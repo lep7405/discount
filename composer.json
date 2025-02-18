@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.9",
         "opcodesio/log-viewer": "^3.14",
         "prettus/l5-repository": "^2.9",
+        "printu/customerio": "^3.6",
         "spatie/laravel-activitylog": "^4.9",
         "tymon/jwt-auth": "^2.1"
     },

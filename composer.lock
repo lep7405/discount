@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "325070e6ba71972e18b500632f2b16d1",
+    "content-hash": "9451ec2b25e5194dccad22fc8cb34315",
     "packages": [
         {
             "name": "brick/math",
@@ -3053,6 +3053,64 @@
                 "wiki": "https://github.com/andersao/laravel-validation"
             },
             "time": "2024-05-05T23:33:47+00:00"
+        },
+        {
+            "name": "printu/customerio",
+            "version": "3.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/printu/customerio.git",
+                "reference": "0e679a3866b8b2005fdc407799f3fd2cdc9884e8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/printu/customerio/zipball/0e679a3866b8b2005fdc407799f3fd2cdc9884e8",
+                "reference": "0e679a3866b8b2005fdc407799f3fd2cdc9884e8",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "~7.2",
+                "php": "~7.3|^8.0"
+            },
+            "conflict": {
+                "userscape/customerio": "*"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Customerio\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Paweł Krzaczkowski",
+                    "email": "pawel@freshmind.pl",
+                    "homepage": "https://github.com/krzaczek"
+                }
+            ],
+            "description": "PHP API for Customer.io",
+            "homepage": "http://customer.io/",
+            "keywords": [
+                "Customerio",
+                "api",
+                "client",
+                "customer.io",
+                "http",
+                "rest"
+            ],
+            "support": {
+                "issues": "https://github.com/printu/customerio/issues",
+                "source": "https://github.com/printu/customerio/tree/3.6.0"
+            },
+            "time": "2025-01-21T12:10:09+00:00"
         },
         {
             "name": "psr/clock",

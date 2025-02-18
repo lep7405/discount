@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
         Route::put('generates/{id}', [GenerateController::class, 'update'])->name('admin.post_edit_generate');
         Route::delete('generates/{id}', [GenerateController::class, 'destroy'])->name('admin.destroy_generate');
         Route::put('generates/change_status/{id}', [GenerateController::class, 'changeStatus'])->name('admin.change_status_generate');
-        Route::get('/coupon/{generate_id}/{timestamp}/{shop_id}', [GenerateController::class,'generateCoupon'])->name('generate.url.coupon');
+        Route::get('coupon/{generate_id}/{timestamp}/{shop_id}', [GenerateController::class, 'generateCoupon'])->name('generate.url.coupon');
     });
 });
 Route::post('get/{id}', [DiscountController::class, 'getDiscount']);

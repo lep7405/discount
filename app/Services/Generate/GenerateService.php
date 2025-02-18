@@ -17,5 +17,6 @@ interface GenerateService
     public function changeStatus($id);
 
     public function destroy($id);
+
     public function generateCoupon($generate_id, $timestamp, $shop_id);
 }

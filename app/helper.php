@@ -22,7 +22,7 @@ if (! function_exists('responseWithSuccess')) {
         ], $code);
     }
 }
-if (!defined('DEFAULT_HEADER_MESSAGE')) {
+if (! defined('DEFAULT_HEADER_MESSAGE')) {
     define('DEFAULT_HEADER_MESSAGE', 'Welcome to Secomapp special offer!');
     define('DEFAULT_SUCCESS_MESSAGE', 'Your offer was created! Please install app to activate the offer!');
     define('DEFAULT_EXTEND_MESSAGE', 'Just install app then offer will be applied automatically!');
@@ -33,4 +33,3 @@ if (!defined('DEFAULT_HEADER_MESSAGE')) {
     define('DEFAULT_LIMIT_REASON', 'Offers have reached the limit!');
     define('DEFAULT_CONDITION_REASON', "Your store doesn't match app conditions!");
 }
-

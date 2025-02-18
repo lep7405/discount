@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateGenerateRequest;
-use App\Http\Requests\GenerateRequest;
 use App\Services\Generate\GenerateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -103,7 +102,5 @@ class GenerateController extends Controller
         return back()->with('success', 'Change Status Generate Success');
     }
 
-    public function generateCoupon($generate_id, $timestamp, $shop_id,GenerateService $generateService){
-
-    }
+    public function generateCoupon($generate_id, $timestamp, $shop_id, GenerateService $generateService) {}
 }

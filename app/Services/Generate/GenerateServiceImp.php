@@ -2,18 +2,18 @@
 
 namespace App\Services\Generate;
 
-use App\Exceptions\HttpException;
-use App\Models\Coupon;
 use App\Exceptions\DiscountException;
 use App\Exceptions\GenerateException;
+use App\Exceptions\HttpException;
+use App\Models\Coupon;
 use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
 use App\Repositories\Generate\GenerateRepository;
 use Carbon\Carbon;
+use Customerio\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
-use GuzzleHttp\Exception\GuzzleException;
-use Customerio\Client;
 class GenerateServiceImp implements GenerateService
 {
     public function __construct(protected GenerateRepository $generateRepository, protected DiscountRepository $discountRepository, protected CouponRepository $couponRepository) {}
@@ -36,11 +36,13 @@ class GenerateServiceImp implements GenerateService
         $current_pages = $generateData->currentPage();
         $groupedGenerates = $generateData->groupBy('app_name');
         $discountMap = [];
+
         foreach ($groupedGenerates as $appName => $group) {
             $discountIds = $group->pluck('discount_id')->unique();
             $discounts = $this->discountRepository->findDiscountsByIdsAndApp($discountIds, $appName);
             $discountMap[$appName] = $discounts->keyBy('id');
         }
+
         $generateDatas = [];
         foreach ($generateData as $gen) {
             $discount = $discountMap[$gen['app_name']][$gen['discount_id']] ?? null;
@@ -169,7 +171,7 @@ class GenerateServiceImp implements GenerateService
         $this->generateRepository->updateGenerateStatus($id, $generate->status);
     }
 
-    public function destroy ($id)
+    public function destroy($id)
     {
         $generate = $this->generateRepository->find($id);
         if (! $generate) {
@@ -259,63 +261,128 @@ class GenerateServiceImp implements GenerateService
     {
         // 1️⃣ Kiểm tra Generate có tồn tại không
         $generate = $this->generateRepository->find($generate_id);
-        if (!$generate || !$generate->status) {
+        if (! $generate || ! $generate->status) {
             throw GenerateException::notFound()->renderView('customer.coupon.layout', [
                 'header_message' => DEFAULT_HEADER_MESSAGE,
                 'content_message' => 'WHOOPS!',
-                'reasons' => !$generate ? "This offer does not exist!" : "This offer was disabled",
+                'reasons' => ! $generate ? 'This offer does not exist!' : 'This offer was disabled',
             ]);
         }
-
-        // 2️⃣ Lấy thông tin cần thiết từ Generate
         $app = $generate->app_name;
         $app_url = $generate->app_url;
         $discount_id = $generate->discount_id;
         $conditions = json_decode($generate->conditions, true) ?? [];
 
-        // 3️⃣ Kiểm tra Discount
         $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $app);
         $discount_expired = $discount->expired_at ? Carbon::parse($discount->expired_at)->timestamp : null;
 
-        // 4️⃣ Kiểm tra Coupon đã tồn tại hay chưa
         $existingCoupons = $this->couponRepository->getCouponByDiscountIdAndCode($discount_id, $app);
         $number_coupon = count($existingCoupons);
 
         // 5️⃣ Lấy message từ Generate hoặc dùng DEFAULT
         $messages = $this->getMessagesFromGenerate($generate);
+        $header_message = $generate->header_message ? $generate->header_message : DEFAULT_HEADER_MESSAGE;
+        $used_message = $generate->used_message ? $generate->used_message : DEFAULT_USED_MESSAGE;
 
         // 6️⃣ Lấy thông tin Shop từ API Customer.io
         try {
-            $attributes = $this->getShopAttributes($shop_id);
+            $attributes = $this->getShopAttributes($shop_id,$app_url,$generate_id);
             $shop_name = $attributes->shop_name ?? null;
-        } catch (Exception $e) {
-            return $this->renderErrorView('Oops! Can not find shop name!', $app_url, $generate_id);
+        } catch (GuzzleException $e) {
+            throw HttpException::connectionError('Oops! Can not connect to shop! Please try again!')
+                ->renderView('customer.coupon.layout', [
+                    'header_message' => 'Connection Error!',
+                    'content_message' => 'Oops! Can not find shop name!',
+                    'reasons' => 'The shop may be down or experiencing issues. Please try again!',
+                    'app_url' => $app_url,
+                    'generate_id' => $generate_id,
+                ]);
         }
 
         // 7️⃣ Kiểm tra nếu shop đã có Coupon
         $coupon = $this->getExistingCoupon($discount_id, $shop_name, $app);
         if ($coupon) {
-            return $this->renderCouponView($coupon, $messages, $app_url, $generate_id);
+            if($coupon->times_used>0){
+                return [
+                    'header_message'=>$header_message,
+                    'content_message'=>$messages['fail_message'],
+                    'reasons'=> $used_message,
+                    'app_url'=>$app_url,
+                    'generate_id'=>$generate_id
+                ];
+            }
+            return [
+                'header_message'=>$header_message,
+                'content_message'=>$messages['success_message'],
+                'extend_message'=> $messages['extend_message'],
+                'app_url'=>$app_url,
+                'generate_id'=>$generate_id
+            ];
         }
 
         // 8️⃣ Kiểm tra thời gian hết hạn
         if ($this->isCouponExpired($discount_expired, $timestamp, $generate->expired_range)) {
-            return $this->renderErrorView($messages['reason_expired'], $app_url, $generate_id);
+            return [
+                'header_message'=>$header_message,
+                'content_message'=>$messages['fail_message'],
+                'reasons'=> $messages['reason_expired'],
+                'app_url'=>$app_url,
+                'generate_id'=>$generate_id
+            ];
         }
 
         // 9️⃣ Kiểm tra giới hạn sử dụng Coupon
         if ($generate->limit && $generate->limit <= $number_coupon) {
-            return $this->renderErrorView($messages['reason_limit'], $app_url, $generate_id);
+            return [
+                'header_message'=>$header_message,
+                'content_message'=>$messages['fail_message'],
+                'reasons'=> $messages['reason_limit'],
+                'app_url'=>$app_url,
+                'generate_id'=>$generate_id
+            ];
         }
 
         // 🔟 Kiểm tra điều kiện (Conditions)
-        if ($conditions && !$this->isConditionSatisfied($conditions, $attributes)) {
+        if ($conditions && ! $this->isConditionSatisfied($conditions, $attributes)) {
             return $this->renderErrorView($messages['reason_condition'], $app_url, $generate_id);
         }
 
         // 🔥 Nếu tất cả điều kiện đạt -> Tạo mới Coupon
-        return $this->createNewCoupon($shop_name, $discount_id, $app, $messages, $app_url, $generate_id);
+        $dataCoupon = [];
+        $dataCoupon['discount_id'] = $discount_id;
+        $dataCoupon['shop'] = $shop_name . '.myshopify.com';
+        $dataCoupon['times_used'] = 0;
+        $dataCoupon['status'] = 1;
+        $dataCoupon['code'] = $this->generateUniqueCouponCode($discount_id, $shop_name, $app);
+
+        if ($app == 'bannerslider' ||
+            $app == 'banner' ||
+            $app == 'currency_switcher' ||
+            $app == 'productlabels' ||
+            $app == 'pl' ||
+            $app == 'customer_attribute' ||
+            $app == 'spin_to_win' ||
+            $app == 'smart_image_optimizer' ||
+            $app == 'seo_booster' ||
+            $app == 'affiliate' ||
+            $app == 'loyalty' ||
+            $app == 'freegifts' ||
+            $app == 'freegifts_new' ||
+            $app == 'reviews_importer'
+        ) {
+            $dataCoupon['automatic'] = true;
+        }
+        $this->couponRepository->createCoupon($dataCoupon, $app);
+
+        return [
+            'header_message' => DEFAULT_HEADER_MESSAGE,
+            'content_message' => $messages['success_message'],
+            'extend_message' => $messages['extend_message'],
+            'app_url' => $app_url,
+            'generate_id' => $generate_id,
+        ];
     }
+
     private function getMessagesFromGenerate($generate)
     {
         return [
@@ -327,7 +394,8 @@ class GenerateServiceImp implements GenerateService
             'reason_condition' => json_decode($generate->fail_message, true)['reason_condition'] ?? DEFAULT_CONDITION_REASON,
         ];
     }
-    private function getShopAttributes($shop_id)
+
+    private function getShopAttributes($shop_id,$app_url,$generate_id)
     {
         $client = new Client($this->apiKey, $this->siteId);
         $endpoint = "/customers/{$shop_id}/attributes";
@@ -335,6 +403,7 @@ class GenerateServiceImp implements GenerateService
 
         try {
             $get_customerio = $client->get($endpoint);
+
             return $get_customerio->customer->attributes;
         } catch (GuzzleException $e) {
             throw HttpException::connectionError('Oops! Can not connect to shop! Please try again!')
@@ -342,14 +411,18 @@ class GenerateServiceImp implements GenerateService
                     'header_message' => 'Connection Error!',
                     'content_message' => 'Oops! Can not connect to shop!',
                     'reasons' => 'The shop may be down or experiencing issues. Please try again!',
+                    'app_url' => $app_url,
+                    'generate_id' => $generate_id,
                 ]);
         }
     }
+
     private function getExistingCoupon($discount_id, $shop_name, $app)
     {
         return Coupon::on($app)->where('discount_id', $discount_id)
             ->where('shop', "{$shop_name}.myshopify.com")->first();
     }
+
     private function isCouponExpired($discount_expired, $timestamp, $expired_range)
     {
         $current_timestamp = now()->timestamp;
@@ -359,15 +432,16 @@ class GenerateServiceImp implements GenerateService
             $current_timestamp > $expired_timestamp ||
             ($discount_expired && $timestamp > $discount_expired);
     }
+
     private function isConditionSatisfied($conditions, $attributes)
     {
         foreach ($conditions as $condition) {
-            $arr_or = explode("||", $condition);
+            $arr_or = explode('||', $condition);
             $condition_met = false;
 
             foreach ($arr_or as $or_condition) {
-                [$app_name, $status] = explode("&", $or_condition);
-                $customer_status = $attributes->{$app_name . "_status"} ?? 'notinstalledyet';
+                [$app_name, $status] = explode('&', $or_condition);
+                $customer_status = $attributes->{$app_name . '_status'} ?? 'notinstalledyet';
 
                 if ($customer_status == $status) {
                     $condition_met = true;
@@ -375,18 +449,19 @@ class GenerateServiceImp implements GenerateService
                 }
             }
 
-            if (!$condition_met) {
+            if (! $condition_met) {
                 return false;
             }
         }
 
         return true;
     }
+
     private function generateUniqueCouponCode($discount_id, $shop_name, $app)
     {
         do {
-            $newCode = strtoupper("GENAUTO" . random_int(1, 1000) . substr(md5("{$app}_{$discount_id}_{$shop_name}"), 2, 4));
-            $exists = Coupon::on($app)->where('code', $newCode)->exists();
+            $newCode = strtoupper('GENAUTO' . random_int(1, 1000) . substr(md5("{$app}_{$discount_id}_{$shop_name}"), 2, 4));
+            $exists = $this->couponRepository->getCouponByCode($newCode, $app);
         } while ($exists);
 
         return $newCode;

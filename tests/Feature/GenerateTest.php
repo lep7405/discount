@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Discount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+
 uses(DatabaseTransactions::class);
 
 beforeEach(function () {
@@ -40,8 +40,6 @@ beforeEach(function () {
     ]);
 });
 
-
-
 test('authenticated user can access generate index page', function () {
     $response = $this->get(route('admin.get_generate'));
 
@@ -75,13 +73,13 @@ test('user can create a generate record', function () {
         'app_url' => 'http://localhost:8000/generates_new',
     ]);
 });
-test('create generate fails when discount_id not found',function(){
+test('create generate fails when discount_id not found', function () {
     $data = [
         'discount_app' => '100&cs',
         'expired_range' => '1',
         'app_url' => 'http://localhost:8000/generates_new',
     ];
-    $response= $this->post(route('admin.post_new_generate'), $data);
+    $response = $this->post(route('admin.post_new_generate'), $data);
 
     $response->assertStatus(404);
     $response->assertSessionHas('error', 'Discount not found');
@@ -92,13 +90,13 @@ test('create generate fails when discount_id and app_name not unique in generate
         'expired_range' => '1',
         'app_url' => 'http://localhost:8000/generates_new',
     ];
-     $this->post(route('admin.post_new_generate'), $data);
+    $this->post(route('admin.post_new_generate'), $data);
     $data = [
         'discount_app' => '50&cs',
         'expired_range' => '1',
         'app_url' => 'http://localhost:8000/generates_new',
     ];
-    $response= $this->post(route('admin.post_new_generate'), $data);
+    $response = $this->post(route('admin.post_new_generate'), $data);
     $response->assertStatus(409);
     $response->assertSessionHas('error', 'Config Discount already exist');
 });
@@ -113,4 +111,3 @@ test('create generate fails when discount expired', function () {
     $response->assertStatus(400);
     $response->assertSessionHas('error', 'Discount is expired');
 });
-

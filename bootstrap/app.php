@@ -1,11 +1,12 @@
 <?php
 
+use App\Exceptions\HttpException;
+use App\Exceptions\InternalException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Exceptions\InternalException;
 use Illuminate\Validation\ValidationException;
-use App\Exceptions\HttpException;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($exception->shouldRenderView()) {
                     return response()->view($exception->getViewName(), $exception->getViewData(), $exception->getCode() ?: 500);
                 }
+
                 return redirect()->back()->with('error', $exception->getMessage());
             }
 
@@ -33,7 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($exception->shouldRenderView()) {
                     return response()->view($exception->getViewName(), $exception->getViewData(), $exception->getCode() ?: 500);
                 }
-                return redirect()->back()->with('error', $exception->getMessage());
+
+                return redirect()->back()->with('error', $exception->getMessage())->setStatusCode($exception->getCode());
             }
         });
 

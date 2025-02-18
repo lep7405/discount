@@ -18,7 +18,7 @@ class DiscountFactory extends Factory
     {
         //auto increment id thì không đặt trong cái này được
         return [
-//            'id' => $this->faker->numberBetween(50, 100), // Fake ID từ 50 đến 100
+            //            'id' => $this->faker->numberBetween(50, 100), // Fake ID từ 50 đến 100
             'name' => $this->faker->sentence(2), // Tên giả lập
             'started_at' => $this->faker->dateTimeBetween('-1 month', 'now'), // Thời gian bắt đầu
             'expired_at' => $this->faker->dateTimeBetween('now', '+1 month'), // Thời gian hết hạn

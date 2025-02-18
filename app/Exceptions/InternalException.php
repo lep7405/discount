@@ -15,6 +15,7 @@ class InternalException extends Exception
         $this->renderView = true;
         $this->viewName = $view;
         $this->viewData = $data;
+
         return $this;
     }
 
@@ -33,4 +34,3 @@ class InternalException extends Exception
         return $this->viewData;
     }
 }
-
