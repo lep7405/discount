@@ -32,6 +32,7 @@ class Discount extends Model
      * @var string
      */
     protected static $logName = 'discount_activity'; // Giá trị mặc định
+
     protected $fillable = [
         'name', 'started_at', 'expired_at', 'type', 'value', 'usage_limit', 'trial_days', 'discount_month',
     ];

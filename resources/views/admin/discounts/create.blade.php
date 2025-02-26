@@ -6,31 +6,33 @@
 
 @section("li_breadcumb")
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}">{{ 'Discounts' }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}"><span class="mr-2">/</span>{{ 'Discounts' }}</a></li>
 @endsection
 
 @section('title_admin_breadcumb')
-    {{ 'Create' }}
+    <span class="mr-2">/</span>{{ 'Create' }}
 @endsection
 
 @section('main_content')
     <div class="max-w-2xl mx-auto">
-        <form method="POST" action="{{ route('admin.'.$databaseName.'.post_new_discount') }}" class="space-y-6">
+        <form method="POST" action="{{ route('admin.'.$databaseName.'.store_discount') }}" class="space-y-6">
             @csrf
+{{--            @if ($errors->any())--}}
+{{--                <div class="text-red-500">--}}
+{{--                    <ul>--}}
+{{--                        @foreach ($errors->all() as $error)--}}
+{{--                            <li>{{ $error }}</li>--}}
+{{--                        @endforeach--}}
+{{--                    </ul>--}}
+{{--                </div>--}}
+{{--            @endif--}}
 
-            {{-- Alert Messages --}}
-            @if (session()->has('message'))
-                <div class="p-4 rounded-lg bg-green-50 border border-green-200">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle h-5 w-5 text-green-400"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-green-800">{{ session()->get('message') }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endif
+{{--        @if (session('error'))--}}
+{{--                <div class="text-red-500 text-sm">{{ session('error') }}</div>--}}
+{{--            @endif--}}
+{{--            @if ($errors->has('error'))--}}
+{{--                <div class="text-red-500 text-sm">{{ $errors->first('error') }}</div>--}}
+{{--            @endif--}}
             {{-- General Section --}}
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="px-4 py-5 bg-[#027BFF] border-b border-blue-200 sm:px-6">
@@ -39,13 +41,16 @@
                 <div class="px-4 py-5 sm:p-6">
                     <div class="grid grid-cols-1 gap-6">
                         <div>
-                            <label for="inputName" class="block text-sm font-bold text-gray-700">Name</label>
+                            <label for="inputName" class="block text-sm font-bold text-gray-700">Name <span class="text-red-400">*</span></label>
                             <input type="text"
                                    id="inputName"
                                    name="name"
                                    value="{{ old('name') }}"
                                    placeholder="Enter name"
                                    class="mt-1 block w-full py-2 px-2 rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            @error('name')
+                            <div class="text-red-500">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -92,7 +97,7 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-bold text-gray-700">Type</label>
+                                <label class="block text-sm font-bold text-gray-700">Type <span class="text-red-400">*</span> </label>
                                 <select name="type"
                                         class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                     <option value="percentage">Percentage</option>

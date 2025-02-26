@@ -6,31 +6,18 @@ use Exception;
 
 class InternalException extends Exception
 {
-    protected bool $renderView = false;
-    protected string $viewName;
-    protected array $viewData = [];
+    protected array $errors;
 
-    public function renderView(string $view, array $data = []): static
+    public static function new(?array $errors = []): static
     {
-        $this->renderView = true;
-        $this->viewName = $view;
-        $this->viewData = $data;
+        $exception = new static;
+        $exception->errors = $errors;
 
-        return $this;
+        return $exception;
     }
 
-    public function shouldRenderView(): bool
+    public function getErrors(): array
     {
-        return $this->renderView;
-    }
-
-    public function getViewName(): string
-    {
-        return $this->viewName;
-    }
-
-    public function getViewData(): array
-    {
-        return $this->viewData;
+        return $this->errors ?? [];
     }
 }

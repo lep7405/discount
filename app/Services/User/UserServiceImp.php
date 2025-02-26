@@ -5,6 +5,7 @@ namespace App\Services\User;
 use App\Exceptions\AuthException;
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Hash;
 
 class UserServiceImp implements UserService
 {
@@ -12,9 +13,7 @@ class UserServiceImp implements UserService
 
     public function create(array $attributes)
     {
-        $formData = Arr::only($attributes, ['name', 'email', 'password']);
-
-        return $this->userRepository->create($formData);
+        return $this->userRepository->create($attributes);
     }
 
     public function login(array $attributes)
@@ -27,28 +26,9 @@ class UserServiceImp implements UserService
         return true;
     }
 
-    public function store($request)
+    public function changePassword($data, $id)
     {
-        // TODO: Implement store() method.
-    }
-
-    public function show($id)
-    {
-        // TODO: Implement show() method.
-    }
-
-    public function edit($id)
-    {
-        // TODO: Implement edit() method.
-    }
-
-    public function update($request, $id)
-    {
-        // TODO: Implement update() method.
-    }
-
-    public function destroy($id)
-    {
-        // TODO: Implement destroy() method.
+        $newPassword = Arr::get($data, 'password');
+        $this->userRepository->update(['password' => Hash::make($newPassword)], $id);
     }
 }

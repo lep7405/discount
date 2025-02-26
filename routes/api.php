@@ -1,13 +1,21 @@
 <?php
 
-//
-//use App\Http\Controllers\AuthController;
-//use App\Http\Controllers\DiscountController;
-//use App\Http\Controllers\ReportController;
-//use App\Http\Controllers\TestController;
-//use Illuminate\Support\Facades\Route;
-//
-//foreach (config('database.connections') as $key => $db) {
+
+ use App\Http\Controllers\AuthController;
+ use App\Http\Controllers\DiscountController;
+ use App\Http\Controllers\ReportController;
+ use App\Http\Controllers\TestController;
+ use Illuminate\Support\Facades\Route;
+
+foreach (config('database.connections') as $key => $db) {
+    if ($key && $key !== 'mysql') {
+        Route::group(['prefix' => $key], function () use ($key) {
+            Route::post('discountInfo/{id}', [DiscountController::class, 'getDiscountInfo'])->name('admin.' . $key . '.discountInfo');
+        });
+    }
+}
+
+// foreach (config('database.connections') as $key => $db) {
 //    if ($key && $key !== 'mysql') {
 //        Route::group(['prefix' => $key], function () use ($key) {
 //            Route::get('reports', [ReportController::class, 'index'])->name('admin.' . $key . '.reports');
@@ -23,14 +31,14 @@
 //            Route::get('test', [\App\Http\Controllers\CouponController::class, 'getAllCoupons']);
 //        });
 //    }
-//}
-//Route::post('cs', [DiscountController::class, 'testException']);
+// }
+// Route::post('cs', [DiscountController::class, 'testException']);
 //
-//Route::post('test', [TestController::class, 'testException']);
-//Route::group(['prefix' => 'auth'], function () {
+// Route::post('test', [TestController::class, 'testException']);
+// Route::group(['prefix' => 'auth'], function () {
 //    Route::get('register', [AuthController::class, 'showRegisterForm'])->name('register');
 //    Route::post('register', [AuthController::class, 'register']);
 //    Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 //    Route::post('login', [AuthController::class, 'login']);
 //    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-//});
+// });

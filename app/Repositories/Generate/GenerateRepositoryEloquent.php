@@ -91,7 +91,6 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
     public function updateGenerate($id, array $data)
     {
         $fillableData = array_intersect_key($data, array_flip($this->getModel()->getFillable()));
-
         return $this->getModel()
             ->where('id', $id)
             ->update($fillableData);

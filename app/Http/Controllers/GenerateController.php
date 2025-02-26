@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateGenerateRequest;
+use App\Http\Requests\UpdateGenerateRequest;
 use App\Services\Generate\GenerateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class GenerateController extends Controller
 {
     protected array $configDatabase;
+
     protected array $apps;
 
     private string $apiKey;
+
     private string $siteId;
+
     private string $appKey;
 
     public function __construct()
@@ -21,12 +26,9 @@ class GenerateController extends Controller
         // Lấy danh sách tất cả các kết nối cơ sở dữ liệu từ file config/database.php
         $config = config('database.connections');
 
-        // Lọc danh sách database, chỉ lấy các database tùy chỉnh, bỏ qua database hệ thống như mysql, pgsql, sqlsrv, sqlite
-        $this->configDatabase = array_keys(array_filter(
-            $config,
-            fn ($key) => ! in_array($key, ['mysql', 'mariadb', 'pgsql', 'sqlsrv', 'sqlite']),
-            ARRAY_FILTER_USE_KEY
-        ));
+        $this->configDatabase = array_keys(
+            Arr::except($config, ['mysql', 'mariadb', 'pgsql', 'sqlsrv', 'sqlite'])
+        );
 
         // Lấy danh sách ứng dụng từ từng database, nếu không có 'app_name' thì mặc định là chuỗi rỗng
         $this->apps = array_map(fn ($db) => $db['app_name'] ?? '', $config);
@@ -53,14 +55,13 @@ class GenerateController extends Controller
 
     public function create(GenerateService $generateService, CreateGenerateRequest $request): RedirectResponse
     {
-        $generateService->create($request->validated());
-
+        $generateService->create($request->validationData());
         return redirect()->route('admin.get_generate')->with('success', 'Created Generate Success');
     }
 
-    public function update($id, Request $request, GenerateService $generateService): RedirectResponse
+    public function update($id, UpdateGenerateRequest $request, GenerateService $generateService): RedirectResponse
     {
-        $generateService->update($id, $request->all());
+        $generateService->update($id, $request->validationData());
 
         return redirect()->route('admin.get_generate')->with('success', 'Updated Generate Success');
     }
@@ -102,5 +103,21 @@ class GenerateController extends Controller
         return back()->with('success', 'Change Status Generate Success');
     }
 
-    public function generateCoupon($generate_id, $timestamp, $shop_id, GenerateService $generateService) {}
+    public function generateCoupon($generate_id, $timestamp, $shop_id, GenerateService $generateService)
+    {
+        $data = $generateService->generateCoupon($generate_id, $timestamp, $shop_id);
+
+        return view('admin.generates.coupon', compact(
+            [
+
+            ]
+        ));
+    }
+
+    public function privateGenerateCoupon(Request $request, $generateId, $shopName, GenerateService $generateService)
+    {
+        $data = $generateService->privateGenerateCoupon($request->ip(), $generateId, $shopName);
+
+        return response()->json($data);
+    }
 }

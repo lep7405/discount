@@ -4,24 +4,33 @@
 
 @section("li_breadcumb")
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}">{{ 'Discounts' }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}"><span class="mr-2">/</span>{{ 'Discounts' }}</a></li>
 @endsection
 
 @section('title_admin_breadcumb')
-    {{ 'Edit' }}
+    <span class="mr-2">/</span>{{ 'Edit' }}
 @endsection
 
 @section('main_content')
     <style>
         [x-cloak] { display: none !important; }
     </style>
-    <div x-data="{ showModal: false }" x-cloak class="container mx-auto px-4">
-        <div class="flex flex-wrap -mx-4">
+    <div x-data="{ showModal: false }" x-cloak class="container mx-auto px-4 mt-2">
+        <h1 class="text-xl font-bold">Edit Discount</h1>
 
+        <div class="flex flex-wrap -mx-4">
             <div class="w-full lg:w-2/3 px-4">
-                <h1 class="text-xl font-bold">Edit Discount</h1>
-                <form role="form" action="{{ route('admin.'.$databaseName.'.update_discount', $data->id) }}" method="POST" class="space-y-6">
+                @if ($errors->has('error'))
+                    <div class="text-red-500">
+                        {{$errors->first('error')}}
+                    </div>
+                @endif
+                    @if ($errors->has('discount_month'))
+                        <span class="text-red-500">{{ $errors->first('discount_month') }}</span>
+                    @endif
+                    <form role="form" action="{{ route('admin.'.$databaseName.'.update_discount', ['id' => $discountData->id]) }}" method="POST" class="space-y-6">
                     @csrf
+                        @method('PUT')
                     {{-- General Section --}}
                     <div class="bg-white shadow rounded-lg overflow-hidden">
                         <div class="px-4 py-5 bg-[#027BFF] border-b border-blue-200 sm:px-6">
@@ -30,13 +39,16 @@
                         <div class="px-4 py-5 sm:p-6">
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label for="inputName" class="block text-sm font-bold text-gray-700">Name</label>
+                                    <label for="inputName" class="block text-sm font-bold text-gray-700">Name  <span class="text-red-400">*</span></label>
                                     <input type="text"
                                            id="inputName"
                                            name="name"
-                                           value="{{ $data->name }}"
+                                           value="{{ $discountData->name }}"
                                            placeholder="Enter name"
                                            class="mt-1 block w-full py-2 px-2 rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    @if ($errors->has('name'))
+                                        <span class="text-red-500">{{ $errors->first('name') }}</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -50,17 +62,17 @@
                         <div class="px-4 py-5 sm:p-6">
                             <div class="grid grid-cols-1 gap-6">
                                 @if ($databaseName == 'affiliate' || $databaseName == 'freegifts_new')
-                                    <div x-data="{ showDiscountMonth: @if (isset($data->discount_month) && $data->discount_month > 0) true @else false @endif }" class="grid grid-cols-2 gap-4">
+                                    <div x-data="{ showDiscountMonth: @if (isset($discountData->discount_month) && $discountData->discount_month > 0) true @else false @endif }" class="grid grid-cols-2 gap-4">
                                         <div class="flex flex-col">
                                             <label class="mb-2 text-sm font-bold text-gray-700">Discount for first X months</label>
                                             <select
                                                 name="discount_for_x_month"
                                                 x-on:change="showDiscountMonth = $event.target.value === '1'"
                                                 class="h-10 rounded-md border-2 border-gray-200 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                @if ($discount_status) disabled @endif
+                                                @if ($discountStatus) disabled @endif
                                             >
-                                                <option value="0" @if (isset($data->discount_month) && $data->discount_month == null) selected @endif>No</option>
-                                                <option value="1" @if (isset($data->discount_month) && $data->discount_month > 0) selected @endif>Yes</option>
+                                                <option value="0" @if (isset($discountData->discount_month) && $discountData->discount_month == null) selected @endif>No</option>
+                                                <option value="1" @if (isset($discountData->discount_month) && $discountData->discount_month > 0) selected @endif>Yes</option>
                                             </select>
                                         </div>
                                         <div x-show="showDiscountMonth" x-cloak class="flex flex-col">
@@ -70,25 +82,23 @@
                                                 min="0"
                                                 step="0.01"
                                                 name="discount_month"
-                                                value="@if (isset($data->discount_month)){{ $data->discount_month }}@endif"
+                                                value="@if (isset($discountData->discount_month)){{ $discountData->discount_month }}@endif"
                                                 placeholder="Enter value"
                                                 class="h-10 rounded-md border-2 border-gray-200 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                @if ($discount_status) disabled @endif
+                                                @if ($discountStatus) disabled @endif
                                             >
-                                            @error('discount_month')
-                                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
                                         </div>
                                     </div>
                                 @endif
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-bold text-gray-700">Type</label>
+                                        <label class="block text-sm font-bold text-gray-700">Type <span class="text-red-400">*</span></label>
                                         <select name="type"
                                                 class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                                @if ($discount_status) disabled @endif>
-                                            <option @if ($data->type == 'percentage') selected @endif value="percentage">Percentage</option>
-                                            <option @if ($data->type == 'amount') selected @endif value="amount">Amount</option>
+                                                @if ($discountStatus) disabled @endif
+                                        >
+                                            <option @if ($discountData->type == 'percentage') selected @endif value="percentage">Percentage</option>
+                                            <option @if ($discountData->type == 'amount') selected @endif value="amount">Amount</option>
                                         </select>
                                     </div>
                                     <div>
@@ -97,10 +107,10 @@
                                                min="0"
                                                step="0.01"
                                                name="value"
-                                               value="{{ $data->value }}"
+                                               value="{{ $discountData->value }}"
                                                placeholder="Enter value"
                                                class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                               @if ($discount_status) disabled @endif>
+                                               @if ($discountStatus) disabled @endif>
                                         @error('value')
                                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
@@ -111,10 +121,10 @@
                                     <label class="block text-sm font-bold text-gray-700">Trial days</label>
                                     <input type="number"
                                            name="trial_days"
-                                           value="{{ $data->trial_days }}"
+                                           value="{{ $discountData->trial_days }}"
                                            placeholder="Enter trial days"
                                            class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                           @if ($discount_status) disabled @endif>
+                                           @if ($discountStatus) disabled @endif>
                                     @error('trial_days')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -136,7 +146,7 @@
                                     <input type="number"
                                            id="inputUsage"
                                            name="usage_limit"
-                                           value="{{ $data->usage_limit }}"
+                                           value="{{ $discountData->usage_limit }}"
                                            placeholder="Enter usage limit"
                                            class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                     @error('usage_limit')
@@ -150,10 +160,11 @@
                                         <input type="date"
                                                id="inputStarted"
                                                name="started_at"
-                                               value="{{ date('Y-m-d', strtotime($data->started_at)) }}"
+                                               value="{{ $discountData->started_at ? date('Y-m-d', strtotime($discountData->started_at)) : '' }}"
                                                class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+
                                         @error('started_at')
-                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-red-600">{{ $errors->first('started_at') }}</p>
                                         @enderror
                                     </div>
                                     <div>
@@ -161,10 +172,10 @@
                                         <input type="date"
                                                id="inputExpired"
                                                name="expired_at"
-                                               value="{{ date('Y-m-d', strtotime($data->expired_at)) }}"
+                                               value="{{ $discountData->expired_at ? date('Y-m-d', strtotime($discountData->expired_at)) : '' }}"
                                                class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
                                         @error('expired_at')
-                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-red-600">{{ $errors->first('expired_at') }}</p>
                                         @enderror
                                     </div>
                                 </div>
@@ -185,18 +196,20 @@
                 </form>
             </div>
             <div class="w-full lg:w-1/3 px-4">
+                <div class="px-4 py-5 bg-[#027BFF] border-b border-blue-200 sm:px-6">
+                    <h3 class="text-lg font-medium leading-6 text-white">Status</h3>
+                </div>
                 <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                    <h3 class="text-lg font-semibold mb-4">Status</h3>
                     <ul class="list-disc list-inside">
-                        <li>{{ $data->type == 'percentage' ? $data->value .'%' : $data->value." USD" }}</li>
-                        <li>{{ $data->trial_days ?? 0 }} days trial</li>
+                        <li>{{ $discountData->type == 'percentage' ? $discountData->value .'%' : $discountData->value." USD" }}</li>
+                        <li>{{ $discountData->trial_days ?? 0 }} days trial</li>
                     </ul>
                 </div>
                 <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                     <h3 class="text-lg font-semibold mb-4">Coupon</h3>
                     <ul class="list-disc list-inside">
-                        <li><a href="{{ route('admin.'.$databaseName.".show_create_coupon_in_discount", $data->id) }}" class="text-blue-600 hover:text-blue-800">Add Coupon</a></li>
-                        <li><a href="{{ route('admin.'.$databaseName.".show_all_coupon_in_discount", $data->id) }}"  class="text-blue-600 hover:text-blue-800">Coupons Created</a></li>
+                        <li><a href="{{ route('admin.'.$databaseName.'.show_create_coupon_in_discount', $discountData->id) }}" class="text-blue-600 hover:text-blue-800">Add Coupon</a></li>
+                        <li><a  href="{{ route('admin.'.$databaseName.'.show_all_coupon_in_discount', $discountData->id) }}" class="text-blue-600 hover:text-blue-800">Coupons Created</a></li>
                     </ul>
                 </div>
             </div>
@@ -223,7 +236,7 @@
     </div>
 
     <!-- Modal -->
-    <form id="deleteDiscount" method="POST" action="{{ route('admin.'.$databaseName.'.delete_discount', $data->id) }}">
+    <form id="deleteDiscount" method="POST" action="{{ route('admin.'.$databaseName.'.destroy_discount', $discountData->id) }}">
         @csrf
         @method('DELETE')
     </form>
@@ -256,3 +269,22 @@
         });
     </script>
 @endpush
+@push('scripts')
+    <script>
+        @if (session('success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            }
+        });
+        @endif
+    </script>
+@endpush
+

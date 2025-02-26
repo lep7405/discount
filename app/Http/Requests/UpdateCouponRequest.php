@@ -24,6 +24,7 @@ class UpdateCouponRequest extends FormRequest
         $routeName = $this->route()->getPrefix();
         $arr = explode('/', $routeName);
         $databaseName = $arr[1];
+        //        dd($this->input('code'));
 
         return [
             'code' => 'required|string|max:255',

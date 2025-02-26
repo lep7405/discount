@@ -13,6 +13,7 @@
         "laravel/framework": "^11.31",
         "laravel/telescope": "^5.3",
         "laravel/tinker": "^2.9",
+        "laravel/ui": "^4.6",
         "opcodesio/log-viewer": "^3.14",
         "prettus/l5-repository": "^2.9",
         "printu/customerio": "^3.6",

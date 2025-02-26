@@ -330,10 +330,11 @@
                 let url = "";
 
                 if (id && storedDiscountId !== id) {
-                    url = `http://localhost:8000/${database}/discount_ajax/${id}`;
+                    url = `http://localhost:8000/admin/${database}/discounts/${id}`;
                 } else {
-                    url = `http://localhost:8000/${database}/discount_ajax/${storedDiscountId}`;
+                    url = `http://localhost:8000/admin/${database}/discounts/${storedDiscountId}`;
                 }
+                console.log('url',url);
 
                 fetch(url, {
                     method: 'POST',

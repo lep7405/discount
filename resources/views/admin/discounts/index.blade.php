@@ -6,7 +6,7 @@
 
 @section("li_breadcumb")
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}">{{ 'Discounts' }}</a></li>
+    <li class=""><a href="{{ route('admin.'.$databaseName.'.discounts') }}"><span class="mr-2">/</span>{{ 'Discounts' }}</a></li>
 @endsection
 
 @section('main_content')
@@ -14,7 +14,7 @@
         <!-- Card Header -->
         <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
             <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Discounts List</h2>
-            <a href="{{ route('admin.'.$databaseName.'.discounts_new') }}"
+            <a href="{{ route('admin.'.$databaseName.'.create_discount') }}"
                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                 <i class="fas fa-plus mr-2"></i>
                 Add New Discount
@@ -27,14 +27,24 @@
                 <label class="text-sm font-medium text-gray-600">Show</label>
                 <input type="hidden" name="search_discount" value="{{ $search_discount }}">
                 <input type="hidden" name="started_at" value="{{ $started_at }}">
-                <select id="discount-entries-select" name="per_page_discount"
-                        class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
-                        onchange="this.form.submit()">
-                    <option value="5" {{ $per_page_discount == 5 ? 'selected' : '' }}>5</option>
-                    <option value="10" {{ $per_page_discount == 10 ? 'selected' : '' }}>10</option>
-                    <option value="20" {{ $per_page_discount == 20 ? 'selected' : '' }}>20</option>
-                    <option value="-1" {{ $per_page_discount == -1 ? 'selected' : '' }}>All</option>
-                </select>
+                <div class="relative inline-block">
+                    <select id="discount-entries-select" name="per_page_discount"
+                            class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onchange="this.form.submit()">
+                        <option value="5" {{ $per_page_discount == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $per_page_discount == 10 ? 'selected' : '' }}>10</option>
+                        <option value="20" {{ $per_page_discount == 20 ? 'selected' : '' }}>20</option>
+                        <option value="-1" {{ $per_page_discount == -1 ? 'selected' : '' }}>All</option>
+                    </select>
+
+                    <!-- Custom Dropdown Arrow -->
+                    <div class="absolute top-0 right-0 flex items-center justify-center w-8 h-full pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+
                 <label class="text-sm font-medium text-gray-600">entries</label>
             </form>
             <div class="flex items-center">
@@ -58,7 +68,7 @@
                 <table id="discount-data" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
                     <tr>
-                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">id</th>
                         <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
                         <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             <div class="flex items-center space-x-2">
@@ -97,14 +107,14 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                      @if (count($discountData)>0)
                     @foreach ($discountData as $item)
-                        <tr href="{{ route('admin.'.$databaseName.'.get_edit_discount', $item->id) }}"
-                            class="hover:bg-blue-50/50 transition-colors duration-150">
+                        <tr onclick="window.location='{{ route('admin.'.$databaseName.'.edit_discount', $item->id) }}';"
+                            class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <a href="{{ route('admin.'.$databaseName.'.get_edit_discount', $item->id) }}"
+                                <a
                                    class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">{{ $item->id }}</a>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-900">
-                                <a href="{{ route('admin.'.$databaseName.'.get_edit_discount', $item->id) }}"
+                                <a
                                    class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">{{ $item->name }}</a>
                                 <br>
                                 <span class="text-gray-500 text-sm">
@@ -138,7 +148,11 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <!-- Showing entries info -->
                         <div class="text-sm text-gray-600 font-medium">
-                            Showing {{ ($current_pages_discount - 1) * $per_page_discount + 1 }} to {{ min($current_pages_discount * $per_page_discount, $total_items_discount) }} of {{ $total_items_discount }} entries
+                            @if ($total_items_discount == $total_items)
+                                Showing {{ ($current_pages_discount - 1) * $per_page_discount + 1 }} to {{ min($current_pages_discount * $per_page_discount, $total_items_discount) }} of {{ $total_items_discount }} entries
+                            @else
+                                Showing {{ ($current_pages_discount - 1) * $per_page_discount + 1 }} to {{ min($current_pages_discount * $per_page_discount, $total_items_discount) }} of {{ $total_items_discount }} entries of {{ $total_items }} total items
+                            @endif
                         </div>
 
                         <!-- Pagination controls -->

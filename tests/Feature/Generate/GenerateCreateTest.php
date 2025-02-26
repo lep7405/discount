@@ -1,15 +1,14 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-uses(DatabaseTransactions::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
-    DB::connection('cs')->table('discounts')->whereIn('id', [50, 52])->delete();
     DB::connection('cs')->table('discounts')->insert([
         [
             'id' => 50,
@@ -46,7 +45,6 @@ test('authenticated user can access generate index page', function () {
     $response->assertStatus(200);
     $response->assertViewIs('admin.generates.index');
 });
-
 test('unauthenticated user is redirected from generate index page', function () {
     auth()->logout();
 
@@ -54,7 +52,6 @@ test('unauthenticated user is redirected from generate index page', function () 
 
     $response->assertRedirect(route('login'));
 });
-
 test('user can create a generate record', function () {
     $data = [
         'discount_app' => '50&cs',
@@ -100,7 +97,6 @@ test('create generate fails when discount_id and app_name not unique in generate
     $response->assertStatus(409);
     $response->assertSessionHas('error', 'Config Discount already exist');
 });
-
 test('create generate fails when discount expired', function () {
     $data = [
         'discount_app' => '52&cs',

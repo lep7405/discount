@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Services\User\UserService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     public function showRegisterForm()
     {
+        //        return redirect()->route('login');
         return view('auth.register');
     }
 
     public function register(UserService $userService, RegisterRequest $request)
     {
+
         $userService->create($request->validationData());
 
         return redirect()->route('login');
@@ -39,10 +43,21 @@ class AuthController extends Controller
         $request->session()->flush();
         auth()->logout();
 
-        return redirect('/auth/login')->with('message', 'Bạn đã đăng xuất thành công!');
+        return redirect('/login')->with('message', 'Bạn đã đăng xuất thành công!');
     }
 
-    public function me() {}
+    public function me()
+    {
+        $user = Auth::user();
 
-    public function changePassword(Request $request) {}
+        return view('admin.user.index', compact('user'));
+    }
+
+    public function changePassword(ChangePasswordRequest $request, UserService $userService)
+    {
+        $user = Auth::user();
+        $userService->changePassword($request->validationData(), $user->id);
+
+        return redirect()->back()->with('success', 'Change password successfully!');
+    }
 }

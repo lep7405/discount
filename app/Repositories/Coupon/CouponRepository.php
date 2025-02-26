@@ -25,4 +25,10 @@ interface CouponRepository extends RepositoryInterface
     public function updateCoupon(array $data, int $id, string $databaseName);
 
     public function deleteCoupon(int $id, string $databaseName);
+
+    public function deleteCouponByDiscountId(int $discountId, string $databaseName);
+
+    public function getCouponByDiscountIdandShop($discountId, $shopName, $databaseName);
+
+    public function getAllCouponsByDiscount($discount_id, array $filters, string $databaseName);
 }

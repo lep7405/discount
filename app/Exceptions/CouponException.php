@@ -4,24 +4,38 @@ namespace App\Exceptions;
 
 class CouponException extends InternalException
 {
-    public static function notFound()
+    public static function validateCreate(array $messages): self
     {
-        return new self('Coupon not found', 404);
+        return self::new($messages);
+    }
+    public static function validateCreateByDiscount(array $messages): self
+    {
+        return self::new($messages);
     }
 
-    public static function timesUsedLessThanDecrement()
+    public static function notFound(array $messages): self
     {
-        return new self('Times used is less than decrement', 400);
+        return self::new($messages);
     }
 
-    public static function codeAlreadyExist()
+    public static function cannotUpdate(array $messages): self
     {
-        return new self('Code is already exist', 400);
+        return self::new($messages);
     }
 
-    public static function cannotDelete()
+    public static function timesUsedLessThanDecrement(array $messages): self
     {
-        return new self('Cannot delete coupon', 400);
+        return self::new($messages);
+    }
+
+    public static function codeAlreadyExist(array $messages): self
+    {
+        return self::new($messages);
+    }
+
+    public static function cannotDelete(array $messages): self
+    {
+        return self::new($messages);
     }
 
     public static function inValidArrangeTime()

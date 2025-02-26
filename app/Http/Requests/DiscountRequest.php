@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\DiscountException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
 class DiscountRequest extends FormRequest
 {
@@ -23,32 +23,35 @@ class DiscountRequest extends FormRequest
      */
     public function rules(): array
     {
-        $routeName = $this->route()->getPrefix();
-        $arr = explode('/', $routeName);
-        $databaseName = $arr[1];
+        $databaseName = explode('/', $this->route()->getPrefix())[1];
         $rules = [
             'name' => 'required|max:255|string',
             'expired_at' => 'nullable|date|after:started_at',
             'type' => 'required|in:percentage,amount',
-            'value' => [
-                'numeric',
-                'required',
-                'min:0',
-                function ($attribute, $value, $fail) {
-                    if ($this->input('type') == 'percentage' && ($value < 0 || $value > 100)) {
-                        $fail($attribute . ' is invalid.');
-                    }
-                },
-            ],
+            'value' => $this->percentageValidationRule(),
             'usage_limit' => 'nullable|integer|min:0',
-            'trial_days' => 'nullable|integer|min:0', //cái trial days cho null xong đó ở dưới lấy ra 0 nếu null
+            'trial_days' => 'nullable|integer|min:0',
         ];
         if (in_array($databaseName, ['affiliate', 'freegifts_new'])) {
-            $rules['discount_for_x_month'] = 'required|boolean';
-            $rules['discount_month'] = 'required_if:discount_for_x_month,1|integer|min:1';
+            if ($this->input('discount_for_x_month') == '1') {
+                $rules['discount_month'] = 'required|integer|min:1';
+            }
         }
 
         return $rules;
+    }
+
+    public function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+        $errorDetails = [];
+
+        foreach ($errors->messages() as $field => $messages) {
+            foreach ($messages as $message) {
+                $errorDetails[$field][] = $message; // Đảm bảo đúng định dạng Laravel cần
+            }
+        }
+        throw DiscountException::validateCreate($errorDetails);
     }
 
     public function validationData(): array
@@ -66,11 +69,15 @@ class DiscountRequest extends FormRequest
         ];
     }
 
-    protected function failedValidation(Validator $validator)
+    protected function percentageValidationRule()
     {
-        throw new HttpResponseException(response()->json([
-            'success' => false,
-            'errors' => $validator->errors(),
-        ], 422)); // 422 Unprocessable Entity
+        return function ($attribute, $value, $fail) {
+            if ($this->input('type') === 'percentage' && ($value < 0 || $value > 100)) {
+                $fail($attribute.' must be between 0 and 100 when type is percentage.');
+            }
+            if ($this->input('type') === 'amount' && ($value < 0)) {
+                $fail($attribute.' must be greater or equal to 0.');
+            }
+        };
     }
 }

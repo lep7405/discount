@@ -11,6 +11,7 @@ class Generate extends Model
     use LogsActivity;
 
     protected static $logOnlyDirty = true;
+
     protected static $logName = 'generate_activity';
 
     protected static $logAttributes = [

@@ -20,6 +20,7 @@ class GenerateFactory extends Factory
             'app_name' => 'cs',
             'app_url' => 'http://localhost:8000/generates_new',
             'discount_id' => 1,
+            'expired_range' => 14,
         ];
     }
 }

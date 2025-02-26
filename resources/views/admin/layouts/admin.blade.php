@@ -119,16 +119,18 @@
         <x-header />
 
         <main class="flex-grow py-6">
-            <div class="mx-auto  px-4 sm:px-6 lg:px-8">
-                <div class="col-sm-6">
-                    <nav class="bg-gray-50/50 py-2 px-4 rounded-md">
+            <div class="mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="w-full">
+                    <nav class="bg-white/80 backdrop-blur-sm py-3 px-4 rounded-lg shadow-sm">
                         <ol class="flex items-center space-x-2 text-sm">
                             <li>
-                                <a href="{{ route('admin.dashboard.index') }}" class="text-blue-600 hover:text-blue-800">Home</a>
+                                <a href="{{ route('admin.dashboard.index') }}" class="text-blue-600 hover:text-blue-800 transition-colors">
+                                    Home
+                                </a>
                             </li>
                             <li class="text-gray-400">/</li>
                             @yield("li_breadcumb")
-                            <li class="text-gray-600">@yield('title_admin_breadcumb')</li>
+                            <li class="text-gray-900 font-medium">@yield('title_admin_breadcumb')</li>
                         </ol>
                     </nav>
                 </div>

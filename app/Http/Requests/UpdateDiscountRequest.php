@@ -37,7 +37,7 @@ class UpdateDiscountRequest extends FormRequest
             'expired_at' => 'date|after:started_at',
             'usage_limit' => 'nullable|integer|min:0',
         ];
-        //nếu mà cái discount mà chưa có coupon nào đuợc sử dụng thì cần phái nhập lớp nây
+        // nếu mà cái discount mà chưa có coupon nào đuợc sử dụng thì cần phái nhập lớp nây
         if (! $discount_status) {
             $rules['type'] = 'required|in:percentage,fixed';
             $rules['value'] = 'required|numeric|between:0,100';

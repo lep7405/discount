@@ -7,7 +7,7 @@
     <li><a href="{{ route('admin.get_generate') }}">{{ 'Generate Coupon' }}</a></li>
 @endsection
 @section('title_admin_breadcumb')
-    {{ 'Create' }}
+    <span class="mr-2">/</span>{{ 'Create' }}
 @endsection
 @section('main_content')
     <div class="container mx-auto px-4">
@@ -23,129 +23,160 @@
                                 <div class="bg-blue-600 text-white px-6 py-4">
                                     <h3 class="text-lg font-semibold">General</h3>
                                 </div>
-                                <div class="p-6">
-                                    @if (session('error'))
-                                        <div class="text-red-500 text-sm">{{ session('error') }}</div>
-                                    @endif
-                                    @if (count($errors) > 0)
-                                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
-                                            <ul class="list-disc list-inside">
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{!! $error !!}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
-
-                                        <div class="space-y-2">
-                                            <label class="block text-sm font-medium text-gray-700">Discount<span class="text-red-500">*</span></label>
-                                            <p class="text-sm text-gray-600 current_discount_status" id="discountInfo">
-                                            </p>
-                                            <select id="discount_id" class="discount_select2 mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" name="discount_app">
-                                                <option value="">-- Select Discount --</option>
-                                                @foreach ($discountData as $item)
-                                                    <option value="{{ $item->id.'&'.$item->databaseName }}">{{ $item->name.' / '.$item->appName }}</option>
-                                                @endforeach
-                                            </select>
-
-                                        </div>
-{{--                                        <div class="mb-4">--}}
-{{--                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="discount">Discount</label>--}}
-{{--                                            <p class="status_hover text-sm text-gray-600"></p>--}}
-
-{{--                                            <select id="discountSelect" class="form-select w-full mt-1 discount_select2" name="discount_app">--}}
-{{--                                                <option value="">-- Select Discount --</option>--}}
-{{--                                                @foreach ($discountData as $item)--}}
-{{--                                                    <option value="{{ $item->id.'&'.$item->databaseName }}">{{ $item->name.' / '.$item->appName }}</option>--}}
-{{--                                                @endforeach--}}
-{{--                                            </select>--}}
-
-{{--                                            <ul id="discountInfo" class="mt-2 text-sm text-gray-600"></ul> <!-- Khu vực hiển thị thông tin -->--}}
-{{--                                        </div>--}}
-
-                                        <div x-data="conditionManager()" class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="condition">Conditions</label>
-                                            <ul id="more_condition" class="mb-2 space-y-2">
-                                                <template x-for="condition in conditions" :key="condition.id">
-                                                    <li class="p-2 border rounded">
-                                                        <template x-for="(app, index) in condition.apps" :key="index">
-                                                            <div class="flex items-center space-x-2 mb-2">
-                                                                <span x-show="index > 0">OR</span>
-                                                                <select
-                                                                    x-model="app.name"
-                                                                    @change="updateAppValue(condition.id, index, 'name', $event.target.value)"
-                                                                    class="form-select mt-1 block w-40"
-                                                                >
-                                                                    <option value="">Select App</option>
-                                                                    <option value="fg">Free gift</option>
-                                                                    <option value="qv">Quick View</option>
-                                                                    <option value="pp">Promotion Popup</option>
-                                                                    <option value="sl">Store Locator</option>
-                                                                    <option value="sp">Store Pickup</option>
-                                                                    <option value="bn">Banner Slider</option>
-                                                                    <option value="cs">Currency Switcher</option>
-                                                                    <option value="pl">Product Label</option>
-                                                                    <option value="ca">Customer Attribute</option>
-                                                                    <option value="sw">Spin To Win</option>
-                                                                </select>
-                                                                <select
-                                                                    x-model="app.status"
-                                                                    @change="updateAppValue(condition.id, index, 'status', $event.target.value)"
-                                                                    class="form-select mt-1 block w-40"
-                                                                >
-                                                                    <option value="">Select Status</option>
-                                                                    <option value="notinstalledyet">Not Installed yet</option>
-                                                                    <option value="installed">Installed</option>
-                                                                    <option value="charged">Charged</option>
-                                                                    <option value="uninstalled">Uninstalled</option>
-                                                                </select>
-                                                                <button
-                                                                    @click="removeInCondition(condition.id,index)"
-                                                                    type="button"
-                                                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm"
-                                                                >
-                                                                    Remove
-                                                                </button>
-                                                                <button
-                                                                    x-show="index === condition.apps.length - 1"
-                                                                    @click="addOr(condition.id)"
-                                                                    type="button"
-                                                                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm"
-                                                                >
-                                                                    OR
-                                                                </button>
-                                                            </div>
-
-                                                        </template>
-                                                        <button
-                                                            @click="removeCondition(condition.id)"
-                                                            type="button"
-                                                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm"
-                                                        >
-                                                            Remove1
-                                                        </button>
-
-                                                    </li>
-
-                                                </template>
-                                            </ul>
-                                            <button type="button" @click="addCondition" class="btnAnd bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">And</button>
-                                            <input type="hidden" name="condition_object" x-model="conditionJSON" class="condition_object">
-                                        </div>
-                                    <div class="mb-4">
-                                        <label class="block text-gray-700 text-sm font-bold mb-2" for="range">Expired Range (Days)<span class="text-red-500">*</span></label>
-                                        <input type="number" name="expired_range"        class="form-input mt-1 block w-full border {{ $errors->has('expired_range') ? 'border-red-500' : 'border-gray-300' }}"
-                                               value="{{ old('expired_range') }}" id="range" placeholder="Expired Range (Days)">
+                                <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+                                    {{-- Error Messages --}}
+                                    <div class="mb-6">
+                                        @if ($errors->any())
+                                            <div class="text-red-400">
+                                                <ul>
+                                                    @foreach ($errors->all() as $error)
+                                                        <li>{{ $error }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
                                     </div>
-                                    <div class="mb-4">
-                                        <label class="block text-gray-700 text-sm font-bold mb-2" for="limit">Limit Coupons</label>
-                                        <input type="number" name="limit" class="form-input mt-1 block w-full" value="{{ old('limit') }}" id="limit" placeholder="Limit Coupons Generate">
+
+                                    {{-- Discount Selection --}}
+                                    <div class="mb-6">
+                                        <label for="discount_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Discount<span class="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <p id="discountInfo" class="text-sm text-gray-600 mb-2"></p>
+                                        <select
+                                            id="discount_id"
+                                            name="discount_app"
+                                            class="discount_select2 w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        >
+                                            <option value="">-- Select Discount --</option>
+                                            @foreach ($discountData as $item)
+                                                <option value="{{ $item->id.'&'.$item->databaseName }}">{{ $item->name.' / '.$item->appName }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    <div class="mb-4">
-                                        <label class="block text-gray-700 text-sm font-bold mb-2" for="inputApp">App URL<span class="text-red-500">*</span></label>
-                                        <input type="text" class="form-input mt-1 block w-full" id="inputApp" name="app_url" value="{{ old('app_url') }}" placeholder="Enter App URL">
+
+                                    {{-- Conditions --}}
+                                    <div x-data="conditionManager()" class="mb-6">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Conditions</label>
+                                        <ul id="more_condition" class="mb-4 space-y-3">
+                                            <template x-for="condition in conditions" :key="condition.id">
+                                                <li class="p-4 border border-gray-200 rounded-md shadow-sm">
+                                                    <template x-for="(app, index) in condition.apps" :key="index">
+                                                        <div class="flex flex-wrap items-center gap-2 mb-3">
+                                                            <span x-show="index > 0" class="text-sm font-medium text-gray-500">OR</span>
+                                                            <select
+                                                                x-model="app.name"
+                                                                @change="updateAppValue(condition.id, index, 'name', $event.target.value)"
+                                                                class="form-select px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                            >
+                                                                <option value="">Select App</option>
+                                                                <option value="fg">Free gift</option>
+                                                                <option value="qv">Quick View</option>
+                                                                <option value="pp">Promotion Popup</option>
+                                                                <option value="sl">Store Locator</option>
+                                                                <option value="sp">Store Pickup</option>
+                                                                <option value="bn">Banner Slider</option>
+                                                                <option value="cs">Currency Switcher</option>
+                                                                <option value="pl">Product Label</option>
+                                                                <option value="ca">Customer Attribute</option>
+                                                                <option value="sw">Spin To Win</option>
+                                                            </select>
+                                                            <select
+                                                                x-model="app.status"
+                                                                @change="updateAppValue(condition.id, index, 'status', $event.target.value)"
+                                                                class="form-select px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                            >
+                                                                <option value="">Select Status</option>
+                                                                <option value="notinstalledyet">Not Installed yet</option>
+                                                                <option value="installed">Installed</option>
+                                                                <option value="charged">Charged</option>
+                                                                <option value="uninstalled">Uninstalled</option>
+                                                            </select>
+                                                            <button
+                                                                @click="removeInCondition(condition.id,index)"
+                                                                type="button"
+                                                                class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded-md text-sm transition duration-150 ease-in-out"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                            <button
+                                                                x-show="index === condition.apps.length - 1"
+                                                                @click="addOr(condition.id)"
+                                                                type="button"
+                                                                class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-3 rounded-md text-sm transition duration-150 ease-in-out"
+                                                            >
+                                                                OR
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                    <button
+                                                        @click="removeCondition(condition.id)"
+                                                        type="button"
+                                                        class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded-md text-sm transition duration-150 ease-in-out"
+                                                    >
+                                                        Remove Condition
+                                                    </button>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                        <button
+                                            type="button"
+                                            @click="addCondition"
+                                            class="btnAnd bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-150 ease-in-out"
+                                        >
+                                            And
+                                        </button>
+                                        <input type="hidden" name="condition_object" x-model="conditionJSON" class="condition_object">
+                                    </div>
+
+                                    {{-- Expired Range --}}
+                                    <div class="mb-6">
+                                        <label for="range" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Expired Range (Days)<span class="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="expired_range"
+                                            id="range"
+                                            placeholder="Expired Range (Days)"
+                                            class="w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('expired_range') ? 'border-red-500' : 'border-gray-300' }}"
+                                            value="{{ old('expired_range') }}"
+                                        >
+                                    </div>
+
+                                    {{-- Limit Coupons --}}
+                                    <div class="mb-6">
+                                        <label for="limit" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Limit Coupons
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="limit"
+                                            id="limit"
+                                            placeholder="Limit Coupons Generate"
+                                            class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ old('limit') }}"
+                                        >
+                                    </div>
+
+                                    {{-- App URL --}}
+                                    <div class="mb-6">
+                                        <label for="inputApp" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            App URL<span class="text-red-500 ml-1">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputApp"
+                                            name="app_url"
+                                            placeholder="Enter App URL"
+                                            class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ old('app_url') }}"
+                                        >
                                     </div>
                                 </div>
+                            </div>
+                            <div class="mt-8">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded submit_config">Save Config</button>
                             </div>
                         </div>
                         <div class="w-full lg:w-1/3 px-4">
@@ -201,9 +232,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-8">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded submit_config">Save Config</button>
-                    </div>
+
                 </form>
             </div>
         </div>
@@ -308,14 +337,14 @@
 
                 // Giải mã ID và database từ value của select
                 const [id, database] = selectedValue.split("&");
-                let url = `http://localhost:8000/${database}/discount_ajax/${id}`;
+                let url = `http://localhost:8000/admin/${database}/discounts/${id}`;
                 fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    body: JSON.stringify({ db: database })
+                    body: JSON.stringify({ db: database }),
                 })
                     .then(response => {
                         if (!response.ok) {

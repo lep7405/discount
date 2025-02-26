@@ -23,10 +23,11 @@
             <h1 class="text-3xl font-semibold text-gray-700 mb-2">Secomus Login</h1>
             <p class="text-gray-600">Log in to start</p>
         </div>
-        @if (session('error'))
-            <div class="text-red-500 text-sm">{{ session('error') }}</div>
+        @if ($errors->has('error'))
+            <div class="text-red-400">
+               {{$errors->first('error')}}
+            </div>
         @endif
-
         <form action="{{ route('login') }}" method="POST" class="space-y-6">
             @csrf
 

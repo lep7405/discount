@@ -15,7 +15,6 @@
             <h1 class="text-3xl font-semibold text-gray-700 mb-2">Secomus Register</h1>
             <p class="text-gray-600">Register a new account</p>
         </div>
-
         <form action="{{ route('register') }}" method="POST" class="space-y-6">
             @csrf
 

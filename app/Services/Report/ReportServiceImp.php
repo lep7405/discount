@@ -14,32 +14,35 @@ class ReportServiceImp implements ReportService
 
     public function index(array $filters, string $databaseName)
     {
-        $count_all = $this->discountRepository->countDiscount($databaseName);
-        $perPage = Arr::get($filters, 'per_page_discount', 5);
-        $perPage = $perPage == -1 ? $count_all : $perPage;
+        $count_all_discount = $this->discountRepository->countDiscount($databaseName);
+        $perPageDiscount = Arr::get($filters, 'per_page_discount', 5);
+        $perPageDiscount = $perPageDiscount == -1 ? $count_all_discount : $perPageDiscount;
         $started_at = Arr::get($filters, 'started_at');
         if ($started_at && ! in_array($started_at, ['desc', 'asc'])) {
             throw DiscountException::inValidStartedAt();
         }
-        Arr::set($filters, 'per_page_discount', $perPage);
+        $page_discount = Arr::get($filters, 'page_discount', 1);
+        Arr::set($filters, 'per_page_discount', $perPageDiscount);
         Arr::set($filters, 'started_at', $started_at);
-
+        Arr::set($filters, 'page_discount', $page_discount);
         $discountData = $this->discountRepository->getAllDiscountsReports($filters, $databaseName);
         $total_items_discount = $discountData->total();
         $total_pages_discount = $discountData->lastPage();
         $current_pages_discount = $discountData->currentPage();
 
-        $count_all = $this->couponRepository->countCoupons($databaseName);
-        $perPage = Arr::get($filters, 'per_page_coupon', 5);
+        $count_all_coupon = $this->couponRepository->countCoupons($databaseName);
+        $perPageCoupon = Arr::get($filters, 'per_page_coupon', 5);
         $status = Arr::get($filters, 'status');
-        $perPage = $perPage == -1 ? $count_all : $perPage;
+        $perPageCoupon = $perPageCoupon == -1 ? $count_all_coupon : $perPageCoupon;
         $status = $status !== null ? (int) $status : null;
         $arrange_times_used = Arr::get($filters, 'time_used');
         if ($arrange_times_used && ! in_array($arrange_times_used, ['desc', 'asc'])) {
             throw CouponException::inValidArrangeTime();
         }
-        Arr::set($filters, 'per_page_coupon', $perPage);
+        $page_coupon = Arr::get($filters, 'page_coupon', 1);
+        Arr::set($filters, 'per_page_coupon', $perPageCoupon);
         Arr::set($filters, 'status', $status);
+        Arr::set($filters, 'page_coupon', $page_coupon);
 
         $couponData = $this->couponRepository->getAllCouponsReport($filters, $databaseName);
         $total_items_coupon = $couponData->total();

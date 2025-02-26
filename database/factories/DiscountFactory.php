@@ -16,7 +16,7 @@ class DiscountFactory extends Factory
      */
     public function definition(): array
     {
-        //auto increment id thì không đặt trong cái này được
+        // auto increment id thì không đặt trong cái này được
         return [
             //            'id' => $this->faker->numberBetween(50, 100), // Fake ID từ 50 đến 100
             'name' => $this->faker->sentence(2), // Tên giả lập

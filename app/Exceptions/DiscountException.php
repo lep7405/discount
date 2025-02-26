@@ -4,33 +4,46 @@ namespace App\Exceptions;
 
 class DiscountException extends InternalException
 {
-    public static function notFound()
+    //    public static function validateCreate(array $message){
+    //        return new self($message);
+    //    }
+    public static function validateCreate(array $messages): self
     {
-        return new self('Discount not found', 404);
+        return self::new($messages);
     }
 
-    public static function canNotDelete()
+    public static function validateUpdate(array $messages): self
     {
-        return new self('Discount can not deleted', 409);
+        return self::new($messages);
     }
 
-    public static function validateEdit(string $message)
+    public static function notFound(array $messages): self
     {
-        return new self("{$message}", 400);
+        return self::new($messages);
     }
 
-    public static function generateExist()
+    public static function canNotDelete(array $messages): self
     {
-        return new self('Config Discount already exist', 409);
+        return self::new($messages);
     }
 
-    public static function discountExpired()
+    public static function validateEdit(array $message)
     {
-        return new self('Discount is expired', 400);
+        return new self(null, $message);
     }
 
-    public static function inValidStartedAt()
+    public static function generateExist(array $messages) : self
     {
-        return new self('Started at not valid', 400);
+        return self::new($messages);
+    }
+
+    public static function discountExpired(array $messages): self
+    {
+        return self::new($messages);
+    }
+
+    public static function inValidStartedAt(array $messages): self
+    {
+        return self::new($messages);
     }
 }

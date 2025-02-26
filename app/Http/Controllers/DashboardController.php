@@ -36,7 +36,7 @@ class DashboardController extends Controller
             // Khởi tạo giá trị mặc định
             $dashboard_apps[$key] = [
                 'db' => $db,
-                'app_name' => config('database.connections.' . $db . '.app_name'),
+                'app_name' => config('database.connections.'.$db.'.app_name'),
                 'count_discount' => 0,
                 'count_coupon' => 0,
                 'used_coupons' => 0,

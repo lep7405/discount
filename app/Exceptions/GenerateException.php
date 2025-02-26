@@ -13,4 +13,9 @@ class GenerateException extends InternalException
     {
         return new self("{$message}", 400);
     }
+
+    public static function validateCreate(array $messages):self
+    {
+        return self::new($messages);
+    }
 }

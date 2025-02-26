@@ -9,11 +9,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Coupon extends Model
 {
     use LogsActivity;
+
     protected static $logAttributes = ['code', 'shop', 'discount_id', 'times_used', 'status'];
+
     protected static $logOnlyDirty = true;
+
     protected static $logName = 'coupon_activity';
 
     protected $table = 'coupons';
+
     protected $fillable = ['code', 'shop', 'discount_id', 'times_used', 'status', 'automatic'];
 
     public static function changeLogName($log_name)

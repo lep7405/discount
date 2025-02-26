@@ -40,17 +40,17 @@ class MyCustomCommand extends Command
         //            ->first();
         //        //        dd(json_encode($data1));
         //        $data = DB::table('generates')
-        ////            ->leftJoinSub($cs, 'discounts_cs', function($join) {
-        ////                $join->on('generates.discount_id', '=', 'discounts_cs.id');  // Sử dụng bí danh 'discounts_cs'
-        ////            })
+        // //            ->leftJoinSub($cs, 'discounts_cs', function($join) {
+        // //                $join->on('generates.discount_id', '=', 'discounts_cs.id');  // Sử dụng bí danh 'discounts_cs'
+        // //            })
         //            ->leftJoinSub($affiliate, 'discounts_affiliate', function ($join) {
         //                $join->on('generates.discount_id', '=', 'discounts_affiliate.id');  // Sử dụng bí danh 'discounts_affiliate'
         //            })
         //            ->select('generates.id', 'generates.app_name', 'generates.discount_id', 'generates.conditions', 'generates.expired_range', 'generates.limit', 'generates.header_message', 'generates.success_message', 'generates.used_message', 'generates.fail_message', 'generates.app_url', 'generates.status', 'generates.created_at', 'generates.updated_at')  // Chọn rõ các cột
         //
-        ////            ->orWhere('conditions', 'like', "%{$search}%")
-        //////            ->orWhere('discounts_cs.name', 'like', "%{$search}%")
-        ////            ->orWhere('discounts_affiliate.name', 'like', "%{$search}%")
+        // //            ->orWhere('conditions', 'like', "%{$search}%")
+        // ////            ->orWhere('discounts_cs.name', 'like', "%{$search}%")
+        // //            ->orWhere('discounts_affiliate.name', 'like', "%{$search}%")
         //            ->first();
 
         // Debug dữ liệu lấy được

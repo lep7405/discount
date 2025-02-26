@@ -41,7 +41,7 @@
                     <ul x-show="open" x-cloak class="mt-2 space-y-1 px-3" x-transition>
                         @foreach ($apps as $db => $name)
                             <li class="nav-item has-treeview {{ $db }}" x-data="{ open: false }">
-                                <a href="#" @click="open = !open" class="nav-link flex items-center p-2 text-white rounded-lg hover:bg-gray-700 relative">
+                                <a @click="open = !open" class="nav-link flex items-center p-2 text-white rounded-lg hover:bg-gray-700 hover:cursor-pointer relative">
                                     <p class="ml-3 flex-1">
                                         {{ $name }}
                                     </p>

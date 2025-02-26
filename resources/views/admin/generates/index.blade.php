@@ -9,206 +9,201 @@
 @endsection
 
 @section('main_content')
-    <div class="bg-white rounded-lg shadow">
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100">
         <!-- Card Header -->
-        <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-            <h2 class="text-xl font-semibold text-gray-800">Generate Coupon URL</h2>
-            <a href="{{ route('admin.get_new_generate') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+        <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
+            <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Generate Coupon URL</h2>
+            <a href="{{ route('admin.get_new_generate') }}"
+               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                 <i class="fas fa-plus mr-2"></i>
                 Add New
             </a>
         </div>
 
         <!-- Table Controls -->
-        <div class="px-6 py-4 flex flex-wrap justify-between items-center border-b border-gray-200">
-            <form id="entries-form" method="GET" action="{{ url()->current() }}" class="flex items-center mb-2 sm:mb-0">
+        <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gray-50/50">
+            <form id="entries-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
+                <label class="text-sm font-medium text-gray-600">Show</label>
                 <input type="hidden" name="search" value="{{ $search }}">
                 <input type="hidden" name="status" value="{{ $status }}">
-                <label class="text-sm text-gray-600 mr-2">Show</label>
                 <select id="entries-select" name="per_page"
-                        class="border-2 border-gray-200 rounded-lg text-sm px-3 py-1 pr-8 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                        style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e');
-                               background-position: right 0.5rem center;
-                               background-repeat: no-repeat;
-                               background-size: 1.5em 1.5em;"
+                        class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
                         onchange="this.form.submit()">
                     <option value="5" {{ $per_page == 5 ? 'selected' : '' }}>5</option>
                     <option value="10" {{ $per_page == 10 ? 'selected' : '' }}>10</option>
                     <option value="20" {{ $per_page == 20 ? 'selected' : '' }}>20</option>
                     <option value="-1" {{ $per_page == -1 ? 'selected' : '' }}>All</option>
                 </select>
-                <label class="text-sm text-gray-600 ml-2">entries</label>
+                <label class="text-sm font-medium text-gray-600">entries</label>
             </form>
-
-            <form id="search-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
-                <input type="hidden" name="per_page" value="{{ $per_page }}">
-                <input type="hidden" name="status" value="{{ $status }}">
-                <label for="table-search" class="text-sm text-gray-600 mr-2">Search:</label>
-                <input type="search"
-                       name="search"
-                       id="table-search"
-                       value="{{ $search }}"
-                       class="border-2 border-gray-200 rounded-lg text-sm px-3 py-1 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="Search...">
-            </form>
+            <div class="flex items-center">
+                <form id="search-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
+                    <input type="hidden" name="per_page" value="{{ $per_page }}">
+                    <input type="hidden" name="status" value="{{ $status }}">
+                    <label for="table-search" class="text-sm font-medium text-gray-600 mr-2">Search:</label>
+                    <input type="search"
+                           name="search"
+                           id="table-search"
+                           value="{{ $search }}"
+                           class="min-w-[200px] border-2 border-gray-200 rounded-lg text-sm px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="Search...">
+                </form>
+            </div>
         </div>
 
         <!-- Table -->
-        <div class="p-6 overflow-x-auto">
-            <table id="data" class="w-full divide-y divide-gray-200 border border-black">
-                <thead>
-                <tr class="bg-gray-50">
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">App Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Discount</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Conditions</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Expired</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Url</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                        <div class="flex items-center space-x-2">
-                            <span>Status</span>
-                            <div class="relative inline-block text-left">
-                                <div>
-                                    <button type="button"
-                                            onclick="toggleDropdown()"
-                                            class="inline-flex justify-center items-center px-3 py-1 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div id="statusDropdown"
-                                     class="hidden origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-10">
-                                    <div class="py-1">
-                                        <button onclick="submitForm(1)"
-                                                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 w-full text-left">
-                                            <span class="h-2 w-2 bg-green-500 rounded-full mr-2"></span>
-                                            Active
+        <div class="p-6">
+            <div class="max-h-[70vh] overflow-y-auto relative scrollbar-hide">
+                <table id="data" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0 z-10">
+                    <tr>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Id</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">App Name</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Discount</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Conditions</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Expired</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Url</th>
+                        <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <div class="flex items-center space-x-2">
+                                <span>Status</span>
+                                <div class="relative inline-block text-left">
+                                    <div>
+                                        <button type="button"
+                                                onclick="toggleDropdown()"
+                                                class="inline-flex justify-center items-center px-3 py-1 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
                                         </button>
-                                        <button onclick="submitForm(0)"
-                                                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 w-full text-left">
-                                            <span class="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
-                                            Disable
-                                        </button>
+                                    </div>
+                                    <div id="statusDropdown"
+                                         class="hidden origin-top-right absolute right-0 mt-2 w-32 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-10 transform transition-all duration-200">
+                                        <div class="py-1">
+                                            <button onclick="submitForm(1)"
+                                                    class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 w-full text-left transition-colors duration-200">
+                                                <span class="h-2 w-2 bg-green-500 rounded-full mr-2"></span>
+                                                Active
+                                            </button>
+                                            <button onclick="submitForm(0)"
+                                                    class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 w-full text-left transition-colors duration-200">
+                                                <span class="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
+                                                Disable
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </th>
-                </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                @if (count($generateData) > 0)
-                    @foreach ($generateData as $item)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <a href="{{ route('admin.get_edit_generate',$item->id) }}" class="text-blue-600 hover:text-blue-800">
-                                    {{ $item->id }}
-                                </a>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">{{ $item->app_name }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
-                                <a href="{{ route('admin.' . $item->db_name . '.get_edit_discount',$item->id) }}">{{ $item->discount_name }}</a>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">{{ $item->conditions }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ $item->expired ? 'Discount Expired!' : 'After '.$item->expired_range. " days" }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">{{ $item->app_url }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                <span class="{{ $item->status == '1' ? 'text-green-600' : 'text-red-600' }}">
-                                    {{ $item->status == "1" ? 'Active' : 'Disable' }}
-                                </span>
-                            </td>
-                        </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-gray-500">No data found</td>
+                        </th>
                     </tr>
-                @endif
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <!-- Showing entries info -->
-                <div class="text-sm text-gray-600">
-                    Showing {{ ($currentPage - 1) * $per_page + 1 }} to {{ min($currentPage * $per_page, $totalItem) }} of {{ $totalItem }} entries
-                </div>
-
-                <!-- Pagination controls -->
-                <div class="flex items-center space-x-1">
-                    <!-- First Page -->
-                    @if ($currentPage > 1)
-                        <a href="?page=1&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
-                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0L9 10.414V13a1 1 0 11-2 0V7a1 1 0 011-1h6a1 1 0 110 2h-2.586l5.293 5.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                    @if (count($generateData) > 0)
+                        @foreach ($generateData as $item)
+                            <tr class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <a href="{{ route('admin.get_edit_generate',$item->id) }}"
+                                       class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
+                                        {{ $item->id }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
+                                    <a href="{{ route('admin.get_edit_generate',$item->id) }}"
+                                       class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
+                                        {{ $item->app_name }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
+                                    <a href="{{ route('admin.' . $item->db_name . '.edit_discount',$item->discount_id) }}"
+                                       class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
+                                        {{ $item->discount_name }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
+                                    {{ $item->conditions }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ $item->expired ? 'Discount Expired!' : 'After '.$item->expired_range. " days" }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
+                                    {{ $item->app_url }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->status == '1' ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ $item->status == "1" ? 'Active' : 'Disable' }}
+                                </td>
+                            </tr>
+                        @endforeach
                     @else
-                        <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0L9 10.414V13a1 1 0 11-2 0V7a1 1 0 011-1h6a1 1 0 110 2h-2.586l5.293 5.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                    </svg>
-                </span>
+                        <tr>
+                            <td colspan="7" class="text-center text-gray-500 py-4">No data found</td>
+                        </tr>
                     @endif
+                    </tbody>
+                </table>
 
-                    <!-- Previous Page -->
-                    @if ($currentPage > 1)
-                        <a href="?page={{ $currentPage - 1 }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
-                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    @else
-                        <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                </span>
-                    @endif
+                <!-- Pagination Info and Links -->
+                <div id="generate-pagination-section" class="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <!-- Showing entries info -->
+                        <div class="text-sm text-gray-600 font-medium">
+                            Showing {{ ($currentPage - 1) * $per_page + 1 }} to {{ min($currentPage * $per_page, $totalItem) }} of {{ $totalItem }} entries
+                        </div>
 
-                    <!-- Current Page Indicator -->
-                    <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md">
-                {{ $currentPage }}/{{ $totalPages }}
-            </span>
+                        <!-- Pagination controls -->
+                        <div class="flex items-center space-x-1">
+                            <!-- First Page -->
+                            @if ($currentPage > 1)
+                                <a href="?page=1&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            @else
+                                <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </span>
+                            @endif
 
-                    <!-- Next Page -->
-                    @if ($currentPage < $totalPages)
-                        <a href="?page={{ $currentPage + 1 }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
-                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    @else
-                        <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg>
-                </span>
-                    @endif
+                            <!-- Previous Page -->
+                            @if ($currentPage > 1)
+                                <a href="?page={{ $currentPage - 1 }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            @else
+                                <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
+                                    <i class="fas fa-angle-left"></i>
+                                </span>
+                            @endif
 
-                    <!-- Last Page -->
-                    @if ($currentPage < $totalPages)
-                        <a href="?page={{ $totalPages }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
-                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 001.414 0L11 10.414V13a1 1 0 102 0V7a1 1 0 00-1-1H6a1 1 0 100 2h2.586L3.293 13.293a1 1 0 000 1.414z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    @else
-                        <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 001.414 0L11 10.414V13a1 1 0 102 0V7a1 1 0 00-1-1H6a1 1 0 100 2h2.586L3.293 13.293a1 1 0 000 1.414z" clip-rule="evenodd" />
-                    </svg>
-                </span>
-                    @endif
+                            <!-- Current Page Indicator -->
+                            <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md">
+                                {{ $currentPage }}/{{ $totalPages }}
+                            </span>
+
+                            <!-- Next Page -->
+                            @if ($currentPage < $totalPages)
+                                <a href="?page={{ $currentPage + 1 }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            @else
+                                <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
+                                    <i class="fas fa-angle-right"></i>
+                                </span>
+                            @endif
+
+                            <!-- Last Page -->
+                            @if ($currentPage < $totalPages)
+                                <a href="?page={{ $totalPages }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            @else
+                                <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,37 +215,33 @@
         </form>
     </div>
 @endsection
-
 @push('scripts')
     <script>
-        function submitForm(status) {
-            document.getElementById('status-input').value = status;
-            document.getElementById('status-form').submit();
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const paginationSection = document.getElementById('generate-pagination-section');
+            const perPageSelect = document.getElementById('entries-select');
 
-        document.getElementById("table-search").addEventListener("input", function() {
-            document.getElementById("search-form").submit();
+            // Check if we need to scroll (when page or per_page changes)
+            if ((urlParams.has('page') || urlParams.has('per_page') || urlParams.has('search') || urlParams.has('status'))
+                && paginationSection && perPageSelect.value !== '-1') {
+                setTimeout(() => {
+                    // Scroll to the table section
+                    document.getElementById('data').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }, 100);
+            }
         });
 
-        @if (session('success'))
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: "{{ session('success') }}",
-            showConfirmButton: false,
-            timer: 3000
-        });
-        @endif
-    </script>
-@endpush
-@push('scripts')
-    <script>
         function toggleDropdown() {
             const dropdown = document.getElementById('statusDropdown');
             dropdown.classList.toggle('hidden');
 
-            // Đóng dropdown khi click ra ngoài
+            // Close dropdown when clicking outside
             document.addEventListener('click', function(event) {
                 const dropdown = document.getElementById('statusDropdown');
                 const button = event.target.closest('button');
@@ -265,8 +256,12 @@
             document.getElementById('status-form').submit();
         }
 
+        let searchTimeout;
         document.getElementById("table-search").addEventListener("input", function() {
-            document.getElementById("search-form").submit();
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                document.getElementById("search-form").submit();
+            }, 500);
         });
 
         @if (session('success'))
@@ -276,7 +271,11 @@
             icon: 'success',
             title: "{{ session('success') }}",
             showConfirmButton: false,
-            timer: 3000
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            }
         });
         @endif
     </script>

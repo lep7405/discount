@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\AuthException;
+use App\Exceptions\DiscountException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -39,9 +41,14 @@ class LoginRequest extends FormRequest
 
     public function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json([
-            'success' => false,
-            'errors' => $validator->errors(),
-        ], 422)); // 422 Unprocessable Entity
+        $errors = $validator->errors();
+        $errorDetails = [];
+
+        foreach ($errors->messages() as $field => $messages) {
+            foreach ($messages as $message) {
+                $errorDetails[$field][] = $message; // Đảm bảo đúng định dạng Laravel cần
+            }
+        }
+        throw AuthException::validateLogin($errorDetails);
     }
 }

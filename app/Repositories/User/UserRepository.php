@@ -2,11 +2,11 @@
 
 namespace App\Repositories\User;
 
-use Dotenv\Repository\RepositoryInterface;
+use Prettus\Repository\Contracts\RepositoryInterface;
 
 interface UserRepository extends RepositoryInterface
 {
-    public function create(array $data);
+    public function create(array $attributes);
 
     public function update(array $data, $id);
 
