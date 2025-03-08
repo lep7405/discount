@@ -26,4 +26,6 @@ interface GenerateService
     //test
     public function test1();
     public function testCreateName(string $name,string $app_name);
+
+    public function test2();
 }

@@ -679,4 +679,14 @@ class GenerateServiceImp implements GenerateService
 
         return in_array($app, $automatic_apps);
     }
+
+    public function test2()
+    {
+        $discount = $this->discountRepository->findDiscountByIdNoCoupon(1, 'cs');
+        return $discount;
+        if(! $discount){
+            throw DiscountException::notFound(['error' => ['Discount not found']]);
+        }
+        throw DiscountException::discountExpired(['error' => ['Discount expired']]);
+    }
 }

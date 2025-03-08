@@ -10,6 +10,7 @@ use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
 use App\Repositories\Generate\GenerateRepository;
 use App\Services\Generate\GenerateService;
+use App\Services\Generate\GenerateServiceImp;
 use Carbon\Carbon;
 use Mockery;
 
@@ -19,17 +20,44 @@ beforeEach(function () {
     $this->generateRepository = Mockery::mock(GenerateRepository::class);
     $this->discountRepository = Mockery::mock(DiscountRepository::class);
     $this->couponRepository = Mockery::mock(CouponRepository::class);
+    //2  cách , cách nào cũng được
+//    $this->generateService = app()->instance(GenerateService::class, new GenerateServiceImp( $this->generateRepository,$this->discountRepository,$this->couponRepository));
 
+    //cách viết này là cách viết ngắn gọn hơn , do cái container service nó dùng cái binddings để nó tìm nạp vào
+//    $this->generateService = app()->make(GenerateService::class);
     $this->generateService = app()->make(GenerateService::class, [
-        $this->generateRepository,
-        $this->discountRepository,
-        $this->couponRepository,
+        'generateRepository' => $this->generateRepository,
+        'discountRepository' => $this->discountRepository,
+        'couponRepository' => $this->couponRepository,
     ]);
-
-    // Xóa dữ liệu cũ trước khi chạy test
     Coupon::on('cs')->delete();
     Discount::on('cs')->delete();
     Generate::query()->delete();
+});
+test('test ',function (){
+    $this->assertInstanceOf(\Mockery\MockInterface::class, $this->discountRepository);
+
+    $discount = new Discount();
+    $discount->id = 1;
+    $discount->name = 'discount';
+    $discount->type = 'percentage';
+
+    $discount->setConnection('cs');
+    $discount->save();
+
+    $this->discountRepository->shouldReceive('findDiscountByIdNoCoupon')
+        ->with( 1, 'cs')
+        ->andReturn(45);
+
+
+    $result= $this->generateService->test2();
+    dd($result);
+//
+//    expect(function () use ($discount) {
+//        $this->generateService->test2();
+//    })->toThrow(function (DiscountException $e) {
+//        expect($e->getErrors()['error'][0])->toBe('Discount expired');
+//    });
 });
 
 //test('create generate fails when discount not found', function () {
@@ -45,26 +73,6 @@ beforeEach(function () {
 //        $this->generateService->create($data);
 //    })->toThrow(NotFoundException::class, 'Discount not found');
 //});
-test('test ',function (){
-
-    $discount = new Discount();
-    $discount->id = 1;
-    $discount->name = 'discount';
-    $discount->type = 'percentage';
-
-    $discount->setConnection('cs');
-    $discount->save();
-
-//    $this->discountRepository->shouldReceive('findDiscountByName')
-//        ->with( $discount->name, 'cs')
-//        ->andReturn($discount);
-
-    expect(function () use ($discount) {
-        $this->generateService->testCreateName($discount->name,'cs');
-    })->toThrow(function (DiscountException $e) {
-        expect($e->getErrors()['error'][0])->toBe('Discount expired');
-    });
-});
 //test('create generate fails when discount expired', function () {
 ////    $discount=Discount::on('cs')->create(
 ////        [
