@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Exceptions\AuthException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\ValidationException;
 
 class RegisterRequest extends FormRequest
 {
@@ -40,6 +39,7 @@ class RegisterRequest extends FormRequest
             'password_confirmation' => $this->input('password_confirmation'),
         ];
     }
+
     public function messages(): array
     {
         return [
@@ -52,6 +52,7 @@ class RegisterRequest extends FormRequest
             'password.confirmed' => 'Password confirmation does not match',
         ];
     }
+
     public function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();

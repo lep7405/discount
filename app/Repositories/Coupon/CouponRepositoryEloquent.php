@@ -28,8 +28,7 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
                     ->orwhere('shop', 'like', "%{$search}%")
                     ->orWhereHas('discount', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orwhere('times_used', $search);
+                    });
             })
             ->when($status !== null, function ($query) use ($status) {
                 $query->where('status', $status);
@@ -51,12 +50,14 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
     {
         return $this->getModel()
             ->on($databaseName)
+//            ->create($data);
             ->create([
                 'code' => Arr::get($data, 'code'),
                 'shop' => Arr::get($data, 'shop'),
                 'discount_id' => Arr::get($data, 'discount_id'),
-                'automatic' => Arr::get($data, 'automatic') || false,
+                'automatic' => Arr::get($data, 'automatic', 1),
                 'times_used' => Arr::get($data, 'times_used'),
+                'status' => Arr::get($data, 'status', 1),
             ]);
     }
 
@@ -64,6 +65,7 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
     {
         return $this->getModel()
             ->on($databaseName)
+            ->with(['discount:id,name'])
             ->find($id);
     }
 
@@ -110,8 +112,8 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
 
     public function getAllCouponsReport(array $filters, string $databaseName)
     {
-        $perPage = Arr::get($filters, 'per_page_discount');
-        $search = Arr::get($filters, 'search_discount');
+        $perPage = Arr::get($filters, 'per_page_coupon');
+        $search = Arr::get($filters, 'search_coupon');
         $status = Arr::get($filters, 'status');
         $arrange_times_used = Arr::get($filters, 'time_used');
         $page_coupon = Arr::get($filters, 'page_coupon');
@@ -142,6 +144,7 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
             ->on($databaseName)
             ->where('discount_id', $discountId)
             ->where('shop', $shopName)
+            ->orderBy('created_at', 'desc')
             ->first();
     }
 

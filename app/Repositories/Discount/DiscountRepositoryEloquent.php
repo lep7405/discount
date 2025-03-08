@@ -13,7 +13,7 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
         return Discount::class;
     }
 
-    public function countDiscount(string $databaseName) : int
+    public function countDiscount(string $databaseName): int
     {
         return $this->getModel()
             ->on($databaseName)
@@ -28,8 +28,6 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->with(['coupon'])
             ->find($id);
     }
-
-
 
     public function findDiscountByIdNoCoupon(int $id, string $databaseName)
     {
@@ -61,19 +59,17 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->where('id', $id)
             ->update($attributes);
         //
-//            ->update([
-//                'name' => Arr::get($attributes, 'name'),
-//                'value' => Arr::get($attributes, 'value'),
-//                'type' => Arr::get($attributes, 'type'),
-//                'started_at' => Arr::get($attributes, 'started_at'),
-//                'expired_at' => Arr::get($attributes, 'expired_at'),
-//                'usage_limit' => Arr::get($attributes, 'usage_limit'),
-//                'trial_days' => Arr::get($attributes, 'trial_days'),
-//                'discount_month' => Arr::get($attributes, 'discount_month'),
-//            ]);
+        //            ->update([
+        //                'name' => Arr::get($attributes, 'name'),
+        //                'value' => Arr::get($attributes, 'value'),
+        //                'type' => Arr::get($attributes, 'type'),
+        //                'started_at' => Arr::get($attributes, 'started_at'),
+        //                'expired_at' => Arr::get($attributes, 'expired_at'),
+        //                'usage_limit' => Arr::get($attributes, 'usage_limit'),
+        //                'trial_days' => Arr::get($attributes, 'trial_days'),
+        //                'discount_month' => Arr::get($attributes, 'discount_month'),
+        //            ]);
     }
-
-
 
     public function getAllDiscounts(array $filters, string $databaseName)
     {
@@ -99,13 +95,14 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->paginate($perPage);
     }
 
-    public function getAllDiscountsForCreateOrUpdateCoupon($databaseName)
+    public function getAllDiscountIdAndName($databaseName)
     {
         return $this->getModel()
             ->on($databaseName)
             ->select('id', 'name')
             ->get();
     }
+
     public function findDiscountsByIdsAndApp($discountIds, $appName)
     {
         return $this->getModel()
@@ -132,7 +129,7 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
         return $this->getModel()
             ->on($databaseName)
             ->when($search, function ($query) use ($search) {
-                $query->where('description', 'like', "%{$search}%")
+                $query->where('name', 'like', "%{$search}%")
                     ->orwhere('started_at', 'like', "%{$search}%")
                     ->orwhere('expired_at', 'like', "%{$search}%")
                     ->orWhere(function ($sub) use ($search) {
@@ -147,20 +144,32 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->paginate($perPage, ['*'], 'page_discount', $page_discount);
     }
 
-    public function getAllDiscountsNoCoupon($databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->select('id', 'name')
-            ->get();
-
-    }
-
     public function deleteDiscount(int $id, string $databaseName)
     {
         return $this->getModel()
             ->on($databaseName)
             ->find($id)
             ->delete();
+    }
+
+    public function UpdateOrCreateDiscountInAffiliatePartner($name, $percentage, $trialDays, $connection)
+    {
+        return Discount::on($connection)->updateOrCreate(
+            [
+                'name' => $name,
+                'type' => 'percentage',
+                'value' => $percentage,
+                'trial_days' => $trialDays,
+            ],
+            [
+                'usage_limit' => 1,
+            ]
+        );
+    }
+    public function findDiscountByName(string $name, string $databaseName){
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('name', $name)
+            ->first();
     }
 }

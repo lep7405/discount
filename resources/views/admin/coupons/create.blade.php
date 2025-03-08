@@ -149,25 +149,13 @@
                     },
                 })
                     .then(response => {
-                        console.log(response);
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
-                        return response.json();
+                        return response.text();  // Nhận HTML từ server
                     })
-                    .then(data => {
-                        if (!data || data.error) {
-                            discountInfo.innerHTML = '<li>Error fetching discount data</li>';
-                            return;
-                        }
-                        let element = `
-                        <li>${data.value}${data.type === 'amount' ? " USD" : "%"} discount</li>
-                        <li>${data.usage_limit == 0 ? "Unlimited" : data.usage_limit + " times usage"}</li>
-                        <li>${data.trial_days ? data.trial_days : 0} days trial</li>
-                        <li>Start: ${data.started_at ? formatDate(data.started_at) : "N/A"}</li>
-                        <li>End: ${data.expired_at ? formatDate(data.expired_at) : "N/A"}</li>
-                    `;
-                        discountInfo.innerHTML = element;
+                    .then(html => {
+                        discountInfo.innerHTML = html;  // Chèn HTML vào phần tử discountInfo
                     })
                     .catch(error => {
                         console.error('Error:', error);

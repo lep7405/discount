@@ -32,7 +32,7 @@ class DiscountException extends InternalException
         return new self(null, $message);
     }
 
-    public static function generateExist(array $messages) : self
+    public static function generateExist(array $messages): self
     {
         return self::new($messages);
     }

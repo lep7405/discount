@@ -4,6 +4,7 @@ namespace App\Services\Coupon;
 
 use App\Exceptions\CouponException;
 use App\Exceptions\DiscountException;
+use App\Exceptions\NotFoundException;
 use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
 use App\Validator\CouponUpdateValidator;
@@ -27,53 +28,55 @@ class CouponServiceImp implements CouponService
         Arr::set($filters, 'per_page_coupon', $perPage);
         Arr::set($filters, 'status', $status);
         $couponData = $this->couponRepository->getAllCoupons($filters, $databaseName);
+
         return [
             'couponData' => $couponData,
             'total_pages_coupon' => $couponData->lastPage(),
             'total_items_coupon' => $couponData->total(),
             'current_pages_coupon' => $couponData->currentPage(),
-            'total_items' => $count_all
+            'total_items' => $count_all,
         ];
     }
 
     public function create(array $data, string $databaseName)
     {
         if ((
-                $databaseName == 'banner' ||
-                $databaseName == 'cs' ||
-                $databaseName == 'pl' ||
-                $databaseName == 'customer_attribute' ||
-                $databaseName == 'spin_to_win' ||
-                $databaseName == 'smart_image_optimizer' ||
-                $databaseName == 'smart_seo_json_ld' ||
-                $databaseName == 'affiliate' ||
-                $databaseName == 'loyalty' ||
-                $databaseName == 'reviews_importer' ||
-                $databaseName == 'freegifts' ||
-                $databaseName == 'freegifts_new'
+            $databaseName == 'banner' ||
+            $databaseName == 'cs' ||
+            $databaseName == 'pl' ||
+            $databaseName == 'customer_attribute' ||
+            $databaseName == 'spin_to_win' ||
+            $databaseName == 'smart_image_optimizer' ||
+            $databaseName == 'smart_seo_json_ld' ||
+            $databaseName == 'affiliate' ||
+            $databaseName == 'loyalty' ||
+            $databaseName == 'reviews_importer' ||
+            $databaseName == 'freegifts' ||
+            $databaseName == 'freegifts_new'
         ) && $data['shop'] != null) {
             $data['automatic'] = true;
         }
-        return  $this->couponRepository->createCoupon($data, $databaseName);
+
+        return $this->couponRepository->createCoupon($data, $databaseName);
     }
 
     public function update(array $data, int $id, string $databaseName)
     {
         $coupon = $this->couponRepository->getCouponById($id, $databaseName);
-
         if (! $coupon) {
-            throw CouponException::notFound(['error' => ['Coupon not found']]);
+            throw NotFoundException::Notfound('Coupon not found');
         }
 
         if ($coupon->times_used && $coupon->times_used > 0) {
             throw CouponException::cannotUpdate(['error' => ['Coupon can not update']]);
         }
 
-        $data = CouponUpdateValidator::validateEdit($data, $databaseName);
+        //        $data = CouponUpdateValidator::validateEdit($data, $databaseName);
 
         $couponByCode = $this->couponRepository->getCouponByCode($data['code'], $databaseName);
         if ($couponByCode) {
-            if ($couponByCode->id != $id) {throw CouponException::codeAlreadyExist(['code' => ['Code existed']]);
+            if ($couponByCode->id != $id) {
+                throw CouponException::codeAlreadyExist(['code' => ['Code existed']]);
             }
         }
         $formData = Arr::only($data, ['code', 'shop', 'discount_id']);
@@ -115,11 +118,12 @@ class CouponServiceImp implements CouponService
     {
         $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $databaseName);
         if (! $discount) {
-            throw DiscountException::notFound(['error'=>['Discount not found']]);
+            throw DiscountException::notFound(['error' => ['Discount not found']]);
         }
 
         Arr::set($data, 'discount_id', $discount->id);
         Arr::set($data, 'times_used', 0);
+
         return $this->couponRepository->createCoupon($data, $databaseName);
     }
 
@@ -138,6 +142,7 @@ class CouponServiceImp implements CouponService
         Arr::set($filters, 'per_page_coupon', $perPage);
         Arr::set($filters, 'status', $status);
         $couponData = $this->couponRepository->getAllCouponsByDiscount($discount_id, $filters, $databaseName);
+
         return [
             'couponData' => $couponData,
             'discountData' => $discount,

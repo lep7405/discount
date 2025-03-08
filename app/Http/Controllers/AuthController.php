@@ -6,6 +6,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Services\User\UserService;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,8 +41,13 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->flush();
-        auth()->logout();
+//        $request->session()->flush();
+        try {
+            Auth::logout();
+        }
+        catch (AuthenticationException $exception){
+            return $exception->getMessage();
+        }
 
         return redirect('/login')->with('message', 'Bạn đã đăng xuất thành công!');
     }

@@ -20,7 +20,7 @@ class UserServiceImp implements UserService
     {
         $formData = Arr::only($attributes, ['email', 'password']);
         if (! auth()->attempt($formData)) {
-            throw AuthException::loginFailed();
+            throw AuthException::loginFailed(['error' => 'Invalid email or password']);
         }
 
         return true;

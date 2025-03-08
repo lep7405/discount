@@ -38,8 +38,8 @@ class DiscountValidator
             $rules['trial_days'] = 'nullable|integer|min:0';
 
             if (in_array($databaseName, ['affiliate', 'freegifts_new'])) {
-//                dd($data['discount_for_x_month']);
-//                $rules['discount_for_x_month'] = 'required|in:0,1';
+                //                dd($data['discount_for_x_month']);
+                //                $rules['discount_for_x_month'] = 'required|in:0,1';
                 if ($data['discount_for_x_month'] === '1') {
                     $rules['discount_month'] = 'required|integer|min:1';
                 }
@@ -58,6 +58,7 @@ class DiscountValidator
             }
             throw DiscountException::validateUpdate($errorDetails);
         }
+
         return $validator->validated();
     }
 }

@@ -32,7 +32,7 @@
                     </div>
                     @if ($errors->has('error'))
                         <div class="text-red-500">
-                            {{$errors->first('error')}}
+                            {{ $errors->first('error') }}
                         </div>
                     @endif
 
@@ -296,80 +296,22 @@
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 const dbName = document.querySelector('input[name="_db"]').value;
                 const url = `http://localhost:8000/admin/${dbName}/discounts/${id}`
-
+                console.log(url);
                 fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    // body: JSON.stringify({ db: dbName }) // Không cần gửi ID trong body nữa vì đã có trong URL
                 })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
-                        return response.json();
+                        return response.text();  // Nhận HTML từ server
                     })
-                    .then(data => {
-                        if (!data || data.error) {
-                            discountInfo.innerHTML = `
-            <li class="flex items-center text-red-500">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Error fetching discount data
-            </li>`;
-                            return;
-                        }
-
-                        let element = `
-        <li class="flex items-center p-3 bg-blue-50 rounded-lg">
-            <span class="flex items-center justify-center w-8 h-8 mr-3 text-blue-500 bg-blue-100 rounded-full">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </span>
-            <span class="font-medium">${data.value}${data.type === 'amount' ? " USD" : "%"} discount</span>
-        </li>
-
-        <li class="flex items-center p-3 bg-green-50 rounded-lg">
-            <span class="flex items-center justify-center w-8 h-8 mr-3 text-green-500 bg-green-100 rounded-full">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </span>
-            <span class="font-medium">${data.usage_limit == 0 ? "Unlimited" : data.usage_limit + " times usage"}</span>
-        </li>
-
-        <li class="flex items-center p-3 bg-purple-50 rounded-lg">
-            <span class="flex items-center justify-center w-8 h-8 mr-3 text-purple-500 bg-purple-100 rounded-full">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </span>
-            <span class="font-medium">${data.trial_days ? data.trial_days : 0} days trial</span>
-        </li>
-
-        <li class="flex items-center p-3 bg-yellow-50 rounded-lg">
-            <span class="flex items-center justify-center w-8 h-8 mr-3 text-yellow-600 bg-yellow-100 rounded-full">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-            </span>
-            <span class="font-medium">Start: ${data.started_at ? formatDate(data.started_at) : "N/A"}</span>
-        </li>
-
-        <li class="flex items-center p-3 bg-red-50 rounded-lg">
-            <span class="flex items-center justify-center w-8 h-8 mr-3 text-red-500 bg-red-100 rounded-full">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-            </span>
-            <span class="font-medium">End: ${data.expired_at ? formatDate(data.expired_at) : "N/A"}</span>
-        </li>
-    `;
-                        discountInfo.innerHTML = element;
+                    .then(html => {
+                        discountInfo.innerHTML = html;  // Chèn HTML vào phần tử discountInfo
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -402,7 +344,7 @@
             toast: true,
             position: 'top-end',
             icon: 'error',
-            title: "{{ $errors->first('decrement')}}",
+            title: "{{ $errors->first('decrement') }}",
             showConfirmButton: false,
             timer: 3000,
             timerProgressBar: true,

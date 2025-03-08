@@ -1,16 +1,8 @@
-{{-- resources/views/components/header.blade.php --}}
 <nav class="bg-white border-b flex items-center justify-between px-4 py-2">
     {{-- Left side --}}
     <div class="flex items-center space-x-4">
-        <button
-            class="text-gray-600 hover:text-gray-700 focus:outline-none"
-            type="button"
-            onclick="toggleSidebar()"
-        >
-            <i class="fas fa-bars"></i>
-        </button>
         <a href="{{ route('admin.dashboard.index') }}" class="hidden sm:block text-gray-600 hover:text-gray-700">
-            Trang chủ
+            Home
         </a>
     </div>
 
@@ -35,7 +27,7 @@
     <div class="flex items-center">
         <a class="text-gray-600 hover:text-gray-700" href="{{ route('logout') }}"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-            {{ __('Đăng xuất') }}
+            {{ __('Log out') }}
         </a>
 
         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
@@ -43,3 +35,4 @@
         </form>
     </div>
 </nav>
+

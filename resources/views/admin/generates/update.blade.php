@@ -1,3 +1,4 @@
+
 @extends('admin.layouts.admin')
 
 @section('title_admin')
@@ -9,11 +10,11 @@
 @endsection
 
 @section('title_admin_breadcumb')
-    {{ 'Update' }}
+    <span class="mr-2">/</span>{{ 'Update' }}
 @endsection
 
 @section('main_content')
-    <div x-data="{ showModal: false }" x-cloak class="container mx-auto px-4 py-8">
+    <div x-data="{ showModal: false }" x-cloak class="container mx-auto px-4 mt-4">
         <div class="flex flex-wrap -mx-4">
             <div class="w-full px-4">
                 <form role="form" action="{{ route('admin.post_edit_generate', $generate->id) }}" method="POST" class="space-y-8">
@@ -29,7 +30,7 @@
                                     <h3 class="text-xl font-semibold">Edit Config Generate Coupon Url</h3>
                                 </div>
                                 <div class="p-6 space-y-6">
-                                    @if (count($errors) > 0)
+                                    @if ($errors->any())
                                         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
                                             <ul class="list-disc list-inside">
                                                 @foreach ($errors->all() as $error)
@@ -40,32 +41,53 @@
                                     @endif
 
                                     <!-- Discount Selection -->
-                                    <div class="space-y-2">
-                                        <label class="block text-sm font-medium text-gray-700">Discount</label>
-                                        <p class="text-sm text-gray-600 current_discount_status" id="discountInfo"></p>
-                                        <select id="discount_id" @if (!$status_del) disabled @endif class="discount_select2 mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" name="discount_app">
-                                            @foreach ($discountData as $item)
-                                                <option value="{{ $item->id.'&'.$item->databaseName }}"
-                                                        @if ($generate->discount_id == $item->id && $generate->app_name == $item->databaseName) selected @endif>
-                                                    {{ $item->name.' / '.$item->appName }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                        <div>
+                                            <label for="discount_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Discount<span class="text-red-500 ml-1">*</span>
+                                            </label>
+                                            <div id="discountInfo" class="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm"></div>
+                                            <select id="discount_id" @if (!$status_del) disabled @endif
+                                            class="discount_select2 w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    name="discount_app"
+                                            >
+                                                @foreach ($discountData as $item)
+                                                    <option value="{{ $item->id.'&'.$item->databaseName }}"
+                                                            @if ($generate->discount_id == $item->id && $generate->app_name == $item->databaseName) selected @endif>
+                                                        {{ $item->name.' / '.$item->appName }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+
+                                        </div>
+{{--                                    <div class="space-y-2">--}}
+{{--                                        <label for="discount_id" class="block text-sm font-semibold text-gray-700">Discount<span class="text-red-500 ml-1">*</span></label>--}}
+{{--                                        <div id="discountInfo" class="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm"></div>--}}
+{{--                                        <select id="discount_id" @if (!$status_del) disabled @endif--}}
+{{--                                        class="discount_select2 w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"--}}
+{{--                                                name="discount_app"--}}
+{{--                                        >--}}
+{{--                                            @foreach ($discountData as $item)--}}
+{{--                                                <option value="{{ $item->id.'&'.$item->databaseName }}"--}}
+{{--                                                        @if ($generate->discount_id == $item->id && $generate->app_name == $item->databaseName) selected @endif>--}}
+{{--                                                    {{ $item->name.' / '.$item->appName }}--}}
+{{--                                                </option>--}}
+{{--                                            @endforeach--}}
+{{--                                        </select>--}}
+{{--                                    </div>--}}
 
                                     <!-- Conditions -->
-                                    <div x-data="conditionManager()" class="mb-4">
-                                        <label class="block text-gray-700 text-sm font-bold mb-2" for="condition">Conditions</label>
-                                        <ul id="more_condition" class="mb-2 space-y-2">
+                                    <div x-data="conditionManager()" class="mb-6">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Conditions</label>
+                                        <ul id="more_condition" class="mb-4 space-y-3">
                                             <template x-for="condition in conditions" :key="condition.id">
-                                                <li class="p-2 border rounded">
+                                                <li class="p-4 border border-gray-200 rounded-md shadow-sm">
                                                     <template x-for="(app, index) in condition.apps" :key="index">
-                                                        <div class="flex items-center space-x-2 mb-2">
-                                                            <span x-show="index > 0">OR</span>
+                                                        <div class="flex flex-wrap items-center gap-2 mb-3">
+                                                            <span x-show="index > 0" class="text-sm font-medium text-gray-500">OR</span>
                                                             <select
                                                                 x-model="app.name"
                                                                 @change="updateAppValue(condition.id, index, 'name', $event.target.value)"
-                                                                class="form-select mt-1 block w-40"
+                                                                class="px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                                             >
                                                                 <option value="">Select App</option>
                                                                 <option value="fg">Free gift</option>
@@ -82,7 +104,7 @@
                                                             <select
                                                                 x-model="app.status"
                                                                 @change="updateAppValue(condition.id, index, 'status', $event.target.value)"
-                                                                class="form-select mt-1 block w-40"
+                                                                class="px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                                             >
                                                                 <option value="">Select Status</option>
                                                                 <option value="notinstalledyet">Not Installed yet</option>
@@ -93,7 +115,7 @@
                                                             <button
                                                                 @click="removeInCondition(condition.id,index)"
                                                                 type="button"
-                                                                class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm"
+                                                                class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded-md text-sm transition duration-150 ease-in-out"
                                                             >
                                                                 Remove
                                                             </button>
@@ -101,7 +123,7 @@
                                                                 x-show="index === condition.apps.length - 1"
                                                                 @click="addOr(condition.id)"
                                                                 type="button"
-                                                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded text-sm"
+                                                                class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-3 rounded-md text-sm transition duration-150 ease-in-out"
                                                             >
                                                                 OR
                                                             </button>
@@ -110,39 +132,82 @@
                                                     <button
                                                         @click="removeCondition(condition.id)"
                                                         type="button"
-                                                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm"
+                                                        class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded-md text-sm transition duration-150 ease-in-out"
                                                     >
                                                         Remove Condition
                                                     </button>
                                                 </li>
                                             </template>
                                         </ul>
-                                        <button type="button" @click="addCondition" class="btnAnd bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">And</button>
+                                        <button
+                                            type="button"
+                                            @click="addCondition"
+                                            class="btnAnd bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-150 ease-in-out"
+                                        >
+                                            And
+                                        </button>
                                         <input type="hidden" name="condition_object" x-model="conditionJSON" class="condition_object">
                                     </div>
 
                                     <!-- Other Fields -->
                                     <div class="space-y-4">
                                         <div>
-                                            <label for="range" class="block text-sm font-medium text-gray-700">Expired Range (Days)</label>
-                                            <input type="number" name="expired_range" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ $generate->expired_range }}" id="range" placeholder="Expired Range (Days)">
+                                            <label for="range" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Expired Range (Days)<span class="text-red-500 ml-1">*</span>
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="expired_range"
+                                                class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                value="{{ $generate->expired_range }}"
+                                                id="range"
+                                                placeholder="Expired Range (Days)"
+                                            >
                                         </div>
                                         <div>
-                                            <label for="limit" class="block text-sm font-medium text-gray-700">Limit Coupons</label>
-                                            <input type="number" name="limit" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ $generate->limit }}" id="limit" placeholder="Limit Coupons Generate">
+                                            <label for="limit" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Limit Coupons
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="limit"
+                                                class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                value="{{ $generate->limit }}"
+                                                id="limit"
+                                                placeholder="Limit Coupons Generate"
+                                            >
                                         </div>
                                         <div>
-                                            <label for="inputApp" class="block text-sm font-medium text-gray-700">App URL</label>
-                                            <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputApp" name="app_url" value="{{ $generate->app_url }}" placeholder="Enter App URL">
+                                            <label for="inputApp" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                App URL<span class="text-red-500 ml-1">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                class="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                id="inputApp"
+                                                name="app_url"
+                                                value="{{ $generate->app_url }}"
+                                                placeholder="Enter App URL"
+                                            >
                                         </div>
                                     </div>
 
                                     <!-- Auto Generate Coupon URL Info -->
-                                    <div class="text-sm text-gray-600">
-                                        <p>Auto Generate Coupon URL: <strong>{{ $generate_url.'{timestamp}/{shop_id}' }}</strong></p>
-                                        <p>Example for date 01-01-2018, shop id = 1: <strong>{{ $generate_url."1514764800/1" }}</strong></p>
-                                        <p><strong>PRIVATE: {{ $private_generate_url.'{shop_name}' }}</strong></p>
-                                    </div>
+                                        <div class="text-sm text-gray-600 space-y-3">
+                                            <p class="text-gray-700">
+                                                <span class="font-semibold">Auto Generate Coupon URL:</span>
+                                                <strong class="text-indigo-600">{{ $generate_url.'{timestamp}/{shop_id}' }}</strong>
+                                            </p>
+                                            <p class="text-gray-700">
+                                                <span class="font-semibold">Example for date 01-01-2018, shop id = 1:</span>
+                                                <strong class="text-green-600">{{ $generate_url."1514764800/1" }}</strong>
+                                            </p>
+                                            <p class="text-gray-700">
+                                                <span class="font-semibold">PRIVATE:</span>
+                                                <strong class="text-red-600">{{ $private_generate_url.'{shop_name}' }}</strong>
+                                            </p>
+                                        </div>
+
                                 </div>
                                 <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-between">
                                     <button @click="showModal = true" type="button" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -188,25 +253,70 @@
                                         }
                                     @endphp
 
-                                    <div>
-                                        <label for="inputHeader" class="block text-sm font-medium text-gray-700">Header Message</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputHeader" name="header_message" value="{{ $generate->header_message }}" placeholder="Default: Welcome to Secomapp special offer!">
+                                    <div class="mb-4">
+                                        <label for="inputHeader" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Header Message
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputHeader"
+                                            name="header_message"
+                                            placeholder="Default: Welcome to Secomapp special offer!"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $generate->header_message }}"
+                                        >
                                     </div>
-                                    <div>
-                                        <label for="inputSuccess" class="block text-sm font-medium text-gray-700">Success Message</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputSuccess" name="success_message" value="{{ $success_message ?? '' }}" placeholder="Default: Your offer was created! Please install app to active the offer!">
+                                    <div class="mb-4">
+                                        <label for="inputSuccess" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Success Message
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputSuccess"
+                                            name="success_message"
+                                            placeholder="Default: Your offer was created! Please install app to active the offer!"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $success_message ?? '' }}"
+                                        >
                                     </div>
-                                    <div>
-                                        <label for="inputUsed" class="block text-sm font-medium text-gray-700">Used Message</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputUsed" name="used_message" value="{{ $generate->used_message }}" placeholder="Default: You have already claimed this offer!">
+                                    <div class="mb-4">
+                                        <label for="inputUsed" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Used Message
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputUsed"
+                                            name="used_message"
+                                            placeholder="Default: You have already claimed this offer!"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $generate->used_message }}"
+                                        >
                                     </div>
-                                    <div>
-                                        <label for="inputFail" class="block text-sm font-medium text-gray-700">Fail Message</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputFail" name="fail_message" value="{{ $fail_message ?? '' }}" placeholder="Default: Offer can't be created because of following reasons:">
+                                    <div class="mb-4">
+                                        <label for="inputFail" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Fail Message
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputFail"
+                                            name="fail_message"
+                                            placeholder="Default: Offer can't be created because of following reasons:"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $fail_message ?? '' }}"
+                                        >
                                     </div>
-                                    <div>
-                                        <label for="inputExtend" class="block text-sm font-medium text-gray-700">Extend Message</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputExtend" name="extend_message" value="{{ $extend_message ?? '' }}" placeholder="Default: Just install app then offer will be applied automatically!">
+                                    <div class="mb-4">
+                                        <label for="inputExtend" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Extend Message
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputExtend"
+                                            name="extend_message"
+                                            placeholder="Default: Just install app then offer will be applied automatically!"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $extend_message ?? '' }}"
+                                        >
                                     </div>
                                 </div>
                             </div>
@@ -217,17 +327,44 @@
                                     <h3 class="text-lg font-semibold">Custom Fail Reasons</h3>
                                 </div>
                                 <div class="p-6 space-y-4">
-                                    <div>
-                                        <label for="inputReasonTime" class="block text-sm font-medium text-gray-700">Time Expired</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputReasonTime" name="reason_expired" value="{{ $reason_expired ?? '' }}" placeholder="Default: This offer was expired!">
+                                    <div class="mb-4">
+                                        <label for="inputReasonTime" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Time Expired
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputReasonTime"
+                                            name="reason_expired"
+                                            placeholder="Default: This offer was expired!"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $reason_expired ?? '' }}"
+                                        >
                                     </div>
-                                    <div>
-                                        <label for="inputReasonLimit" class="block text-sm font-medium text-gray-700">Limited Coupon</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputReasonLimit" name="reason_limit" value="{{ $reason_limit ?? '' }}" placeholder="Default: Offers were reached the limited!">
+                                    <div class="mb-4">
+                                        <label for="inputReasonLimit" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Limited Coupon
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputReasonLimit"
+                                            name="reason_limit"
+                                            placeholder="Default: Offers were reached the limited!"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $reason_limit ?? '' }}"
+                                        >
                                     </div>
-                                    <div>
-                                        <label for="inputReasonCondition" class="block text-sm font-medium text-gray-700">Not Match Conditions</label>
-                                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="inputReasonCondition" name="reason_condition" value="{{ $reason_condition ?? '' }}" placeholder="Default: Your store doesn't match app conditions!">
+                                    <div class="mb-4">
+                                        <label for="inputReasonCondition" class="block text-sm font-semibold text-gray-700 mb-2">
+                                            Not Match Conditions
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="inputReasonCondition"
+                                            name="reason_condition"
+                                            placeholder="Default: Your store doesn't match app conditions!"
+                                            class="form-input w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            value="{{ $reason_condition ?? '' }}"
+                                        >
                                     </div>
                                 </div>
                             </div>
@@ -267,6 +404,7 @@
     </div>
 @endsection
 
+
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -287,7 +425,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const discountSelect = $('#discount_id');
-            const discountInfo = document.getElementById('discountInfo');
+            let discountInfo = document.getElementById('discountInfo');
 
             if (!discountSelect.length) {
                 console.error("Không tìm thấy phần tử có ID 'discount_id'");
@@ -303,7 +441,7 @@
             // Xử lý khi chọn discount
             discountSelect.on('change', function() {
                 console.log("Discount changed!");
-                const selectedValue = $(this).val();
+                let selectedValue = $(this).val();
                 console.log("Selected Discount:", selectedValue);
 
                 if (selectedValue) {
@@ -327,54 +465,27 @@
                 // Giải mã ID và database từ value của select
                 const [id, database] = selectedValue.split("&");
                 let storedDiscountId = @json($generate->discount_id); // Lấy discount_id từ Laravel Blade và chuyển thành JS
-                let url = "";
-
-                if (id && storedDiscountId !== id) {
-                    url = `http://localhost:8000/admin/${database}/discounts/${id}`;
-                } else {
-                    url = `http://localhost:8000/admin/${database}/discounts/${storedDiscountId}`;
-                }
-                console.log('url',url);
-
+                let url = `http://localhost:8000/admin/${database}/discounts/${id || storedDiscountId}`;
                 fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    body: JSON.stringify({ db: database })
                 })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
-                        return response.json();
+                        return response.text();  // Nhận HTML từ server
                     })
-                    .then(data => {
-                        if (!data || data.error) {
-                            discountInfo.innerHTML = '<li>Error fetching discount data</li>';
-                            return;
-                        }
-
-                        let element = `
-                <li>${data.value}${data.type === 'amount' ? " USD" : "%"} discount</li>
-                <li>${data.usage_limit == 0 ? "Unlimited" : data.usage_limit + " times usage"}</li>
-                <li>${data.trial_days ? data.trial_days : 0} days trial</li>
-                <li>Start: ${data.started_at ? formatDate(data.started_at) : "N/A"}</li>
-                <li>End: ${data.expired_at ? formatDate(data.expired_at) : "N/A"}</li>
-            `;
-                        discountInfo.innerHTML = element;
+                    .then(html => {
+                        discountInfo.innerHTML = html;  // Chèn HTML vào phần tử discountInfo
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         discountInfo.innerHTML = '<li>Failed to load discount info</li>';
                     });
-            }
-
-            function formatDate(dateString) {
-                if (!dateString) return "N/A";
-                let date = new Date(dateString);
-                return date.toLocaleDateString('en-GB');
             }
         });
     </script>
@@ -458,3 +569,4 @@
     </script>
 @endpush
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+

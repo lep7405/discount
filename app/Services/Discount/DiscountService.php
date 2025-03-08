@@ -6,14 +6,17 @@ interface DiscountService
 {
     // get all discounts,
     public function index(array $filters, $databaseName);
-    public function getAllDiscountForCreateOrUpdateCoupon($databaseName);
+
+    public function getAllDiscountIdAndName($databaseName);
 
     public function store(array $attributes, $databaseName);
+
     public function update($id, array $attributes, $databaseName);
 
     public function delete($id, $databaseName);
+
     // for edit
-    public function getDiscountAndStatus($id, $databaseName);
+    //    public function getDiscountAndStatus($id, $databaseName);
 
     // get discount info
     public function getDiscountInfo(int $id, string $databaseName);

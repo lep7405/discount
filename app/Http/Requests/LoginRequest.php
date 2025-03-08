@@ -3,10 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Exceptions\AuthException;
-use App\Exceptions\DiscountException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
 class LoginRequest extends FormRequest
 {

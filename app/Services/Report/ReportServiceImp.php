@@ -32,8 +32,8 @@ class ReportServiceImp implements ReportService
 
         $count_all_coupon = $this->couponRepository->countCoupons($databaseName);
         $perPageCoupon = Arr::get($filters, 'per_page_coupon', 5);
-        $status = Arr::get($filters, 'status');
         $perPageCoupon = $perPageCoupon == -1 ? $count_all_coupon : $perPageCoupon;
+        $status = Arr::get($filters, 'status');
         $status = $status !== null ? (int) $status : null;
         $arrange_times_used = Arr::get($filters, 'time_used');
         if ($arrange_times_used && ! in_array($arrange_times_used, ['desc', 'asc'])) {

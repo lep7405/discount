@@ -20,9 +20,7 @@ interface DiscountRepository extends RepositoryInterface
 
     public function deleteDiscount(int $id, string $databaseName);
 
-    public function getAllDiscountsForCreateOrUpdateCoupon(string $databaseName);
-
-
+    public function getAllDiscountIdAndName(string $databaseName);
 
     public function getAllDiscountsReports(array $filters, string $databaseName);
 
@@ -30,6 +28,7 @@ interface DiscountRepository extends RepositoryInterface
 
     public function getAllNotFilterWithCoupon($databaseName);
 
-    // lấy tất cả discount cho việc chọn trong generate , coupon
-    public function getAllDiscountsNoCoupon($databaseName);
+    public function UpdateOrCreateDiscountInAffiliatePartner($name, $percentage, $trialDays, $connection);
+
+    public function findDiscountByName(string $name,string $databaseName);
 }

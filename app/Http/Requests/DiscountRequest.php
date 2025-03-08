@@ -73,10 +73,10 @@ class DiscountRequest extends FormRequest
     {
         return function ($attribute, $value, $fail) {
             if ($this->input('type') === 'percentage' && ($value < 0 || $value > 100)) {
-                $fail($attribute.' must be between 0 and 100 when type is percentage.');
+                $fail($attribute . ' must be between 0 and 100 when type is percentage.');
             }
             if ($this->input('type') === 'amount' && ($value < 0)) {
-                $fail($attribute.' must be greater or equal to 0.');
+                $fail($attribute . ' must be greater or equal to 0.');
             }
         };
     }

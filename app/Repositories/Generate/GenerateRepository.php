@@ -19,4 +19,6 @@ interface GenerateRepository extends RepositoryInterface
     public function updateGenerateStatus($id, $status);
 
     public function destroyGenerate($id);
+
+    public function getGenerateById($id);
 }

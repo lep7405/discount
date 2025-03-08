@@ -10,7 +10,7 @@
     <span class="mr-2">/</span>{{ 'Create' }}
 @endsection
 @section('main_content')
-    <div class="container mx-auto px-4">
+    <div class="container mx-auto px-4 mt-4">
         <div class="flex flex-wrap -mx-4">
             <div class="w-full px-4">
                 <!-- form start -->
@@ -25,7 +25,7 @@
                                 </div>
                                 <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
                                     {{-- Error Messages --}}
-                                    <div class="mb-6">
+                                    <div>
                                         @if ($errors->any())
                                             <div class="text-red-400">
                                                 <ul>
@@ -38,11 +38,11 @@
                                     </div>
 
                                     {{-- Discount Selection --}}
-                                    <div class="mb-6">
+                                    <div>
                                         <label for="discount_id" class="block text-sm font-semibold text-gray-700 mb-2">
                                             Discount<span class="text-red-500 ml-1">*</span>
                                         </label>
-                                        <p id="discountInfo" class="text-sm text-gray-600 mb-2"></p>
+                                        <div id="discountInfo" class="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm"></div>
                                         <select
                                             id="discount_id"
                                             name="discount_app"
@@ -56,9 +56,9 @@
                                     </div>
 
                                     {{-- Conditions --}}
-                                    <div x-data="conditionManager()" class="mb-6">
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Conditions</label>
-                                        <ul id="more_condition" class="mb-4 space-y-3">
+                                    <div x-data="conditionManager()" class="mb-6 mt-2">
+                                        <label class="block text-sm font-semibold text-gray-700">Conditions</label>
+                                        <ul id="more_condition" class="mb-2 space-y-3">
                                             <template x-for="condition in conditions" :key="condition.id">
                                                 <li class="p-4 border border-gray-200 rounded-md shadow-sm">
                                                     <template x-for="(app, index) in condition.apps" :key="index">
@@ -187,26 +187,76 @@
                                     </div>
                                     <div class="p-6">
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputHeader">Header Message</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputHeader" name="header_message" value="{{ old('header_message') }}" placeholder="Default: Welcome to Secomapp special offer!">
+                                            <label for="header_message" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Header Message
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="header_message"
+                                                id="inputHeader"
+                                                placeholder="Default: Welcome to Secomapp special offer!"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('expired_range') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('header_message') }}"
+                                            >
                                         </div>
+
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputSuccess">Success Message</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputSuccess" name="success_message" value="{{ old('success_message') }}" placeholder="Default: Your offer was created! Please install app to active the offer!">
+                                            <label for="inputSuccess" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Success Message
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="success_message"
+                                                id="inputSuccess"
+                                                placeholder="Default: Your offer was created! Please install app to active the offer!"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('expired_range') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('success_message') }}"
+                                            >
                                         </div>
+
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputUsed">Used Message</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputUsed" name="used_message" value="{{ old('used_message') }}" placeholder="Default: You have already claimed this offer!">
+                                            <label for="inputUsed" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Used Message
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="used_message"
+                                                id="inputUsed"
+                                                placeholder="Default: You have already claimed this offer!"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('used_message') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('used_message') }}"
+                                            >
                                         </div>
+
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputFail">Fail Message</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputFail" name="fail_message" value="{{ old('fail_message') }}" placeholder="Default: Offer can't be created because of following reasons:">
+                                            <label for="inputFail" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Fail Message
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="fail_message"
+                                                id="inputFail"
+                                                placeholder="Default: Offer can't be created because of following reasons:"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('fail_message') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('fail_message') }}"
+                                            >
                                         </div>
+
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputExtend">Extend Message</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputExtend" name="extend_message" value="{{ old('extend_message') }}" placeholder="Default: Just install app then offer will be applied automatically!">
+                                            <label for="inputExtend" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Extend Message
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="extend_message"
+                                                id="inputExtend"
+                                                placeholder="Default: Just install app then offer will be applied automatically!"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('extend_message') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('extend_message') }}"
+                                            >
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                             <div class="mb-8">
@@ -216,18 +266,48 @@
                                     </div>
                                     <div class="p-6">
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputReasonTime">Time Expired</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputReasonTime" name="reason_expired" value="{{ old('reason_expired') }}" placeholder="Default: This offer was expired!">
+                                            <label for="inputReasonTime" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Time Expired
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="reason_expired"
+                                                id="inputReasonTime"
+                                                placeholder="Default: This offer was expired!"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('reason_expired') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('reason_expired') }}"
+                                            >
                                         </div>
+
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputReasonLimit">Limited Coupon</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputReasonLimit" name="reason_limit" value="{{ old('reason_limit') }}" placeholder="Default: Offers were reached the limited!">
+                                            <label for="inputReasonLimit" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Limited Coupon
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="reason_limit"
+                                                id="inputReasonLimit"
+                                                placeholder="Default: Offers were reached the limited!"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('reason_limit') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('reason_limit') }}"
+                                            >
                                         </div>
+
                                         <div class="mb-4">
-                                            <label class="block text-gray-700 text-sm font-bold mb-2" for="inputReasonCondition">Not Match Conditions</label>
-                                            <input type="text" class="form-input mt-1 block w-full" id="inputReasonCondition" name="reason_condition" value="{{ old('reason_condition') }}" placeholder="Default: Your store doesn't match app conditions!">
+                                            <label for="inputReasonCondition" class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Not Match Conditions
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="reason_condition"
+                                                id="inputReasonCondition"
+                                                placeholder="Default: Your store doesn't match app conditions!"
+                                                class="form-input w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent {{ $errors->has('reason_condition') ? 'border-red-500' : 'border-gray-300' }}"
+                                                value="{{ old('reason_condition') }}"
+                                            >
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -241,7 +321,6 @@
 
 <script>
     function conditionManager() {
-        console.log(1);
         return {
             conditions: [],
             conditionJSON: '',
@@ -344,39 +423,20 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    body: JSON.stringify({ db: database }),
                 })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
-                        return response.json();
+                        return response.text();  // Nhận HTML từ server
                     })
-                    .then(data => {
-                        if (!data || data.error) {
-                            discountInfo.innerHTML = '<li>Error fetching discount data</li>';
-                            return;
-                        }
-
-                        let element = `
-                <li>${data.value}${data.type === 'amount' ? " USD" : "%"} discount</li>
-                <li>${data.usage_limit == 0 ? "Unlimited" : data.usage_limit + " times usage"}</li>
-                <li>${data.trial_days ? data.trial_days : 0} days trial</li>
-                <li>Start: ${data.started_at ? formatDate(data.started_at) : "N/A"}</li>
-                <li>End: ${data.expired_at ? formatDate(data.expired_at) : "N/A"}</li>
-            `;
-                        discountInfo.innerHTML = element;
+                    .then(html => {
+                        discountInfo.innerHTML = html;  // Chèn HTML vào phần tử discountInfo
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         discountInfo.innerHTML = '<li>Failed to load discount info</li>';
                     });
-            }
-
-            function formatDate(dateString) {
-                if (!dateString) return "N/A";
-                let date = new Date(dateString);
-                return date.toLocaleDateString('en-GB');
             }
         });
 

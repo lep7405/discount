@@ -24,8 +24,8 @@
             <p class="text-gray-600">Log in to start</p>
         </div>
         @if ($errors->has('error'))
-            <div class="text-red-400">
-               {{$errors->first('error')}}
+            <div class="text-red-500">
+               {{ $errors->first('error') }}
             </div>
         @endif
         <form action="{{ route('login') }}" method="POST" class="space-y-6">
@@ -50,11 +50,13 @@
                     <input type="password"
                            id="password"
                            name="password"
+                           value="{{ old('password') }}"
                            class="w-full pl-10 pr-12 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                            placeholder="Password">
                     <i class="fas fa-lock text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <button type="button"
                             onclick="togglePassword()"
+
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         <i id="eye-icon" class="fas fa-eye"></i>
                     </button>

@@ -18,11 +18,13 @@ class DiscountController extends Controller
     public function __construct(protected DiscountService $discountService)
     {
         $this->routeName = Request()->route()->getPrefix();
-        $arr = explode('/', $this->routeName);
+        $uri = Request()->route()->uri();
+        $arr = explode('/', $uri);
         $this->databaseName = $arr[1];
-        $this->appName = config('database.connections.'.$this->databaseName.'.app_name');
+        $this->appName = config('database.connections.' . $this->databaseName . '.app_name');
         Discount::changeLogName($this->databaseName);
     }
+
     public function index(Request $request)
     {
         $appName = $this->appName;
@@ -35,13 +37,14 @@ class DiscountController extends Controller
             'databaseName' => $databaseName,
             'total_pages_discount' => $data['total_pages_discount'],
             'total_items_discount' => $data['total_items_discount'],
-            'total_items'=>$data['total_items'],
+            'total_items' => $data['total_items'],
             'current_pages_discount' => $data['current_pages_discount'] ?? 1,
             'per_page_discount' => $request->query('per_page_discount') ?? 5,
             'search_discount' => $request->query('search_discount') ?? null,
             'started_at' => $request->query('started_at') ?? null,
         ]);
     }
+
     public function create()
     {
         $appName = $this->appName;
@@ -54,42 +57,47 @@ class DiscountController extends Controller
     {
         $this->discountService->store($request->validationData(), $this->databaseName);
 
-        return redirect()->route('admin.'.$this->databaseName.'.discounts')->with('success', 'Discount created successfully!');
+        return redirect()->route('admin.' . $this->databaseName . '.discounts')->with('success', 'Discount created successfully!');
     }
+
     public function edit($id)
     {
         $databaseName = $this->databaseName;
-        $discountAndStatus = $this->discountService->getDiscountAndStatus($id, $databaseName);
+        $discount = $this->discountService->getDiscountWithCoupon($id, $databaseName);
+        $status = $this->discountService->getStatusDiscount($discount);
+        //        dd(json_encode($status, JSON_PRETTY_PRINT));
 
         return view('admin.discounts.update', [
             'appName' => $this->appName,
             'databaseName' => $this->databaseName,
-            'discountStatus' => $discountAndStatus['discountStatus'],
-            'discountData' => $discountAndStatus['discount'],
+            'discountStatus' => $status,
+            'discountData' => $discount,
         ]);
     }
 
     public function update(Request $request, $id)
     {
-
         $this->discountService->update($id, $request->all(), $this->databaseName);
 
         return redirect()->back()->with('success', 'Discount updated successfully!');
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         $this->discountService->delete($id, $this->databaseName);
 
-        return redirect()->route('admin.'.$this->databaseName.'.discounts')->with('success', 'Discount deleted successfully!');
+        return redirect()->route('admin.' . $this->databaseName . '.discounts')->with('success', 'Discount deleted successfully!');
     }
-    public function getDiscountInfo(Request $request,DiscountService $discountService, $id)
+
+    public function getDiscountInfo(Request $request, DiscountService $discountService, $id)
     {
-        $dbName=$request->input('dbName');
-        if(!$dbName){
-            $dbName=$this->databaseName;
-        }
-        $discountData = $discountService->getDiscountInfo($id, $dbName);
-        return response()->json($discountData);
+        $data = $discountService->getDiscountInfo($id, $this->databaseName);
+
+        return view('components.discountInfo', compact('data'))->render();
+    }
+
+    public function test4()
+    {
+        dd(1);
     }
 }

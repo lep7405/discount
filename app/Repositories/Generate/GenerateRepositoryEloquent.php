@@ -82,8 +82,6 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
 
     public function createGenerate(array $data)
     {
-        logger()->info(json_encode($data));
-
         return $this->getModel()
             ->create($data);
     }
@@ -91,6 +89,7 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
     public function updateGenerate($id, array $data)
     {
         $fillableData = array_intersect_key($data, array_flip($this->getModel()->getFillable()));
+
         return $this->getModel()
             ->where('id', $id)
             ->update($fillableData);
@@ -115,5 +114,12 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
         return $this->getModel()
             ->where('id', $id)
             ->delete();
+    }
+
+    public function getGenerateById($id)
+    {
+        return $this->getModel()
+            ->where('id', $id)
+            ->first();
     }
 }

@@ -91,6 +91,12 @@
                     <label class="text-sm font-medium text-gray-600">Show</label>
                     <input type="hidden" name="search_discount" value="{{ $search_discount }}">
                     <input type="hidden" name="started_at" value="{{ $started_at }}">
+                    <input type="hidden" name="started_at" value="{{ $per_page_coupon }}">
+                    <input type="hidden" name="started_at" value="{{ $current_pages_coupon }}">
+                    <input type="hidden" name="started_at" value="{{ $search_coupon }}">
+                    <input type="hidden" name="started_at" value="{{ $time_used }}">
+                    <input type="hidden" name="started_at" value="{{ $status }}">
+
                     <select id="discount-entries-select" name="per_page_discount"
                             class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
                             onchange="this.form.submit()">
@@ -130,7 +136,7 @@
                                     <div class="relative inline-block text-left">
                                         <div>
                                             <button type="button"
-                                                    onclick="toggleDropdown('discount-startDropdown')"
+                                                    onclick="toggleDropdownDiscount('discount-startDropdown')"
                                                     class="inline-flex justify-center items-center px-3 py-1 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -209,7 +215,7 @@
                             <div class="flex items-center space-x-1">
                                 <!-- First Page -->
                                 @if ($current_pages_discount > 1)
-                                    <a href="?page_discount=1&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                    <a href="?page_discount=1&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-left"></i>
                                     </a>
@@ -221,7 +227,7 @@
 
                                 <!-- Previous Page -->
                                 @if ($current_pages_discount > 1)
-                                    <a href="?page_discount={{ $current_pages_discount - 1 }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                    <a href="?page_discount={{ $current_pages_discount - 1 }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-left"></i>
                                     </a>
@@ -238,7 +244,7 @@
 
                                 <!-- Next Page -->
                                 @if ($current_pages_discount < $total_pages_discount)
-                                    <a href="?page_discount={{ $current_pages_discount + 1 }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                    <a href="?page_discount={{ $current_pages_discount + 1 }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-right"></i>
                                     </a>
@@ -250,7 +256,7 @@
 
                                 <!-- Last Page -->
                                 @if ($current_pages_discount < $total_pages_discount)
-                                    <a href="?page_discount={{ $total_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                    <a href="?page_discount={{ $total_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-right"></i>
                                     </a>
@@ -275,7 +281,7 @@
             <!-- Card Header -->
             <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
                 <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Coupons List</h2>
-                <a href="{{ route('admin.'.$databaseName.'.coupons_new') }}"
+                <a href="{{ route('admin.'.$databaseName.'.create_coupon') }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                     <i class="fas fa-plus mr-2"></i>
                     Add New Coupon
@@ -288,7 +294,11 @@
                     <label class="text-sm font-medium text-gray-600">Show</label>
                     <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
                     <input type="hidden" name="status" value="{{ $status }}">
-                    <input type="hidden" name="time_used" value="{{ $time_used }}">
+                    <input type="hidden" name="time_used" value="{{ $per_page_discount }}">
+                    <input type="hidden" name="search_coupon" value="{{ $current_pages_discount }}">
+                    <input type="hidden" name="status" value="{{ $search_discount }}">
+                    <input type="hidden" name="time_used" value="{{ $started_at }}">
+
                     <select id="coupon-entries-select" name="per_page_coupon"
                             class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
                             onchange="this.form.submit()">
@@ -331,7 +341,7 @@
                                     <div class="relative inline-block text-left">
                                         <div>
                                             <button type="button"
-                                                    onclick="toggleDropdownTime()"
+                                                    onclick="toggleDropdownTime('timeDropdown')"
                                                     class="inline-flex justify-center items-center px-3 py-1 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -392,16 +402,16 @@
                         <tbody class="bg-white divide-y divide-gray-100">
                         @if (count($couponData)>0)
                             @foreach ($couponData as $item)
-                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.get_edit_coupon', $item->id) }}';"
+                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.edit_coupon', $item->id) }}';"
                                     class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.get_edit_coupon', $item->id) }}"
+                                        <a href="{{ route('admin.'.$databaseName.'.edit_coupon', $item->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->id }}
                                         </a>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.get_edit_coupon', $item->id) }}"
+                                        <a href="{{ route('admin.'.$databaseName.'.edit_coupon', $item->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->code }}
                                         </a>
@@ -410,7 +420,7 @@
                                         {{ $item->shop }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.edit_discount',$item->discount->id) }}"
+                                        <a href="{{ route('admin.'.$databaseName.'.update_discount',$item->discount->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->discount->name }}
                                         </a>
@@ -443,7 +453,7 @@
                             <div class="flex items-center space-x-1">
                                 <!-- First Page -->
                                 @if ($current_pages_coupon > 1)
-                                    <a href="?page_coupon=1&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                    <a href="?page_coupon=1&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-left"></i>
                                     </a>
@@ -455,7 +465,7 @@
 
                                 <!-- Previous Page -->
                                 @if ($current_pages_coupon > 1)
-                                    <a href="?page_coupon={{ $current_pages_coupon - 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                    <a href="?page_coupon={{ $current_pages_coupon - 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-left"></i>
                                     </a>
@@ -472,7 +482,7 @@
 
                                 <!-- Next Page -->
                                 @if ($current_pages_coupon < $total_pages_coupon)
-                                    <a href="?page_coupon={{ $current_pages_coupon + 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                    <a href="?page_coupon={{ $current_pages_coupon + 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-right"></i>
                                     </a>
@@ -484,7 +494,7 @@
 
                                 <!-- Last Page -->
                                 @if ($current_pages_coupon < $total_pages_coupon)
-                                    <a href="?page_coupon={{ $total_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                    <a href="?page_coupon={{ $total_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-right"></i>
                                     </a>
@@ -502,11 +512,22 @@
                 <input type="hidden" name="status" id="status-input">
                 <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
                 <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
+
+                <input type="hidden" name="search_discount" value="{{ $search_discount }}">
+                <input type="hidden" name="per_page_discount" value="{{ $per_page_discount }}">
+                <input type="hidden" name="current_pages_discount" value="{{ $current_pages_discount }}">
+                <input type="hidden" name="started_at" value="{{ $started_at }}">
+
             </form>
             <form id="times-used-form" method="GET" action="{{ url()->current() }}" class="hidden">
                 <input type="hidden" name="time_used" id="times-used-input">
                 <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
                 <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
+
+                <input type="hidden" name="search_discount" value="{{ $search_discount }}">
+                <input type="hidden" name="per_page_discount" value="{{ $per_page_discount }}">
+                <input type="hidden" name="current_pages_discount" value="{{ $current_pages_discount }}">
+                <input type="hidden" name="started_at" value="{{ $started_at }}">
             </form>
         </div>
     </div>
@@ -515,7 +536,7 @@
 @push('scripts')
     <script>
 
-        function toggleDropdown() {
+        function toggleDropdownDiscount() {
             const dropdown = document.getElementById('discount-startDropdown');
             dropdown.classList.toggle('hidden');
 
@@ -541,24 +562,6 @@
             }, 500);
         });
 
-        @if (session('success'))
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: "{{ session('success') }}",
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            customClass: {
-                popup: 'animate__animated animate__fadeInDown'
-            }
-        });
-        @endif
-    </script>
-@endpush
-@push('scripts')
-    <script>
         function toggleDropdownTime() {
             const dropdown = document.getElementById('timeDropdown');
             dropdown.classList.toggle('hidden');
@@ -595,10 +598,10 @@
             document.getElementById('status-form').submit();
         }
 
-        let searchTimeout;
+        let searchTimeout1;
         document.getElementById("coupon-table-search").addEventListener("input", function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
+            clearTimeout(searchTimeout1);
+            searchTimeout1 = setTimeout(() => {
                 document.getElementById("coupon-search-form").submit();
             }, 500);
         });
@@ -619,7 +622,6 @@
         @endif
     </script>
 @endpush
-
 
 @push('scripts')
     <script>

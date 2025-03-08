@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Coupon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class testSearchCoupon extends Command
 {
@@ -29,12 +28,12 @@ class testSearchCoupon extends Command
     {
         $status = null;
         $arrange_times_used = null;
-        $search = "coupon_2_1";
+        $search = 'coupon_2_1';
         $databaseConnection = 'cs'; // Đặt kết nối cơ sở dữ liệu ở đây (ví dụ: 'cs')
 
         // Sử dụng mô hình Eloquent với kết nối linh động
         $data = Coupon::on($databaseConnection) // Chỉ định kết nối cơ sở dữ liệu linh động ở đây
-        ->with(['discount:id,name'])
+            ->with(['discount:id,name'])
             ->when($search, function ($query) use ($search) {
                 $query->where('code', 'like', "%{$search}%")
                     ->orWhere('shop', 'like', "%{$search}%")
@@ -51,7 +50,7 @@ class testSearchCoupon extends Command
             })
             ->get();
         dd($data);
+
         return $data->toArray();
     }
-
 }

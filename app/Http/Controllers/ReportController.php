@@ -17,7 +17,7 @@ class ReportController extends Controller
         $this->routeName = Request()->route()->getName();
         $arr = explode('.', $this->routeName);
         $this->databaseName = $arr[1];
-        $this->appName = config('database.connections.'.$this->databaseName.'.app_name');
+        $this->appName = config('database.connections.' . $this->databaseName . '.app_name');
     }
 
     public function index(ReportService $reportService, Request $request)
@@ -26,8 +26,9 @@ class ReportController extends Controller
         $databaseName = $this->databaseName;
         $config = config('database.connections');
         $apps = [];
+        $databases = ['mysql', 'mariadb', 'pgsql', 'sqlsrv', 'sqlite'];
         foreach ($config as $key => $db) {
-            if ($key && $key != 'mysql' && isset($db['app_name'])) {
+            if ($key && ! in_array($key, $databases) && isset($db['app_name'])) {
                 $apps[$key] = $db['app_name'];
             }
         }

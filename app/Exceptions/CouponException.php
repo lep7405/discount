@@ -8,6 +8,7 @@ class CouponException extends InternalException
     {
         return self::new($messages);
     }
+
     public static function validateCreateByDiscount(array $messages): self
     {
         return self::new($messages);

@@ -4,9 +4,13 @@ namespace App\Exceptions;
 
 class GenerateException extends InternalException
 {
-    public static function notFound()
+    public static function notFound(array $messages): self
     {
-        return new static('Generate not found');
+        return self::new($messages);
+    }
+    public static function generateExist(array $messages): self
+    {
+        return self::new($messages);
     }
 
     public static function validateEdit(string $message)
@@ -14,7 +18,13 @@ class GenerateException extends InternalException
         return new self("{$message}", 400);
     }
 
-    public static function validateCreate(array $messages):self
+    public static function validateCreate(array $messages): self
+    {
+        return self::new($messages);
+
+    }
+
+    public static function validateUpdate(array $messages): self
     {
         return self::new($messages);
     }

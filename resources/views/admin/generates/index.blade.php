@@ -107,7 +107,7 @@
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
-                                    <a href="{{ route('admin.get_edit_generate',$item->id) }}"
+                                    <a href="{{ route('admin.' . $item->db_name . '.reports') }}"
                                        class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                         {{ $item->app_name }}
                                     </a>
@@ -261,7 +261,7 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 document.getElementById("search-form").submit();
-            }, 500);
+            }, 2000);
         });
 
         @if (session('success'))

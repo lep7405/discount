@@ -32,6 +32,7 @@ class CouponByDiscountRequest extends FormRequest
             'shop' => 'nullable|string|max:128',
         ];
     }
+
     public function validationData()
     {
         return [
@@ -39,6 +40,7 @@ class CouponByDiscountRequest extends FormRequest
             'shop' => $this->input('shop'),
         ];
     }
+
     public function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();

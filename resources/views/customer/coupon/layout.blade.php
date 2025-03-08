@@ -50,6 +50,9 @@
                                 <p class="font-semibold text-gray-800">{{ $extend_message }}</p>
                             @endif
                         </div>
+                        @if (isset($coupon_code))
+                            <p class="font-semibold text-gray-800">Coupon code :  {{ $coupon_code }}</p>
+                        @endif
                         @if (isset($app_url))
                             <div class="bg-gray-50 px-4 py-3 text-right">
                                 @if (!empty($generate_id) && $generate_id == 28)

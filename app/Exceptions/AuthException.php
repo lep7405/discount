@@ -8,19 +8,22 @@ class AuthException extends InternalException
     //    {
     //        return new self(, 401);
     //    }
-    public static function loginFailed(): self
+    public static function loginFailed(array $message): self
     {
-        return self::new(['error' => 'Email or password is incorrect']);
+        return self::new($message);
     }
-    public static function validateLogin(array $messages):self
-    {
-        return self::new($messages);
-    }
-    public static function validateRegister(array $messages):self
+
+    public static function validateLogin(array $messages): self
     {
         return self::new($messages);
     }
-    public static function validateChangePassWord(array $messages):self
+
+    public static function validateRegister(array $messages): self
+    {
+        return self::new($messages);
+    }
+
+    public static function validateChangePassWord(array $messages): self
     {
         return self::new($messages);
     }

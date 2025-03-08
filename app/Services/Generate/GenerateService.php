@@ -9,6 +9,7 @@ interface GenerateService
     public function showCreate(array $databaseName);
 
     public function create(array $data);
+    public function testCreate($discount_id,$app_name);
 
     public function showUpdate($id);
 
@@ -19,4 +20,10 @@ interface GenerateService
     public function destroy($id);
 
     public function generateCoupon($generate_id, $timestamp, $shop_id);
+
+    public function createCouponFromAffiliatePartner(array $data, string $appCode, string $shopName);
+
+    //test
+    public function test1();
+    public function testCreateName(string $name,string $app_name);
 }

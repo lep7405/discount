@@ -18,11 +18,11 @@
     <div x-data="{ showModal: false }" x-cloak class="container mx-auto px-4 mt-2">
         <h1 class="text-xl font-bold">Edit Discount</h1>
 
-        <div class="flex flex-wrap -mx-4">
+        <div class="flex flex-wrap">
             <div class="w-full lg:w-2/3 px-4">
                 @if ($errors->has('error'))
                     <div class="text-red-500">
-                        {{$errors->first('error')}}
+                        {{ $errors->first('error') }}
                     </div>
                 @endif
                     @if ($errors->has('discount_month'))
@@ -33,9 +33,7 @@
                         @method('PUT')
                     {{-- General Section --}}
                     <div class="bg-white shadow rounded-lg overflow-hidden">
-                        <div class="px-4 py-5 bg-[#027BFF] border-b border-blue-200 sm:px-6">
-                            <h3 class="text-lg font-medium leading-6 text-white">General</h3>
-                        </div>
+                        <x-section-header title="General" />
                         <div class="px-4 py-5 sm:p-6">
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
@@ -45,7 +43,7 @@
                                            name="name"
                                            value="{{ $discountData->name }}"
                                            placeholder="Enter name"
-                                           class="mt-1 block w-full py-2 px-2 rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                           class="form-input {{ $errors->has('name') ? 'border-red-500' : 'border-gray-300' }}">
                                     @if ($errors->has('name'))
                                         <span class="text-red-500">{{ $errors->first('name') }}</span>
                                     @endif
@@ -56,9 +54,7 @@
                     {{-- Detail Section --}}
 
                     <div class="bg-white shadow rounded-lg overflow-hidden">
-                        <div class="px-4 py-5 bg-[#027BFF] border-b border-blue-200 sm:px-6">
-                            <h3 class="text-lg font-medium leading-6 text-white">Detail</h3>
-                        </div>
+                        <x-section-header title="Detail" />
                         <div class="px-4 py-5 sm:p-6">
                             <div class="grid grid-cols-1 gap-6">
                                 @if ($databaseName == 'affiliate' || $databaseName == 'freegifts_new')
@@ -80,11 +76,10 @@
                                             <input
                                                 type="number"
                                                 min="0"
-                                                step="0.01"
                                                 name="discount_month"
                                                 value="@if (isset($discountData->discount_month)){{ $discountData->discount_month }}@endif"
                                                 placeholder="Enter value"
-                                                class="h-10 rounded-md border-2 border-gray-200 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                class="form-input {{ $errors->has('discount_month') ? 'border-red-500' : 'border-gray-300' }}"
                                                 @if ($discountStatus) disabled @endif
                                             >
                                         </div>
@@ -109,7 +104,7 @@
                                                name="value"
                                                value="{{ $discountData->value }}"
                                                placeholder="Enter value"
-                                               class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                               class="form-input {{ $errors->has('value') ? 'border-red-500' : 'border-gray-300' }}"
                                                @if ($discountStatus) disabled @endif>
                                         @error('value')
                                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -123,7 +118,7 @@
                                            name="trial_days"
                                            value="{{ $discountData->trial_days }}"
                                            placeholder="Enter trial days"
-                                           class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                           class="form-input {{ $errors->has('trial_days') ? 'border-red-500' : 'border-gray-300' }}"
                                            @if ($discountStatus) disabled @endif>
                                     @error('trial_days')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -136,9 +131,7 @@
                     {{-- Time Section --}}
 
                     <div class="bg-white shadow rounded-lg overflow-hidden">
-                        <div class="px-4 py-5 bg-[#027BFF] border-b border-blue-200 sm:px-6">
-                            <h3 class="text-lg font-medium leading-6 text-white">Time</h3>
-                        </div>
+                        <x-section-header title="Time" />
                         <div class="px-4 py-5 sm:p-6">
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
@@ -148,7 +141,7 @@
                                            name="usage_limit"
                                            value="{{ $discountData->usage_limit }}"
                                            placeholder="Enter usage limit"
-                                           class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                           class="form-input {{ $errors->has('usage_limit') ? 'border-red-500' : 'border-gray-300' }}">
                                     @error('usage_limit')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -161,7 +154,7 @@
                                                id="inputStarted"
                                                name="started_at"
                                                value="{{ $discountData->started_at ? date('Y-m-d', strtotime($discountData->started_at)) : '' }}"
-                                               class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                               class="form-input {{ $errors->has('started_at') ? 'border-red-500' : 'border-gray-300' }}">
 
                                         @error('started_at')
                                         <p class="mt-2 text-sm text-red-600">{{ $errors->first('started_at') }}</p>
@@ -173,7 +166,7 @@
                                                id="inputExpired"
                                                name="expired_at"
                                                value="{{ $discountData->expired_at ? date('Y-m-d', strtotime($discountData->expired_at)) : '' }}"
-                                               class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                               class="form-input {{ $errors->has('expired_at') ? 'border-red-500' : 'border-gray-300' }}">
                                         @error('expired_at')
                                         <p class="mt-2 text-sm text-red-600">{{ $errors->first('expired_at') }}</p>
                                         @enderror
@@ -195,22 +188,57 @@
                     </div>
                 </form>
             </div>
-            <div class="w-full lg:w-1/3 px-4">
-                <div class="px-4 py-5 bg-[#027BFF] border-b border-blue-200 sm:px-6">
-                    <h3 class="text-lg font-medium leading-6 text-white">Status</h3>
+            <div class="w-full lg:w-1/3 px-4 mt-6">
+                <div class="bg-white shadow rounded-lg overflow-hidden">
+                    <x-section-header title="Status" />
+                    <div class="px-4 py-5 sm:p-6">
+                        <ul class="space-y-3">
+                            <li class="flex items-center space-x-2">
+        <span class="text-blue-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </span>
+                                <span class="text-gray-700 font-medium">{{ $discountData->type == 'percentage' ? $discountData->value .'%' : $discountData->value." USD" }}</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+        <span class="text-purple-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </span>
+                                <span class="text-gray-700">{{ $discountData->trial_days ?? 0 }} days trial</span>
+                            </li>
+                        </ul>
+                    </div>
+
                 </div>
-                <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                    <ul class="list-disc list-inside">
-                        <li>{{ $discountData->type == 'percentage' ? $discountData->value .'%' : $discountData->value." USD" }}</li>
-                        <li>{{ $discountData->trial_days ?? 0 }} days trial</li>
-                    </ul>
-                </div>
-                <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                    <h3 class="text-lg font-semibold mb-4">Coupon</h3>
-                    <ul class="list-disc list-inside">
-                        <li><a href="{{ route('admin.'.$databaseName.'.show_create_coupon_in_discount', $discountData->id) }}" class="text-blue-600 hover:text-blue-800">Add Coupon</a></li>
-                        <li><a  href="{{ route('admin.'.$databaseName.'.show_all_coupon_in_discount', $discountData->id) }}" class="text-blue-600 hover:text-blue-800">Coupons Created</a></li>
-                    </ul>
+                <div class="bg-white shadow rounded-lg overflow-hidden mt-4">
+                    <x-section-header title="Coupon" />
+                    <div class="px-6 py-5 sm:p-6 bg-gray-50 rounded-lg shadow-inner">
+                        <ul class="space-y-3">
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                                </svg>
+                                <a href="{{ route('admin.'.$databaseName.'.show_create_coupon_in_discount', $discountData->id) }}"
+                                   class="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out font-medium">
+                                    Add Coupon
+                                </a>
+                            </li>
+                            <li class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                                </svg>
+                                <a href="{{ route('admin.'.$databaseName.'.show_all_coupon_in_discount', $discountData->id) }}"
+                                   class="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out font-medium">
+                                    List Coupons
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+
                 </div>
             </div>
         </div>

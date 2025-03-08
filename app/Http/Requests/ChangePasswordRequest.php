@@ -35,6 +35,7 @@ class ChangePasswordRequest extends FormRequest
             'password_confirmation' => $this->input('password_confirmation'),
         ];
     }
+
     public function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();
