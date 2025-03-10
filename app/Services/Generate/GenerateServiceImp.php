@@ -6,6 +6,7 @@ use App\Exceptions\DiscountException;
 use App\Exceptions\GenerateException;
 use App\Exceptions\NotFoundException;
 use App\Models\Coupon;
+use App\Models\Generate;
 use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
 use App\Repositories\Generate\GenerateRepository;
@@ -83,27 +84,6 @@ class GenerateServiceImp implements GenerateService
         }
         return $discountData;
     }
-
-    public function testCreate($discount_id,$app_name){
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $app_name);
-        if(! $discount){
-            throw DiscountException::notFound(['error' => ['Discount not found']]);
-        }
-        throw DiscountException::discountExpired(['error' => ['Discount expired']]);
-    }
-
-
-    public function testCreateName(string $name,string $app_name){
-        $discount = $this->discountRepository->findDiscountByName($name, $app_name);
-        if(! $discount){
-            throw DiscountException::notFound(['error' => ['Discount not found']]);
-        }
-        throw DiscountException::discountExpired(['error' => ['Discount expired']]);
-    }
-
-
-
-
     public function create(array $data)
     {
         [$discount_id, $app_name] = explode('&', $data['discount_app']);
@@ -117,11 +97,12 @@ class GenerateServiceImp implements GenerateService
         if ($discount->expired_at && now()->greaterThan(Carbon::parse($discount->expired_at))) {
             throw DiscountException::discountExpired(['error' => ['Discount expired']]);
         }
-        if ($this->generateRepository->getGenerateByDiscountIdAndAppName($discount_id, $app_name)->count() > 0) {
+        $generateCheckDiscountIdAndAppName=$this->generateRepository->getGenerateByDiscountIdAndAppName($discount_id, $app_name);
+        if ($generateCheckDiscountIdAndAppName) {
             throw GenerateException::generateExist(['error' => ['Generate existed discount_id and app_name']]);
         }
         if ($condition) {
-            $data['conditions'] = json_encode($this->handleCondition($condition));
+            $data['conditions'] = $this->handleCondition($condition);
         }
         else {
             $data['conditions'] = '';
@@ -129,7 +110,6 @@ class GenerateServiceImp implements GenerateService
         $messages = $this->handleMessage($data);
         $data['success_message'] = $messages['success_message'];
         $data['fail_message'] = $messages['fail_message'];
-
         return $this->generateRepository->createGenerate($data);
     }
 
@@ -141,7 +121,7 @@ class GenerateServiceImp implements GenerateService
         }
         $coupon = $this->couponRepository->getCouponByDiscountIdAndCode($generate->discount_id, $generate->app_name);
         $status_del = true;
-        if (count($coupon) > 0) {
+        if ($coupon) {
             $status_del = false;
         }
         $discount = $this->discountRepository->findDiscountByIdNoCoupon($generate->discount_id, $generate->app_name);
@@ -159,46 +139,43 @@ class GenerateServiceImp implements GenerateService
         if (! $generate) {
             throw NotFoundException::notFound('Generate not found');
         }
-        $discount_id_in_db = $generate->discount_id;
-        $app_name_in_db = $generate->app_name;
+        $discountId = $generate->discount_id;
+        $appName = $generate->app_name;
 
-        $coupon = $this->couponRepository->getCouponByDiscountIdAndCode($discount_id_in_db, $generate->app_name);
-        $discount_id = $discount_id_in_db;
-        $app_name = $app_name_in_db;
-        if (count($coupon) === 0) {
+        $coupon = $this->couponRepository->getCouponByDiscountIdAndCode($discountId, $appName);
+        if (!$coupon) {
             GenerateUpdateValidator::validateUpdate(true, $data);
-            [$discount_id1, $app_name1] = explode('&', $data['discount_app']);
 
-            if ($discount_id1 != $discount_id_in_db || $app_name1 != $app_name_in_db) {
+            [$discountIdNew, $appNameNew] = explode('&', $data['discount_app']);
+            if ($discountId != $discountIdNew || $appName != $appNameNew) {
 
-                if ($this->generateRepository->getGenerateByDiscountIdAndAppName($discount_id, $app_name)->count() > 0) {
-                    throw GenerateException::generateExist(['error' => ['Generate existed discount_id']]);
+                $discount = $this->discountRepository->findDiscountByIdNoCoupon($discountIdNew, $appNameNew);
+                if (! $discount) {
+                    throw NotFoundException::notFound('Discount not found');
                 }
-                $discount_id = $discount_id1;
-                $app_name = $app_name1;
+                if ($discount->expired_at && now()->greaterThan(Carbon::parse($discount->expired_at))) {
+                    throw DiscountException::discountExpired(['error' => ['Discount expired']]);
+                }
+
+                $generateByDiscountIdAndAppName = $this->generateRepository->getGenerateByDiscountIdAndAppName($discountIdNew, $appNameNew);
+
+                if ($generateByDiscountIdAndAppName) {
+                    throw GenerateException::generateExist(['error' => ['Generate existed discount_id']]);
+                };
+
+                $data['discount_id'] = $discountIdNew;
+                $data['app_name'] = $appNameNew;
             }
         } else {
             GenerateUpdateValidator::validateUpdate(false, $data);
         }
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $app_name);
-        if (! $discount) {
-            throw NotFoundException::notFound('Discount not found');
-        }
-        if ($discount->expired_at && now()->greaterThan(Carbon::parse($discount->expired_at))) {
-            throw DiscountException::discountExpired(['error' => ['Discount expired']]);
-        }
 
-//        $data['conditions'] = $this->handleCondition($data['condition_object']);
         $data['conditions'] = $this->handleCondition(Arr::get($data, 'condition_object'));
-
-
         $messages = $this->handleMessage($data);
         $data['success_message'] = $messages['success_message'];
         $data['fail_message'] = $messages['fail_message'];
 
-        $data['discount_id'] = $discount_id;
-        $data['app_name'] = $app_name;
-
+        $data = array_intersect_key($data, array_flip((new Generate())->getFillable()));
         return $this->generateRepository->updateGenerate($id, $data);
     }
 
@@ -275,8 +252,8 @@ class GenerateServiceImp implements GenerateService
         ]);
 
         return [
-            'success_message' => ! empty($successMessage) ? json_encode($successMessage) : null,
-            'fail_message' => ! empty($failMessage) ? json_encode($failMessage) : null,
+            'success_message' => ! empty($successMessage) ? $successMessage : null,
+            'fail_message' => ! empty($failMessage) ? $failMessage : null,
         ];
     }
 
@@ -680,13 +657,4 @@ class GenerateServiceImp implements GenerateService
         return in_array($app, $automatic_apps);
     }
 
-    public function test2()
-    {
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon(1, 'cs');
-        return $discount;
-        if(! $discount){
-            throw DiscountException::notFound(['error' => ['Discount not found']]);
-        }
-        throw DiscountException::discountExpired(['error' => ['Discount expired']]);
-    }
 }

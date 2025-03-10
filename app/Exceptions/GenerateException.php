@@ -28,4 +28,9 @@ class GenerateException extends InternalException
     {
         return self::new($messages);
     }
+
+    public static function NotUpdateDiscountIdAndAppName(array $messages): self
+    {
+        return self::new($messages);
+    }
 }

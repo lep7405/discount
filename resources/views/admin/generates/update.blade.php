@@ -235,7 +235,7 @@
                                 <div class="p-6 space-y-4">
                                     @php
                                         if (!empty($generate->success_message)) {
-                                            $arr = json_decode($generate->success_message, true);
+                                            $arr = $generate->success_message;
                                             if (is_array($arr)) {
                                                 $success_message = $arr['message'] ?? null;
                                                 $extend_message = $arr['extend'] ?? null;
@@ -243,7 +243,7 @@
                                         }
 
                                         if (!empty($generate->fail_message)) {
-                                            $arr = json_decode($generate->fail_message, true);
+                                            $arr = $generate->fail_message;
                                             if (is_array($arr)) {
                                                 $fail_message = $arr['message'] ?? null;
                                                 $reason_expired = $arr['reason_expired'] ?? null;
@@ -505,7 +505,8 @@
                 };
             });
         }
-        console.log(convertArray(@json($generate->conditions) ? JSON.parse(@json($generate->conditions)) : []));
+
+        console.log('hello',convertArray(@json($generate->conditions) ? JSON.parse(@json($generate->conditions)) : []));
         return {
             conditions: convertArray(@json($generate->conditions) ? JSON.parse(@json($generate->conditions)) : []),
             conditionJSON: JSON.stringify(convertArray(@json($generate->conditions) ? JSON.parse(@json($generate->conditions)) : [])),

@@ -14,7 +14,6 @@ class DiscountFactory extends Factory
         return [
             // Thay vì $this->faker->sentence(2), sử dụng $this->faker->sentence()
             'name' => $this->faker->name(),
-
             'started_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'expired_at' => $this->faker->dateTimeBetween('now', '+1 month'),
             'type' => $this->faker->randomElement(['percentage', 'amount']),

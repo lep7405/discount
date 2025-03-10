@@ -85,7 +85,8 @@ class GenerateController extends Controller
     public function showUpdate($id, GenerateService $generateService)
     {
         $arr = $generateService->showUpdate($id);
-
+        $generate=$arr['generate'];
+        $generate->conditions=json_encode($generate->conditions);// chỗ này đang chữa cháy thôi chứ sau tìm hiểu được thì phải xóa nó đi
         return view('admin.generates.update', [
             'discountData' => $generateService->showCreate($this->configDatabase),
             'apps' => $this->apps,

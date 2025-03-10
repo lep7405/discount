@@ -99,7 +99,7 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
             ->on($databaseName)
             ->where('discount_id', $discountId)
             ->where('code', 'like', 'GENAUTO%')
-            ->get();
+            ->first();
     }
 
     public function deleteCoupon(int $id, string $databaseName)

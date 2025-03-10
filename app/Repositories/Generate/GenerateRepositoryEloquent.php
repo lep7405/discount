@@ -77,7 +77,8 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
     {
         return $this->getModel()
             ->where('discount_id', $discount_id)
-            ->where('app_name', $app_name);
+            ->where('app_name', $app_name)
+            ->first();
     }
 
     public function createGenerate(array $data)
@@ -88,18 +89,9 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
 
     public function updateGenerate($id, array $data)
     {
-        $fillableData = array_intersect_key($data, array_flip($this->getModel()->getFillable()));
-
         return $this->getModel()
             ->where('id', $id)
-            ->update($fillableData);
-        //        $generate = $this->getModel()
-        //            ->where('id', $id)
-        //            ->first();
-        //        $generate->expired_range = $data['expired_range'];
-        //
-        //        $generate->save();
-        //        return '';
+            ->update($data);
     }
 
     public function updateGenerateStatus($id, $status)

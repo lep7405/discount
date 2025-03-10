@@ -119,7 +119,7 @@
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
-                                    {{ $item->conditions }}
+                                    {{ json_encode($item->conditions) }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">
                                     {{ $item->expired ? 'Discount Expired!' : 'After '.$item->expired_range. " days" }}
