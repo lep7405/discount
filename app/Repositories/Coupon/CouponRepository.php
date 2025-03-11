@@ -19,6 +19,7 @@ interface CouponRepository extends RepositoryInterface
     public function getCouponByCode(string $code, string $databaseName);
 
     public function getCouponByDiscountIdAndCode(int $discountId, string $databaseName);
+    public function countCouponByDiscountIdAndCode(int $discountId, string $databaseName);
 
     public function decrementTimesUsed(int $id, int $numDecrement, string $databaseName);
 

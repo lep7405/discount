@@ -188,4 +188,13 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
             })
             ->paginate($perPage);
     }
+
+    public function countCouponByDiscountIdAndCode(int $discountId, string $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('discount_id', $discountId)
+            ->where('code', 'like', 'GENAUTO%')
+            ->count();
+    }
 }
