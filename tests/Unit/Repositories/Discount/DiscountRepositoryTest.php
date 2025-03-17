@@ -229,8 +229,8 @@ class DiscountRepositoryTest extends TestCase
     //            $this->
     //        }
     /**
- * @test
- */
+     * @test
+     */
     public function get_all_discounts_by_search()
     {
         // Kết nối đến database 'cs' và thêm dữ liệu test

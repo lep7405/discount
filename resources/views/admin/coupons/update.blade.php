@@ -19,7 +19,7 @@
     <li class="text-gray-400">/</li>
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <style>
         [x-cloak] { display: none !important; }
     </style>
@@ -37,7 +37,7 @@
                     @endif
 
                     <div class="p-6">
-                        <form role="form" action="{{ route('admin.'.$databaseName.'.update_coupon', $couponData->id) }}" method="POST">
+                        <form role="form" action="{{ route('admin.'.$databaseName.'.updateCoupon', $couponData->id) }}" method="POST">
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="_db" value="{{ $databaseName }}">
@@ -197,7 +197,7 @@
             class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
         >
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
-                <form id="decrementCoupon" action="{{ route('admin.'.$databaseName.'.decrement_times_used_coupon', $couponData->id) }}" method="POST">
+                <form id="decrementCoupon" action="{{ route('admin.'.$databaseName.'.decrementTimesUsedCoupon', $couponData->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -262,7 +262,7 @@
         </div>
     </div>
     <!-- Modal -->
-    <form id="deleteDiscount" method="POST" action="{{ route('admin.'.$databaseName.'.destroy_coupon', $couponData->id) }}">
+    <form id="deleteDiscount" method="POST" action="{{ route('admin.'.$databaseName.'.destroyCoupon', $couponData->id) }}">
         @csrf
         @method('DELETE')
     </form>

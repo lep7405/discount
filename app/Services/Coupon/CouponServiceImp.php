@@ -7,38 +7,46 @@ use App\Exceptions\DiscountException;
 use App\Exceptions\NotFoundException;
 use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
-use App\Validator\CouponUpdateValidator;
 use Illuminate\Support\Arr;
 
 class CouponServiceImp implements CouponService
 {
     public function __construct(protected CouponRepository $couponRepository, protected DiscountRepository $discountRepository) {}
 
-    public function index(array $filters, $databaseName)
+    public function index(string $databaseName, array $filters)
     {
-        $count_all = $this->couponRepository->countCoupons($databaseName);
-        $perPage = Arr::get($filters, 'per_page_coupon', 5);
-        $status = Arr::get($filters, 'status');
-        $perPage = $perPage == -1 ? $count_all : $perPage;
-        $status = $status !== null ? (int) $status : null;
-        $arrange_times_used = Arr::get($filters, 'time_used');
-        if ($arrange_times_used && ! in_array($arrange_times_used, ['desc', 'asc'])) {
-            throw CouponException::inValidArrangeTime();
-        }
-        Arr::set($filters, 'per_page_coupon', $perPage);
-        Arr::set($filters, 'status', $status);
-        $couponData = $this->couponRepository->getAllCoupons($filters, $databaseName);
+        $countAll = $this->couponRepository->countCoupons($databaseName);
+        $filters = $this->handleFilters($countAll, $filters);
+        $couponData = $this->couponRepository->getAll(null, $databaseName, $filters);
 
         return [
             'couponData' => $couponData,
-            'total_pages_coupon' => $couponData->lastPage(),
-            'total_items_coupon' => $couponData->total(),
-            'current_pages_coupon' => $couponData->currentPage(),
-            'total_items' => $count_all,
+            'totalPagesCoupon' => $couponData->lastPage(),
+            'totalItemsCoupon' => $couponData->total(),
+            'currentPagesCoupon' => $couponData->currentPage(),
+            'totalCoupons' => $countAll,
         ];
     }
 
-    public function create(array $data, string $databaseName)
+    public function handleFilters(int $countAll, array $filters)
+    {
+        $perPage = Arr::get($filters, 'perPageCoupon', 5);
+        $perPage = $perPage == -1 ? $countAll : $perPage;
+        Arr::set($filters, 'perPageCoupon', $perPage);
+
+        $arrangeTimesUsed = Arr::get($filters, 'timeUsed');
+        if ($arrangeTimesUsed && ! in_array($arrangeTimesUsed, ['desc', 'asc'])) {
+            Arr::set($filters, 'timeUsed', null);
+        }
+        $status = Arr::get($filters, 'status');
+        if ($status && ! in_array($status, ['0', '1'])) {
+            Arr::set($filters, 'status', null);
+        }
+
+        return $filters;
+    }
+
+    public function store(string $databaseName, array $attributes)
     {
         if ((
             $databaseName == 'banner' ||
@@ -53,102 +61,89 @@ class CouponServiceImp implements CouponService
             $databaseName == 'reviews_importer' ||
             $databaseName == 'freegifts' ||
             $databaseName == 'freegifts_new'
-        ) && $data['shop'] != null) {
-            $data['automatic'] = true;
+        ) && $attributes['shop'] != null) {
+            $attributes['automatic'] = true;
         }
+        $formData = Arr::only($attributes, ['code', 'shop', 'discountId', 'automatic']);
 
-        return $this->couponRepository->createCoupon($data, $databaseName);
+        return $this->couponRepository->createCoupon($databaseName, $formData);
     }
 
-    public function update(array $data, int $id, string $databaseName)
+    public function update(int $id, string $databaseName, array $attributes)
     {
-        $coupon = $this->couponRepository->getCouponById($id, $databaseName);
+        $attributes = Arr::only($attributes, ['code', 'shop', 'discountId']);
+
+        $coupon = $this->getCouponById($id, $databaseName);
+
+        if ($coupon->timesUsed && $coupon->timesUsed > 0) {
+            throw CouponException::cannotUpdate();
+        }
+        $couponByCode = $this->couponRepository->getCouponByCode(Arr::get($attributes, 'code'), $databaseName);
+        if ($couponByCode) {
+            if ($couponByCode->id != $id) {
+                throw CouponException::codeAlreadyExist();
+            }
+        }
+
+        return $this->couponRepository->updateCoupon($id, $databaseName, $attributes);
+    }
+
+    public function getCouponById(int $id, string $databaseName)
+    {
+        $coupon = $this->couponRepository->findById($id, $databaseName);
         if (! $coupon) {
             throw NotFoundException::Notfound('Coupon not found');
         }
 
-        if ($coupon->times_used && $coupon->times_used > 0) {
-            throw CouponException::cannotUpdate(['error' => ['Coupon can not update']]);
-        }
-
-        //        $data = CouponUpdateValidator::validateEdit($data, $databaseName);
-
-        $couponByCode = $this->couponRepository->getCouponByCode($data['code'], $databaseName);
-        if ($couponByCode) {
-            if ($couponByCode->id != $id) {
-                throw CouponException::codeAlreadyExist(['code' => ['Code existed']]);
-            }
-        }
-        $formData = Arr::only($data, ['code', 'shop', 'discount_id']);
-
-        return $this->couponRepository->updateCoupon($formData, $id, $databaseName);
+        return $coupon;
     }
 
-    public function getCoupon(int $id, string $databaseName)
+    public function decrementTimesUsedCoupon(int $id, string $databaseName, int $numDecrement)
     {
-        return $this->couponRepository->getCouponById($id, $databaseName);
-    }
-
-    public function decrementCoupon(int $id, int $numDecrement, string $databaseName)
-    {
-        $coupon = $this->couponRepository->getCouponById($id, $databaseName);
-        if (! $coupon) {
-            throw CouponException::notFound(['error' => ['Coupon not found']]);
+        $coupon = $this->getCouponById($id, $databaseName);
+        if ($coupon->timesUsed < $numDecrement) {
+            throw CouponException::timesUsedLessThanDecrement();
         }
-        if ($coupon->times_used < $numDecrement) {
-            throw CouponException::timesUsedLessThanDecrement(['decrement' => ['Invalid numDecrement']]);
-        }
-        $this->couponRepository->decrementTimesUsed($id, $numDecrement, $databaseName);
+        $this->couponRepository->decrementTimesUsed($id, $databaseName, $numDecrement);
     }
 
     public function delete(int $id, string $databaseName)
     {
-        $coupon = $this->couponRepository->getCouponById($id, $databaseName);
-        if (! $coupon) {
-            throw CouponException::notFound();
-        }
-        if ($coupon->times_used && $coupon->times_used > 0) {
-            throw CouponException::cannotDelete(['message' => ['Can not delete coupon']]);
+        $coupon = $this->getCouponById($id, $databaseName);
+        if ($coupon->timesUsed && $coupon->timesUsed > 0) {
+            throw CouponException::cannotDeleteCouponAlreadyUsed();
         }
 
         return $this->couponRepository->deleteCoupon($id, $databaseName);
     }
 
-    public function createByDiscount(array $data, int $discount_id, string $databaseName)
+    public function createCouponByDiscount(int $discountId, string $databaseName, array $attributes)
     {
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $databaseName);
+        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discountId, $databaseName);
         if (! $discount) {
-            throw DiscountException::notFound(['error' => ['Discount not found']]);
+            throw NotFoundException::Notfound('Discount not found');
         }
 
-        Arr::set($data, 'discount_id', $discount->id);
-        Arr::set($data, 'times_used', 0);
+        Arr::set($attributes, 'discountId', $discount->id);
+        Arr::set($attributes, 'timesUsed', 0);
+        $attributes = Arr::only($attributes, ['code', 'shop', 'discountId','timesUsed']);
 
-        return $this->couponRepository->createCoupon($data, $databaseName);
+        return $this->couponRepository->createCoupon($databaseName, $attributes);
     }
 
-    public function allCouponsByDiscount($discount_id, string $databaseName, array $filters)
+    public function getAllCouponsByDiscount($discountId, string $databaseName, array $filters)
     {
-        $discount = $this->discountRepository->findDiscountByIdWithCoupon($discount_id, $databaseName);
-        $count_all = count($discount->coupon);
-        $perPage = Arr::get($filters, 'per_page_coupon', 5);
-        $status = Arr::get($filters, 'status');
-        $perPage = $perPage == -1 ? $count_all : $perPage;
-        $status = $status !== null ? (int) $status : null;
-        $arrange_times_used = Arr::get($filters, 'time_used');
-        if ($arrange_times_used && ! in_array($arrange_times_used, ['desc', 'asc'])) {
-            throw CouponException::inValidArrangeTime();
-        }
-        Arr::set($filters, 'per_page_coupon', $perPage);
-        Arr::set($filters, 'status', $status);
-        $couponData = $this->couponRepository->getAllCouponsByDiscount($discount_id, $filters, $databaseName);
+        $discount = $this->discountRepository->findByIdWithCoupon($discountId, $databaseName);
+        $countAll = count($discount->coupon);
+        $this->handleFilters($countAll, $filters);
+        $couponData = $this->couponRepository->getAll($discountId, $databaseName, $filters);
 
         return [
             'couponData' => $couponData,
             'discountData' => $discount,
-            'total_pages_coupon' => $couponData->lastPage(),
-            'total_items_coupon' => $couponData->total(),
-            'current_pages_coupon' => $couponData->currentPage(),
+            'totalPagesCoupon' => $couponData->lastPage(),
+            'totalItemsCoupon' => $couponData->total(),
+            'currentPagesCoupon' => $couponData->currentPage(),
         ];
     }
 }

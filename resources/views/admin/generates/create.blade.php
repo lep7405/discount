@@ -4,17 +4,17 @@
     Generates
 @endsection
 @section("li_breadcumb")
-    <li><a href="{{ route('admin.get_generate') }}">{{ 'Generate Coupon' }}</a></li>
+    <li><a href="{{ route('admin.indexGenerate') }}">{{ 'Generate Coupon' }}</a></li>
 @endsection
 @section('title_admin_breadcumb')
     <span class="mr-2">/</span>{{ 'Create' }}
 @endsection
-@section('main_content')
+@section('mainContent')
     <div class="container mx-auto px-4 mt-4">
         <div class="flex flex-wrap -mx-4">
             <div class="w-full px-4">
                 <!-- form start -->
-                <form role="form" action={{ route('admin.post_new_generate') }} method="POST">
+                <form role="form" action={{ route('admin.storeGenerate') }} method="POST">
                     @csrf
                     <div class="flex flex-wrap -mx-4">
                         <div class="w-full lg:w-2/3 px-4 mb-8">

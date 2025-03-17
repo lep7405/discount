@@ -8,12 +8,12 @@
     {{ 'Generate Coupon' }}
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <div class="bg-white rounded-xl shadow-lg border border-gray-100">
         <!-- Card Header -->
         <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
             <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Generate Coupon URL</h2>
-            <a href="{{ route('admin.get_new_generate') }}"
+            <a href="{{ route('admin.createGenerate') }}"
                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                 <i class="fas fa-plus mr-2"></i>
                 Add New
@@ -26,19 +26,19 @@
                 <label class="text-sm font-medium text-gray-600">Show</label>
                 <input type="hidden" name="search" value="{{ $search }}">
                 <input type="hidden" name="status" value="{{ $status }}">
-                <select id="entries-select" name="per_page"
+                <select id="entries-select" name="perPage"
                         class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
                         onchange="this.form.submit()">
-                    <option value="5" {{ $per_page == 5 ? 'selected' : '' }}>5</option>
-                    <option value="10" {{ $per_page == 10 ? 'selected' : '' }}>10</option>
-                    <option value="20" {{ $per_page == 20 ? 'selected' : '' }}>20</option>
-                    <option value="-1" {{ $per_page == -1 ? 'selected' : '' }}>All</option>
+                    <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
+                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                    <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
+                    <option value="-1" {{ $perPage == -1 ? 'selected' : '' }}>All</option>
                 </select>
                 <label class="text-sm font-medium text-gray-600">entries</label>
             </form>
             <div class="flex items-center">
                 <form id="search-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
-                    <input type="hidden" name="per_page" value="{{ $per_page }}">
+                    <input type="hidden" name="perPage" value="{{ $perPage }}">
                     <input type="hidden" name="status" value="{{ $status }}">
                     <label for="table-search" class="text-sm font-medium text-gray-600 mr-2">Search:</label>
                     <input type="search"
@@ -101,7 +101,7 @@
                         @foreach ($generateData as $item)
                             <tr class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <a href="{{ route('admin.get_edit_generate',$item->id) }}"
+                                    <a href="{{ route('admin.editGenerate',$item->id) }}"
                                        class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                         {{ $item->id }}
                                     </a>
@@ -113,13 +113,16 @@
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
-                                    <a href="{{ route('admin.' . $item->db_name . '.edit_discount',$item->discount_id) }}"
+                                    <a href="{{ route('admin.' . $item->db_name . '.editDiscount',$item->discount_id) }}"
                                        class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                         {{ $item->discount_name }}
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 break-words whitespace-normal max-w-[16rem]">
-                                    {{ json_encode($item->conditions) }}
+                                    @if (is_array($item->conditions) && !empty($item->conditions))
+                                        {{ json_encode($item->conditions) }}
+                                    @else
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">
                                     {{ $item->expired ? 'Discount Expired!' : 'After '.$item->expired_range. " days" }}
@@ -145,14 +148,14 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <!-- Showing entries info -->
                         <div class="text-sm text-gray-600 font-medium">
-                            Showing {{ ($currentPage - 1) * $per_page + 1 }} to {{ min($currentPage * $per_page, $totalItem) }} of {{ $totalItem }} entries
+                            Showing {{ ($currentPage - 1) * $perPage + 1 }} to {{ min($currentPage * $perPage, $totalItem) }} of {{ $totalItem }} entries
                         </div>
 
                         <!-- Pagination controls -->
                         <div class="flex items-center space-x-1">
                             <!-- First Page -->
                             @if ($currentPage > 1)
-                                <a href="?page=1&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                <a href="?page=1&perPage={{ $perPage }}&search={{ $search }}&status={{ $status }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-double-left"></i>
                                 </a>
@@ -164,7 +167,7 @@
 
                             <!-- Previous Page -->
                             @if ($currentPage > 1)
-                                <a href="?page={{ $currentPage - 1 }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                <a href="?page={{ $currentPage - 1 }}&perPage={{ $perPage }}&search={{ $search }}&status={{ $status }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-left"></i>
                                 </a>
@@ -181,7 +184,7 @@
 
                             <!-- Next Page -->
                             @if ($currentPage < $totalPages)
-                                <a href="?page={{ $currentPage + 1 }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                <a href="?page={{ $currentPage + 1 }}&perPage={{ $perPage }}&search={{ $search }}&status={{ $status }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-right"></i>
                                 </a>
@@ -193,7 +196,7 @@
 
                             <!-- Last Page -->
                             @if ($currentPage < $totalPages)
-                                <a href="?page={{ $totalPages }}&per_page={{ $per_page }}&search={{ $search }}&status={{ $status }}"
+                                <a href="?page={{ $totalPages }}&perPage={{ $perPage }}&search={{ $search }}&status={{ $status }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-double-right"></i>
                                 </a>
@@ -211,7 +214,7 @@
         <form id="status-form" method="GET" action="{{ url()->current() }}" class="hidden">
             <input type="hidden" name="status" id="status-input">
             <input type="hidden" name="search" value="{{ $search }}">
-            <input type="hidden" name="per_page" value="{{ $per_page }}">
+            <input type="hidden" name="perPage" value="{{ $perPage }}">
         </form>
     </div>
 @endsection
@@ -223,8 +226,8 @@
             const paginationSection = document.getElementById('generate-pagination-section');
             const perPageSelect = document.getElementById('entries-select');
 
-            // Check if we need to scroll (when page or per_page changes)
-            if ((urlParams.has('page') || urlParams.has('per_page') || urlParams.has('search') || urlParams.has('status'))
+            // Check if we need to scroll (when page or perPage changes)
+            if ((urlParams.has('page') || urlParams.has('perPage') || urlParams.has('search') || urlParams.has('status'))
                 && paginationSection && perPageSelect.value !== '-1') {
                 setTimeout(() => {
                     // Scroll to the table section

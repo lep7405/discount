@@ -7,7 +7,7 @@
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Discounts Card -->
@@ -78,7 +78,7 @@
             <!-- Card Header -->
             <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
                 <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Discounts List</h2>
-                <a href="{{ route('admin.'.$databaseName.'.create_discount') }}"
+                <a href="{{ route('admin.'.$databaseName.'.createDiscount') }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                     <i class="fas fa-plus mr-2"></i>
                     Add New Discount
@@ -167,7 +167,7 @@
                         <tbody class="bg-white divide-y divide-gray-100">
                         @if (count($discountData)>0)
                             @foreach ($discountData as $item)
-                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.edit_discount', $item->id) }}';"
+                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.editDiscount', $item->id) }}';"
                                     class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <a
@@ -281,7 +281,7 @@
             <!-- Card Header -->
             <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
                 <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Coupons List</h2>
-                <a href="{{ route('admin.'.$databaseName.'.create_coupon') }}"
+                <a href="{{ route('admin.'.$databaseName.'.createCoupon') }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                     <i class="fas fa-plus mr-2"></i>
                     Add New Coupon
@@ -402,16 +402,16 @@
                         <tbody class="bg-white divide-y divide-gray-100">
                         @if (count($couponData)>0)
                             @foreach ($couponData as $item)
-                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.edit_coupon', $item->id) }}';"
+                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.editCoupon', $item->id) }}';"
                                     class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.edit_coupon', $item->id) }}"
+                                        <a href="{{ route('admin.'.$databaseName.'.editCoupon', $item->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->id }}
                                         </a>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.edit_coupon', $item->id) }}"
+                                        <a href="{{ route('admin.'.$databaseName.'.editCoupon', $item->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->code }}
                                         </a>
@@ -420,7 +420,7 @@
                                         {{ $item->shop }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.update_discount',$item->discount->id) }}"
+                                        <a href="{{ route('admin.'.$databaseName.'.updateDiscount',$item->discount->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->discount->name }}
                                         </a>

@@ -19,9 +19,33 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->on($databaseName)
             ->count();
     }
+    public function getAll(string $databaseName,array $filters)
+    {
+        $perPage = Arr::get($filters, 'perPageDiscount');
+        $search = Arr::get($filters, 'searchDiscount');
+        $startedAt = Arr::get($filters, 'startedAt');
+        $pageDiscount = Arr::get($filters, 'pageDiscount');
 
-    // show update discount (cần coupon cho status )
-    public function findDiscountByIdWithCoupon(int $id, string $databaseName)
+        return $this->getModel()
+            ->on($databaseName)
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orwhere('started_at', 'like', "%{$search}%")
+                    ->orwhere('expired_at', 'like', "%{$search}%")
+                    ->orWhere(function ($sub) use ($search) {
+                        if (is_numeric($search)) {
+                            $sub->where('id', $search);
+                        }
+                    });
+            })
+            ->when($startedAt, function ($query) use ($startedAt) {
+                $query->orderBy('started_at', $startedAt);
+            })
+            ->paginate($perPage, ['*'], 'pageDiscount', $pageDiscount);
+    }
+
+
+    public function findByIdWithCoupon(int $id, string $databaseName)
     {
         return $this->getModel()
             ->on($databaseName)
@@ -29,30 +53,21 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->find($id);
     }
 
-    public function findDiscountByIdNoCoupon(int $id, string $databaseName)
+    public function findByIdWithoutCoupon(int $id, string $databaseName)
     {
         return $this->getModel()
             ->on($databaseName)
             ->find($id);
     }
 
-    public function createDiscount(array $attributes, string $databaseName)
+    public function createDiscount( string $databaseName,array $attributes)
     {
         return $this->getModel()
             ->on($databaseName)
-            ->create([
-                'name' => Arr::get($attributes, 'name'),
-                'value' => Arr::get($attributes, 'value'),
-                'type' => Arr::get($attributes, 'type'),
-                'started_at' => Arr::get($attributes, 'started_at'),
-                'expired_at' => Arr::get($attributes, 'expired_at'),
-                'usage_limit' => Arr::get($attributes, 'usage_limit'),
-                'trial_days' => Arr::get($attributes, 'trial_days'),
-                'discount_month' => Arr::get($attributes, 'discount_month'),
-            ]);
+            ->create($attributes);
     }
 
-    public function updateDiscount(array $attributes, int $id, string $databaseName): bool
+    public function updateDiscount(int $id, string $databaseName,array $attributes)
     {
         return $this->getModel()
             ->on($databaseName)
@@ -71,30 +86,6 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
         //            ]);
     }
 
-    public function getAllDiscounts(array $filters, string $databaseName)
-    {
-        $perPage = Arr::get($filters, 'per_page_discount');
-        $search = Arr::get($filters, 'search_discount');
-        $started_at = Arr::get($filters, 'started_at');
-
-        return $this->getModel()
-            ->on($databaseName)
-            ->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orwhere('started_at', 'like', "%{$search}%")
-                    ->orwhere('expired_at', 'like', "%{$search}%")
-                    ->orWhere(function ($sub) use ($search) {
-                        if (is_numeric($search)) {
-                            $sub->where('id', $search);
-                        }
-                    });
-            })
-            ->when($started_at, function ($query) use ($started_at) {
-                $query->orderBy('started_at', $started_at);
-            })
-            ->paginate($perPage);
-    }
-
     public function getAllDiscountIdAndName($databaseName)
     {
         return $this->getModel()
@@ -103,7 +94,7 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->get();
     }
 
-    public function findDiscountsByIdsAndApp($discountIds, $appName)
+    public function findByIdsAndApp($discountIds,$appName)
     {
         return $this->getModel()
             ->on($appName)
@@ -119,30 +110,6 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->get();
     }
 
-    public function getAllDiscountsReports(array $filters, string $databaseName)
-    {
-        $perPage = Arr::get($filters, 'per_page_discount');
-        $search = Arr::get($filters, 'search_discount');
-        $started_at = Arr::get($filters, 'started_at');
-        $page_discount = Arr::get($filters, 'page_discount');
-
-        return $this->getModel()
-            ->on($databaseName)
-            ->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orwhere('started_at', 'like', "%{$search}%")
-                    ->orwhere('expired_at', 'like', "%{$search}%")
-                    ->orWhere(function ($sub) use ($search) {
-                        if (is_numeric($search)) {
-                            $sub->where('id', $search);
-                        }
-                    });
-            })
-            ->when($started_at, function ($query) use ($started_at) {
-                $query->orderBy('started_at', $started_at);
-            })
-            ->paginate($perPage, ['*'], 'page_discount', $page_discount);
-    }
 
     public function deleteDiscount(int $id, string $databaseName)
     {
@@ -152,24 +119,50 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->delete();
     }
 
-    public function UpdateOrCreateDiscountInAffiliatePartner($name, $percentage, $trialDays, $connection)
+    public function UpdateOrCreateDiscountInAffiliatePartner(string $connection,array $attributes)
     {
-        return Discount::on($connection)->updateOrCreate(
-            [
-                'name' => $name,
-                'type' => 'percentage',
-                'value' => $percentage,
-                'trial_days' => $trialDays,
-            ],
-            [
-                'usage_limit' => 1,
-            ]
-        );
+        return $this->getModel()
+            ->on($connection)
+            ->updateOrCreate(
+                [
+                    'name' => Arr::get($attributes, 'name'),
+                    'type' => 'percentage',
+                    'value' => Arr::get($attributes, 'value'),
+                    'trial_days' => Arr::get($attributes, 'trial_days'),
+                ],
+                [
+                    'usage_limit' => 1,
+                ]
+            );
+//        return Discount::on($connection)->updateOrCreate(
+//            [
+//                'name' => Arr::get($attributes, 'name'),
+//                'type' => 'percentage',
+//                'value' => Arr::get($attributes, 'value'),
+//                'trial_days' => Arr::get($attributes, 'trial_days'),
+//            ],
+//            [
+//                'usage_limit' => 1,
+//            ]
+//        );
     }
-    public function findDiscountByName(string $name, string $databaseName){
+
+    public function findByName(string $name, string $databaseName)
+    {
         return $this->getModel()
             ->on($databaseName)
             ->where('name', $name)
             ->first();
+    }
+
+    public function getAllDiscountsWithCoupon($databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->select('id')
+            ->with(['coupon' => function ($query) {
+                $query->select('id', 'times_used');
+            }])
+            ->get();
     }
 }

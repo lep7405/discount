@@ -8,27 +8,26 @@ interface DiscountRepository extends RepositoryInterface
 {
     public function countDiscount(string $databaseName);
 
-    public function getAllDiscounts(array $filters, string $databaseName);
+    public function getAll(string $databaseName,array $filters);
 
-    public function createDiscount(array $attributes, string $databaseName);
+    public function createDiscount(string $databaseName,array $attributes);
 
-    public function findDiscountByIdWithCoupon(int $id, string $databaseName);
-
-    public function findDiscountByIdNoCoupon(int $id, string $databaseName);
-
-    public function updateDiscount(array $attributes, int $id, string $databaseName);
+    public function updateDiscount( int $id, string $databaseName,array $attributes);
 
     public function deleteDiscount(int $id, string $databaseName);
+    public function findByIdWithCoupon(int $id, string $databaseName);
+
+    public function findByIdWithoutCoupon(int $id, string $databaseName);
 
     public function getAllDiscountIdAndName(string $databaseName);
 
-    public function getAllDiscountsReports(array $filters, string $databaseName);
+    public function findByIdsAndApp(array $discountIds, string $appName);
 
-    public function findDiscountsByIdsAndApp($discountIds, $appName);
+    public function getAllNotFilterWithCoupon(string $databaseName);
 
-    public function getAllNotFilterWithCoupon($databaseName);
+    public function UpdateOrCreateDiscountInAffiliatePartner(string $connection,array $attributes);
 
-    public function UpdateOrCreateDiscountInAffiliatePartner($name, $percentage, $trialDays, $connection);
+    public function findByName(string $name, string $databaseName);
 
-    public function findDiscountByName(string $name,string $databaseName);
+    public function getAllDiscountsWithCoupon($databaseName);
 }

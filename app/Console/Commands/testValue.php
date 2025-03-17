@@ -28,13 +28,14 @@ class testValue extends Command
         $data['name'] = 'name2';
         $data['value'] = 'value2';
     }
+
     public function handle()
     {
-        $data=[
-            'name'=>'name1',
-            'value'=>'value1',
+        $data = [
+            'name' => 'name1',
+            'value' => 'value1',
         ];
-      $this->testValue($data);
-      dd($data);
+        $this->testValue($data);
+        dd($data);
     }
 }

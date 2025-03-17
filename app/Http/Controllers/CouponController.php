@@ -30,20 +30,20 @@ class CouponController extends Controller
 
     public function index(CouponService $couponService, Request $request)
     {
-        $data = $couponService->index($request->query(), $this->databaseName);
+        $data = $couponService->index($this->databaseName, $request->query());
 
         return view('admin.coupons.index', [
             'appName' => $this->appName,
             'couponData' => $data['couponData'],
             'databaseName' => $this->databaseName,
             'apps' => $this->apps,
-            'total_pages_coupon' => $data['total_pages_coupon'],
-            'total_items_coupon' => $data['total_items_coupon'],
-            'current_pages_coupon' => $data['current_pages_coupon'] ?? 1,
-            'per_page_coupon' => $request->query('per_page_coupon') ?? 5,
-            'search_coupon' => $request->query('search_coupon') ?? null,
+            'totalPagesCoupon' => $data['totalPagesCoupon'],
+            'totalItemsCoupon' => $data['totalItemsCoupon'],
+            'currentPagesCoupon' => $data['currentPagesCoupon'] ?? 1,
+            'perPageCoupon' => $request->query('perPageCoupon') ?? 5,
+            'searchCoupon' => $request->query('searchCoupon') ?? null,
             'status' => $request->query('status') ?? null,
-            'time_used' => $request->query('time_used') ?? null,
+            'timeUsed' => $request->query('timeUsed') ?? null,
         ]);
     }
 
@@ -58,19 +58,16 @@ class CouponController extends Controller
 
     public function store(CouponService $couponService, CouponRequest $couponRequest)
     {
-        $couponService->create($couponRequest->validationData(), $this->databaseName);
+        $couponService->store($this->databaseName,$couponRequest->validationData());
 
         return redirect()->route('admin.' . $this->databaseName . '.coupons')->with('success', 'Discount created successfully!');
     }
 
-    public function edit(CouponService $couponService, DiscountService $discountService, $id)
+    public function edit(CouponService $couponService, DiscountService $discountService, int $id)
     {
         $appName = $this->appName;
         $databaseName = $this->databaseName;
-        $couponData = $couponService->getCoupon($id, $databaseName);
-        if (! $couponData) {
-            return redirect()->back()->with('error', 'Coupon not found');
-        }
+        $couponData = $couponService->getCouponById($id, $databaseName);
         $discountData = $discountService->getAllDiscountIdAndName($databaseName);
         $currentDiscount = $couponData->discount;
 
@@ -94,13 +91,14 @@ class CouponController extends Controller
 
     public function decrementTimesUsed(CouponService $couponService, DecrementRequest $request, $id)
     {
-        $couponService->decrementCoupon($id, $request->validated()['numDecrement'], $this->databaseName);
+        $couponService->decrementTimesUsedCoupon($id,  $this->databaseName, $request->validationData()['numDecrement']);
 
         return redirect()->back()->with('success', 'Success Decrement Times Used!');
     }
 
-    public function getCreatedByDiscount($discount_id, DiscountService $discountService)
+    public function createByDiscount($discount_id, DiscountService $discountService)
     {
+        dd(1);
         $appName = $this->appName;
         $databaseName = $this->databaseName;
         $apps = $this->apps;
@@ -110,29 +108,30 @@ class CouponController extends Controller
         return view('admin.coupons.discounts.createCoupon', compact(['appName', 'databaseName', 'apps', 'discount']));
     }
 
-    public function createByDiscount(CouponService $couponService, DiscountService $discountService, CouponByDiscountRequest $couponRequest, $discount_id)
+    public function storeByDiscount($discount_id, CouponService $couponService, CouponByDiscountRequest $couponRequest)
     {
-        $couponNew = $couponService->createByDiscount($couponRequest->validationData(), $discount_id, $this->databaseName);
+        $couponNew = $couponService->createCouponByDiscount( $discount_id, $this->databaseName,$couponRequest->validationData());
 
-        return redirect()->route('admin.' . $this->databaseName . '.edit_coupon', $couponNew->id)->with('success', 'Discount created successfully!');
+        return redirect()->route('admin.' . $this->databaseName . '.editCoupon', $couponNew->id)->with('success', 'Discount created successfully!');
     }
 
     public function getAllCouponsByDiscount($discount_id, Request $request, CouponService $couponService)
     {
-        $data = $couponService->allCouponsByDiscount($discount_id, $this->databaseName, $request->query());
+        $data = $couponService->getAllCouponsByDiscount($discount_id, $this->databaseName, $request->query());
 
         return view('admin.coupons.discounts.listCoupon', [
             'appName' => $this->appName,
             'couponData' => $data['couponData'],
             'discountData' => $data['discountData'],
             'databaseName' => $this->databaseName,
-            'total_pages_coupon' => $data['total_pages_coupon'],
-            'total_items_coupon' => $data['total_items_coupon'],
-            'current_pages_coupon' => $data['current_pages_coupon'] ?? 1,
-            'per_page_coupon' => $request->query('per_page_coupon') ?? 5,
-            'search_coupon' => $request->query('search_coupon') ?? null,
+            'apps' => $this->apps,
+            'totalPagesCoupon' => $data['totalPagesCoupon'],
+            'totalItemsCoupon' => $data['totalItemsCoupon'],
+            'currentPagesCoupon' => $data['currentPagesCoupon'] ?? 1,
+            'perPageCoupon' => $request->query('perPageCoupon') ?? 5,
+            'searchCoupon' => $request->query('searchCoupon') ?? null,
             'status' => $request->query('status') ?? null,
-            'time_used' => $request->query('time_used') ?? null,
+            'timeUsed' => $request->query('timeUsed') ?? null,
         ]);
     }
 }

@@ -11,7 +11,7 @@
     <span class="mr-2">/</span>{{ 'Edit' }}
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <style>
         [x-cloak] { display: none !important; }
     </style>
@@ -28,7 +28,7 @@
                     @if ($errors->has('discount_month'))
                         <span class="text-red-500">{{ $errors->first('discount_month') }}</span>
                     @endif
-                    <form role="form" action="{{ route('admin.'.$databaseName.'.update_discount', ['id' => $discountData->id]) }}" method="POST" class="space-y-6">
+                    <form role="form" action="{{ route('admin.'.$databaseName.'.updateDiscount', ['id' => $discountData->id]) }}" method="POST" class="space-y-6">
                     @csrf
                         @method('PUT')
                     {{-- General Section --}}
@@ -107,7 +107,7 @@
                                                class="form-input {{ $errors->has('value') ? 'border-red-500' : 'border-gray-300' }}"
                                                @if ($discountStatus) disabled @endif>
                                         @error('value')
-                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                        <p class="mt-2 text-sm text-red-600">{{ $errors->first('value') }}</p>
                                         @enderror
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@
                                            class="form-input {{ $errors->has('trial_days') ? 'border-red-500' : 'border-gray-300' }}"
                                            @if ($discountStatus) disabled @endif>
                                     @error('trial_days')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-2 text-sm text-red-600">{{ $errors->first('trial_days') }}</p>
                                     @enderror
                                 </div>
                             </div>
@@ -143,7 +143,7 @@
                                            placeholder="Enter usage limit"
                                            class="form-input {{ $errors->has('usage_limit') ? 'border-red-500' : 'border-gray-300' }}">
                                     @error('usage_limit')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    <p class="mt-2 text-sm text-red-600">{{  $errors->first('usage_limit') }}</p>
                                     @enderror
                                 </div>
 
@@ -221,7 +221,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
                                 </svg>
-                                <a href="{{ route('admin.'.$databaseName.'.show_create_coupon_in_discount', $discountData->id) }}"
+                                <a href="{{ route('admin.'.$databaseName.'.createCouponInDiscount', $discountData->id) }}"
                                    class="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out font-medium">
                                     Add Coupon
                                 </a>
@@ -230,7 +230,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                                 </svg>
-                                <a href="{{ route('admin.'.$databaseName.'.show_all_coupon_in_discount', $discountData->id) }}"
+                                <a href="{{ route('admin.'.$databaseName.'.allCouponInDiscount', $discountData->id) }}"
                                    class="text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out font-medium">
                                     List Coupons
                                 </a>
@@ -264,7 +264,7 @@
     </div>
 
     <!-- Modal -->
-    <form id="deleteDiscount" method="POST" action="{{ route('admin.'.$databaseName.'.destroy_discount', $discountData->id) }}">
+    <form id="deleteDiscount" method="POST" action="{{ route('admin.'.$databaseName.'.destroyDiscount', $discountData->id) }}">
         @csrf
         @method('DELETE')
     </form>

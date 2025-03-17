@@ -37,7 +37,7 @@ class Discount extends Model
     protected static $logName = 'discount_activity'; // Giá trị mặc định
 
     protected $fillable = [
-        'name', 'started_at', 'expired_at', 'type', 'value', 'usage_limit', 'trial_days', 'discount_month',
+        'name', 'started_at', 'expired_at', 'type', 'value', 'usage_limit', 'trial_days', 'discount_month', 'discount1',
     ];
 
     /**
@@ -46,6 +46,10 @@ class Discount extends Model
      * @var string
      */
     protected $table = 'discounts';
+    protected $casts = [
+        'started_at' => 'datetime',
+        'expired_at' => 'datetime',
+    ];
 
     /**
      * The attributes that are mass assignable.

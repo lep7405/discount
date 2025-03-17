@@ -6,30 +6,18 @@ use Prettus\Repository\Contracts\RepositoryInterface;
 
 interface CouponRepository extends RepositoryInterface
 {
-    public function getAllCoupons(array $filters, string $databaseName);
-
-    public function getAllCouponsReport(array $filters, string $databaseName);
-
+    public function getAll( $discount_id, string $databaseName, array $filters);
     public function countCoupons(string $databaseName);
-
-    public function createCoupon(array $data, string $databaseName);
-
-    public function getCouponById(int $id, string $databaseName);
-
-    public function getCouponByCode(string $code, string $databaseName);
-
-    public function getCouponByDiscountIdAndCode(int $discountId, string $databaseName);
-    public function countCouponByDiscountIdAndCode(int $discountId, string $databaseName);
-
-    public function decrementTimesUsed(int $id, int $numDecrement, string $databaseName);
-
-    public function updateCoupon(array $data, int $id, string $databaseName);
-
+    public function createCoupon(string $databaseName, array $attributes);
+    public function updateCoupon(int $id, string $databaseName, array $attributes);
     public function deleteCoupon(int $id, string $databaseName);
+    public function findById(int $id, string $databaseName);
 
-    public function deleteCouponByDiscountId(int $discountId, string $databaseName);
+    public function findByDiscountIdAndCode(int $discountId, string $databaseName);
+    public function countByDiscountIdAndCode(int $discountId, string $databaseName);
+    public function decrementTimesUsed(int $id, string $databaseName, int $numDecrement);
+    public function deleteByDiscountId(int $discountId, string $databaseName);
+    public function findByDiscountIdandShop(int $discountId, string $shopName, string $databaseName);
 
-    public function getCouponByDiscountIdandShop($discountId, $shopName, $databaseName);
-
-    public function getAllCouponsByDiscount($discount_id, array $filters, string $databaseName);
+    public function findByCode(string $code, string $databaseName);
 }

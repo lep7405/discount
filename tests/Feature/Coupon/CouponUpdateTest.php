@@ -96,7 +96,7 @@ test('change times_used success', function () {
         'discount_id' => 1,
         'times_used' => 1,
     ]);
-    $response = $this->put(route('admin.cs.decrement_times_used_coupon', ['id' => 102]), $data);
+    $response = $this->put(route('admin.cs.decrementTimesUsedCoupon', ['id' => 102]), $data);
     $response->assertStatus(302);
     $response->assertSessionHas('success');
 });
@@ -113,7 +113,7 @@ test('change times_used fails when times_used < numDecrement', function () {
         'discount_id' => 1,
         'times_used' => 1,
     ]);
-    $response = $this->put(route('admin.cs.decrement_times_used_coupon', ['id' => 102]), $data);
+    $response = $this->put(route('admin.cs.decrementTimesUsedCoupon', ['id' => 102]), $data);
     $response->assertStatus(302);
     //    $response->assertSessionHas('success');
 });

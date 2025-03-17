@@ -5,13 +5,13 @@
 @endsection
 @section("li_breadcumb")
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.coupons') }}">{{ 'Coupons' }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.coupons') }}"><span class="mr-2">/</span>{{ 'Coupons' }}</a></li>
 @endsection
 
 @section('title_admin_breadcumb')
-    {{ 'Create' }}
+    <span class="mr-2">/</span>{{ 'Create' }}
 @endsection
-@section('main_content')
+@section('mainContent')
     <div class="container mx-auto px-4">
         <div class="flex flex-wrap -mx-4">
             <div class="w-full lg:w-2/3 px-4 mb-8">
@@ -19,18 +19,9 @@
                     <div class="bg-gray-100 px-6 py-4 rounded-t-lg border-b">
                         <h3 class="text-xl font-semibold text-gray-800">Create New Coupon</h3>
                     </div>
-{{--                    @if ($errors->any())--}}
-{{--                        <div class="alert alert-danger">--}}
-{{--                            <ul>--}}
-{{--                                @foreach ($errors->all() as $error)--}}
-{{--                                    <li>{{ $error }}</li>--}}
-{{--                                @endforeach--}}
-{{--                            </ul>--}}
-{{--                        </div>--}}
-{{--                    @endif--}}
 
                     <div class="p-6">
-                        <form role="form" action="{{ route('admin.'.$databaseName.'.store_coupon') }}" method="POST">
+                        <form role="form" action="{{ route('admin.'.$databaseName.'.storeCoupon') }}" method="POST">
                             @csrf
                             <input type="hidden" name="_db" value="{{ $databaseName }}">
 

@@ -26,7 +26,7 @@ class TestGetCouponByDiscountIdAndCode extends Command
      */
     public function handle()
     {
-        $coupon=Coupon::on('cs')
+        $coupon = Coupon::on('cs')
             ->where('discount_id', 100)
             ->where('code', 'like', 'GENAUTO%')
             ->get();

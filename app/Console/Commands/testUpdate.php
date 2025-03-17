@@ -27,16 +27,16 @@ class testUpdate extends Command
      */
     public function handle()
     {
-//        $user=User::query()->where('id',1)->update([
-//            'name'=>'phuoc2',
-//            'app_name'=>'cs'
-//        ]);
-        $user=User::create();
-        $user=User::query()->create([
-            'name'=>'phuoc2',
-            'app_name'=>'cs',
-            'password'=>Hash::make('phuoc2'),
-            'email'=>'phuoc3@gmail.com'
+        //        $user=User::query()->where('id',1)->update([
+        //            'name'=>'phuoc2',
+        //            'app_name'=>'cs'
+        //        ]);
+        $user = User::create();
+        $user = User::query()->create([
+            'name' => 'phuoc2',
+            'app_name' => 'cs',
+            'password' => Hash::make('phuoc2'),
+            'email' => 'phuoc3@gmail.com',
         ]);
         dd(1);
     }

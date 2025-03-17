@@ -9,8 +9,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Generate extends Model
 {
-    use LogsActivity;
     use HasFactory;
+    use LogsActivity;
 
     protected static $logOnlyDirty = true;
 
@@ -27,6 +27,7 @@ class Generate extends Model
         'conditions' => 'json',
         'success_message' => 'json',
         'fail_message' => 'json',
+
     ];
 
     public static function changeLogName($logName)

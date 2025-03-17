@@ -12,7 +12,6 @@ class DiscountFactory extends Factory
     public function definition()
     {
         return [
-            // Thay vì $this->faker->sentence(2), sử dụng $this->faker->sentence()
             'name' => $this->faker->name(),
             'started_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'expired_at' => $this->faker->dateTimeBetween('now', '+1 month'),
@@ -20,7 +19,6 @@ class DiscountFactory extends Factory
             'value' => $this->faker->numberBetween(5, 50),
             'usage_limit' => $this->faker->randomNumber(2),
             'trial_days' => $this->faker->numberBetween(0, 14),
-            'discount_month' => $this->faker->numberBetween(1, 12),
         ];
     }
 }

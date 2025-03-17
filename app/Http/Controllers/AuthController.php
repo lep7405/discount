@@ -41,11 +41,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-//        $request->session()->flush();
         try {
             Auth::logout();
-        }
-        catch (AuthenticationException $exception){
+        } catch (AuthenticationException $exception) {
             return $exception->getMessage();
         }
 

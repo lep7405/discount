@@ -60,7 +60,7 @@ beforeEach(function () {
 
 });
 test('authenticated user can access generate update page', function () {
-    $response = $this->get(route('admin.get_edit_generate', [
+    $response = $this->get(route('admin.getEditGenerate', [
         'id' => 100,
     ]));
     $response->assertStatus(200);
@@ -77,7 +77,7 @@ test('authenticated user can access generate update page', function () {
 });
 
 test('authenticated user create generate ', function () {
-    $response = $this->post(route('admin.post_edit_generate', [
+    $response = $this->post(route('admin.updateGenerate', [
         'id' => 100,
     ]));
 });

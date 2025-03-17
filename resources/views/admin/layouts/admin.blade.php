@@ -85,7 +85,7 @@
                         </ol>
                     </nav>
                 </div>
-                @yield('main_content')
+                @yield('mainContent')
             </div>
         </main>
 

@@ -8,7 +8,7 @@
     {{ 'User' }}
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <div class="p-6">
         <div class="max-w-3xl mx-auto">
             <!-- Card -->

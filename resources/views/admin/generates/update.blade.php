@@ -6,18 +6,18 @@
 @endsection
 
 @section("li_breadcumb")
-    <li><a href="{{ route('admin.get_generate') }}">{{ 'Generate Coupon' }}</a></li>
+    <li><a href="{{ route('admin.indexGenerate') }}">{{ 'Generate Coupon' }}</a></li>
 @endsection
 
 @section('title_admin_breadcumb')
     <span class="mr-2">/</span>{{ 'Update' }}
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <div x-data="{ showModal: false }" x-cloak class="container mx-auto px-4 mt-4">
         <div class="flex flex-wrap -mx-4">
             <div class="w-full px-4">
-                <form role="form" action="{{ route('admin.post_edit_generate', $generate->id) }}" method="POST" class="space-y-8">
+                <form role="form" action="{{ route('admin.updateGenerate', $generate->id) }}" method="POST" class="space-y-8">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="_current_discount" value="{{ $generate->discount_id.'&'.$generate->app_name }}">
@@ -189,6 +189,9 @@
                                                 value="{{ $generate->app_url }}"
                                                 placeholder="Enter App URL"
                                             >
+                                            @if ($errors->has('app_url'))
+                                                <span class="text-red-500">{{ $errors->first('app_url') }}</span>
+                                            @endif
                                         </div>
                                     </div>
 
@@ -391,11 +394,11 @@
                         </div>
                     </div>
                 </div>
-                <form id="deleteGenerate" method="POST" action="{{ route('admin.destroy_generate', $generate->id) }}">
+                <form id="deleteGenerate" method="POST" action="{{ route('admin.destroyGenerate', $generate->id) }}">
                     @csrf
                     @method('DELETE')
                 </form>
-                <form id="changeStatus" action="{{ route('admin.change_status_generate', $generate->id) }}" method="POST">
+                <form id="changeStatus" action="{{ route('admin.changeStatusGenerate', $generate->id) }}" method="POST">
                     @csrf
                     @method('PUT')
                 </form>

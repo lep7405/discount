@@ -22,10 +22,10 @@ class UserRepositoryEloquent extends BaseRepository implements UserRepository
         ]);
     }
 
-    public function update(array $data, $id)
+    public function update(array $attributes, $id)
     {
         return $this->getModel()
             ->where('id', $id)
-            ->update($data);
+            ->update($attributes);
     }
 }

@@ -6,8 +6,10 @@ use App\Exceptions\DiscountException;
 use App\Exceptions\NotFoundException;
 use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
-use App\Validator\DiscountValidator;
+use App\Validator\UpdateDiscountValidator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 
 class DiscountServiceImp implements DiscountService
 {
@@ -18,61 +20,65 @@ class DiscountServiceImp implements DiscountService
     /**
      * @throws DiscountException
      */
-    public function index($filters, $databaseName): array
+    public function index(string $databaseName, array $filters): array
     {
-        $count_all = $this->discountRepository->countDiscount($databaseName);
-
-        $perPage = Arr::get($filters, 'per_page_discount', 5);
-        $perPage = $perPage == -1 ? $count_all : $perPage;
-
-        $started_at = Arr::get($filters, 'started_at');
-        if ($started_at && ! in_array($started_at, ['desc', 'asc'])) {
-            throw DiscountException::inValidStartedAt(['error' => 'Invalid started_at']);
-        }
-        Arr::set($filters, 'per_page_discount', $perPage);
-        Arr::set($filters, 'started_at', $started_at);
-
-        $discountData = $this->discountRepository->getAllDiscounts($filters, $databaseName);
+        $countAll = $this->discountRepository->countDiscount($databaseName);
+        $filters = $this->handleFilters($countAll, $filters);
+        $discountData = $this->discountRepository->getAll( $databaseName ,$filters);
 
         return [
             'discountData' => $discountData,
-            'total_pages_discount' => $discountData->lastPage(),
-            'total_items_discount' => $discountData->total(),
-            'current_pages_discount' => $discountData->currentPage(),
-            'total_items' => $count_all,
+            'totalPagesDiscount' => $discountData->lastPage(),
+            'totalItemsDiscount' => $discountData->total(),
+            'currentPagesDiscount' => $discountData->currentPage(),
+            'totalDiscounts' => $countAll,
         ];
     }
-
-    public function store(array $attributes, $databaseName)
-    {
-        return $this->discountRepository->createDiscount($attributes, $databaseName);
+    public function handleFilters(int $countAll, array $filters){
+        $perPage = Arr::get($filters, 'perPageDiscount', config('constant.default_per_page'));
+        $perPage = $perPage == -1 ? $countAll : $perPage;
+        Arr::set($filters, 'perPageDiscount', $perPage);
+        $startedAt = Arr::get($filters, 'startedAt');
+        if ($startedAt && ! in_array($startedAt, ['desc', 'asc'])) {
+            Arr::set($filters, 'startedAt', null);
+        }
+        return $filters;
     }
 
-    public function update($id, array $attributes, $databaseName)
+    public function store(string $databaseName, array $attributes)
+    {
+        return $this->discountRepository->createDiscount($databaseName ,$attributes);
+    }
+    public function update(int $id, string $databaseName, array $attributes)
     {
         $discount = $this->getDiscountWithCoupon($id, $databaseName);
-        $discount_status = $this->getStatusDiscount($discount);
-        $validateAttributes = DiscountValidator::validateEdit($attributes, $discount_status, $databaseName);
-        //trường hợp nó chọn discount_for_x_month là false thì cái discount_month phải được update là null
-        if (Arr::get($attributes, 'discount_for_x_month') === '0') {
-            $validateAttributes['discount_month'] = null;
+        $hasCouponUsed = $this->hasCouponUsed($discount);
+        $validateAttributes = UpdateDiscountValidator::validateUpdate($attributes, $hasCouponUsed, $databaseName);
+        if (in_array($databaseName, config('constant.SPECIAL_DATABASE_NAMES'))) {
+            if (Arr::get($attributes, 'discount_for_x_month') === '0') {
+                $validateAttributes['discount_month'] = null;
+            }
         }
 
-        return $this->discountRepository->updateDiscount($validateAttributes, $id, $databaseName);
+        return $this->discountRepository->updateDiscount($id, $databaseName,$validateAttributes);
     }
 
-    public function delete($id, $databaseName): void
+    /**
+     * @throws DiscountException
+     * @throws NotFoundException
+     */
+    public function delete(int $id, string $databaseName): void
     {
         $discount = $this->getDiscountWithCoupon($id, $databaseName);
-        $discount_status = $this->getStatusDiscount($discount);
-        if ($discount_status) {
-            throw DiscountException::canNotDelete(['error' => ['Can not delete discount']]);
+        $hasCouponUsed = $this->hasCouponUsed($discount);
+        if ($hasCouponUsed) {
+            throw DiscountException::canNotDelete();
         }
-        $this->couponRepository->deleteCouponByDiscountId($discount->id, $databaseName);
+        $this->couponRepository->deleteByDiscountId($discount->id, $databaseName);
         $this->discountRepository->deleteDiscount($discount->id, $databaseName);
     }
 
-    public function getAllDiscountIdAndName($databaseName)
+    public function getAllDiscountIdAndName(string $databaseName)
     {
         return $this->discountRepository->getAllDiscountIdAndName($databaseName);
     }
@@ -80,9 +86,9 @@ class DiscountServiceImp implements DiscountService
     /**
      * @throws NotFoundException
      */
-    public function getDiscountWithCoupon($id, $databaseName)
+    public function getDiscountWithCoupon(int $id,string $databaseName)
     {
-        $discount = $this->discountRepository->findDiscountByIdWithCoupon($id, $databaseName);
+        $discount = $this->discountRepository->findByIdWithCoupon($id, $databaseName);
         if (! $discount) {
             throw NotFoundException::Notfound('Discount not found');
         }
@@ -90,7 +96,7 @@ class DiscountServiceImp implements DiscountService
         return $discount;
     }
 
-    public function getStatusDiscount($discount)
+    public function hasCouponUsed($discount)
     {
         return $discount->coupon->contains(function ($item) {
             return $item->times_used > 0;
@@ -102,7 +108,7 @@ class DiscountServiceImp implements DiscountService
      */
     public function getDiscountInfo(int $id, string $databaseName): array
     {
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($id, $databaseName);
+        $discount = $this->discountRepository->findByIdWithoutCoupon($id, $databaseName);
         if (! $discount) {
             throw NotFoundException::Notfound('Discount not found');
         }
@@ -111,14 +117,4 @@ class DiscountServiceImp implements DiscountService
             'id', 'name', 'started_at', 'expired_at', 'type', 'value', 'usage_limit', 'trial_days',
         ]);
     }
-    //    public function getDiscountAndStatus($id, $databaseName): array
-    //    {
-    //        $discount = $this->getDiscountWithCoupon($id, $databaseName);
-    //        $discountStatus = $this->getStatusDiscount($discount);
-    //
-    //        return [
-    //            'discount' => $discount,
-    //            'discountStatus' => $discountStatus,
-    //        ];
-    //    }
 }

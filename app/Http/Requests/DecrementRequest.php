@@ -25,4 +25,11 @@ class DecrementRequest extends FormRequest
             'numDecrement' => ['required', 'integer', 'min:0'],
         ];
     }
+
+    public function validationData(): array
+    {
+        return [
+            'numDecrement' => $this->input('numDecrement'),
+        ];
+    }
 }

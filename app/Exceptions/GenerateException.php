@@ -4,13 +4,9 @@ namespace App\Exceptions;
 
 class GenerateException extends InternalException
 {
-    public static function notFound(array $messages): self
+    public static function generateExist(): self
     {
-        return self::new($messages);
-    }
-    public static function generateExist(array $messages): self
-    {
-        return self::new($messages);
+        return self::new(['error' => 'Generate existed discount_id and app_name']);
     }
 
     public static function validateEdit(string $message)
@@ -29,8 +25,8 @@ class GenerateException extends InternalException
         return self::new($messages);
     }
 
-    public static function NotUpdateDiscountIdAndAppName(array $messages): self
+    public static function canNotUpdateDiscountIdAndAppName(): self
     {
-        return self::new($messages);
+        return self::new(['error' => 'Can not update discount id and app name']);
     }
 }

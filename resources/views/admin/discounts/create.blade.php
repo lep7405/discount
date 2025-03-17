@@ -13,9 +13,15 @@
     <span class="mr-2">/</span>{{ 'Create' }}
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <div class="max-w-2xl mx-auto">
-        <form method="POST" action="{{ route('admin.'.$databaseName.'.store_discount') }}" class="space-y-6">
+        @if ($errors->has('error'))
+            <div class="text-red-500">
+                <h1>erorr</h1>
+                {{ $errors->first('error') }}
+            </div>
+        @endif
+        <form method="POST" action="{{ route('admin.'.$databaseName.'.storeDiscount') }}" class="space-y-6">
             @csrf
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <x-section-header title="General" />

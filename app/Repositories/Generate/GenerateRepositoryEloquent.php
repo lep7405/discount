@@ -14,11 +14,11 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
         return Generate::class;
     }
 
-    public function getAllGenerates(array $filters)
+    public function getAll(array $filters)
     {
         $perPage = Arr::get($filters, 'per_page');
         $search = Arr::get($filters, 'search');
-        $status = Arr::get($filters, 'status');
+        $status = Arr::get($filters, 'status', null);
         $cs = DB::connection('cs')->table('discounts')->select('id as ids', 'name');
         $affiliate = DB::connection('affiliate')->table('discounts')->select('id as ids', 'name');
 
@@ -73,7 +73,7 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
             ->count();
     }
 
-    public function getGenerateByDiscountIdAndAppName($discount_id, $app_name)
+    public function findByDiscountIdAndAppName($discount_id, $app_name)
     {
         return $this->getModel()
             ->where('discount_id', $discount_id)
@@ -108,7 +108,7 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
             ->delete();
     }
 
-    public function getGenerateById($id)
+    public function findById($id)
     {
         return $this->getModel()
             ->where('id', $id)

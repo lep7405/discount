@@ -20,18 +20,18 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (Exception $exception) {
             if ($exception instanceof InternalException) {
+//                dd(json_encode($exception->getErrors(), JSON_PRETTY_PRINT));
                 return redirect()->back()->withErrors($exception->getErrors())->withInput();
             }
             if ($exception instanceof NotFoundException) {
-                return response()->view('errors.404');
+                return response()->view('errors.404', ['message' => $exception->getMessage()], 404);
             }
-            if($exception instanceof TokenMismatchException){
-                dd(1);
-                return $exception->getMessage();
-            }
-//            if($exception instanceof \Illuminate\Auth\AuthenticationException){
-//                return redirect()->route('login');
-//            }
+            //            if ($exception instanceof TokenMismatchException) {
+            //                return $exception->getMessage();
+            //            }
+            //            if($exception instanceof \Illuminate\Auth\AuthenticationException){
+            //                return redirect()->route('login');
+            //            }
         });
 
     })->create();

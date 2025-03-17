@@ -4,19 +4,17 @@ namespace App\Services\Coupon;
 
 interface CouponService
 {
-    public function index(array $filters, $databaseName);
+    public function index(string $databaseName, array $filters);
 
-    public function create(array $data, string $databaseName);
+    public function store(string $databaseName, array $attributes);
 
-    public function update(array $data, int $id, string $databaseName);
+    public function update(int $id, string $databaseName, array $attributes);
 
     public function delete(int $id, string $databaseName);
 
-    public function getCoupon(int $id, string $databaseName);
+    public function decrementTimesUsedCoupon(int $id, string $databaseName, int $numDecrement);
 
-    public function decrementCoupon(int $id, int $numDecrement, string $databaseName);
+    public function createCouponByDiscount(int $discountId, string $databaseName, array $attributes);
 
-    public function createByDiscount(array $data, int $discount_id, string $databaseName);
-
-    public function allCouponsByDiscount($discount_id, string $databaseName, array $filters);
+    public function getAllCouponsByDiscount($discountId, string $databaseName, array $filters);
 }

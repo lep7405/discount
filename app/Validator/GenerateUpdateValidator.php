@@ -10,6 +10,7 @@ class GenerateUpdateValidator
 {
     public static function validateUpdate($status, $data)
     {
+
         $rules = [
             'expired_range' => 'required|integer',
             'app_url' => 'required',
@@ -17,8 +18,8 @@ class GenerateUpdateValidator
         if ($status) {
             $rules['discount_app'] = 'required';
         }
-        if(!$status && Arr::get($data, 'discount_app')) {
-             throw GenerateException::NotUpdateDiscountIdAndAppName(['error' => ['Can not update discount']]);
+        if (! $status && Arr::get($data, 'discount_app')) {
+            throw GenerateException::canNotUpdateDiscountIdAndAppName();
         }
 
         $validator = Validator::make($data, $rules);

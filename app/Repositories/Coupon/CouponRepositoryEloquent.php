@@ -13,160 +13,20 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
         return Coupon::class;
     }
 
-    public function getAllCoupons(array $filters, string $databaseName)
+    public function getAll($discount_id, string $databaseName, array $filters)
     {
-        $perPage = Arr::get($filters, 'per_page_coupon');
-        $search = Arr::get($filters, 'search_coupon');
+        $perPage = Arr::get($filters, 'perPageCoupon');
+        $pageCoupon = Arr::get($filters, 'pageCoupon', 1);
+        $search = Arr::get($filters, 'searchCoupon');
         $status = Arr::get($filters, 'status');
-        $arrange_times_used = Arr::get($filters, 'time_used');
+        $arrange_times_used = Arr::get($filters, 'timeUsed');
 
         return $this->getModel()
             ->on($databaseName)
             ->with(['discount:id,name'])
-            ->when($search, function ($query) use ($search) {
-                $query->where('code', 'like', "%{$search}%")
-                    ->orwhere('shop', 'like', "%{$search}%")
-                    ->orWhereHas('discount', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    });
+            ->when($discount_id, function ($query) use ($discount_id) {
+                $query->where('discount_id', $discount_id);
             })
-            ->when($status !== null, function ($query) use ($status) {
-                $query->where('status', $status);
-            })
-            ->when($arrange_times_used, function ($query) use ($arrange_times_used) {
-                $query->orderBy('times_used', $arrange_times_used);
-            })
-            ->paginate($perPage);
-    }
-
-    public function countCoupons(string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->count();
-    }
-
-    public function createCoupon(array $data, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-//            ->create($data);
-            ->create([
-                'code' => Arr::get($data, 'code'),
-                'shop' => Arr::get($data, 'shop'),
-                'discount_id' => Arr::get($data, 'discount_id'),
-                'automatic' => Arr::get($data, 'automatic', 1),
-                'times_used' => Arr::get($data, 'times_used'),
-                'status' => Arr::get($data, 'status', 1),
-            ]);
-    }
-
-    public function getCouponById(int $id, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->with(['discount:id,name'])
-            ->find($id);
-    }
-
-    public function decrementTimesUsed(int $id, int $numDecrement, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->where('id', $id)
-            ->decrement('times_used', $numDecrement);
-    }
-
-    public function getCouponByCode(string $code, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->where('code', $code)
-            ->first();
-    }
-
-    public function updateCoupon(array $data, int $id, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->where('id', $id)
-            ->update($data);
-    }
-
-    public function getCouponByDiscountIdAndCode(int $discountId, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->where('discount_id', $discountId)
-            ->where('code', 'like', 'GENAUTO%')
-            ->first();
-    }
-
-    public function deleteCoupon(int $id, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->where('id', $id)
-            ->delete();
-    }
-
-    public function getAllCouponsReport(array $filters, string $databaseName)
-    {
-        $perPage = Arr::get($filters, 'per_page_coupon');
-        $search = Arr::get($filters, 'search_coupon');
-        $status = Arr::get($filters, 'status');
-        $arrange_times_used = Arr::get($filters, 'time_used');
-        $page_coupon = Arr::get($filters, 'page_coupon');
-
-        return $this->getModel()
-            ->on($databaseName)
-            ->with(['discount:id,name'])
-            ->when($search, function ($query) use ($search) {
-                $query->where('code', 'like', "%{$search}%")
-                    ->orwhere('shop', 'like', "%{$search}%")
-                    ->orWhereHas('discount', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    })
-                    ->orwhere('times_used', $search);
-            })
-            ->when($status !== null, function ($query) use ($status) {
-                $query->where('status', $status);
-            })
-            ->when($arrange_times_used, function ($query) use ($arrange_times_used) {
-                $query->orderBy('times_used', $arrange_times_used);
-            })
-            ->paginate($perPage, ['*'], 'page_coupon', $page_coupon);
-    }
-
-    public function getCouponByDiscountIdandShop($discountId, $shopName, $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->where('discount_id', $discountId)
-            ->where('shop', $shopName)
-            ->orderBy('created_at', 'desc')
-            ->first();
-    }
-
-    public function deleteCouponByDiscountId(int $discountId, string $databaseName)
-    {
-        return $this->getModel()
-            ->on($databaseName)
-            ->where('discount_id', $discountId)
-            ->delete();
-    }
-
-    public function getAllCouponsByDiscount($discount_id, array $filters, string $databaseName)
-    {
-        $perPage = Arr::get($filters, 'per_page_coupon');
-        $search = Arr::get($filters, 'search_coupon');
-        $status = Arr::get($filters, 'status');
-        $arrange_times_used = Arr::get($filters, 'time_used');
-
-        return $this->getModel()
-            ->on($databaseName)
-            ->with(['discount:id,name'])
-            ->where('discount_id', $discount_id)
             ->when($search, function ($query) use ($search) {
                 $query->where('code', 'like', "%{$search}%")
                     ->orwhere('shop', 'like', "%{$search}%")
@@ -186,10 +46,98 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
             ->when($arrange_times_used, function ($query) use ($arrange_times_used) {
                 $query->orderBy('times_used', $arrange_times_used);
             })
-            ->paginate($perPage);
+            ->paginate($perPage, ['*'], 'pageCoupon', $pageCoupon);
+    }
+    public function countCoupons(string $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->count();
     }
 
-    public function countCouponByDiscountIdAndCode(int $discountId, string $databaseName)
+    public function createCoupon(string $databaseName, array $attributes)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+//            ->create($data);
+            ->create([
+                'code' => Arr::get($attributes, 'code'),
+                'shop' => Arr::get($attributes, 'shop'),
+                'discount_id' => Arr::get($attributes, 'discount_id'),
+                'automatic' => Arr::get($attributes, 'automatic', 0),
+                'status' => Arr::get($attributes, 'status', 1),
+                'times_used' => Arr::get($attributes, 'timesUsed'),
+            ]);
+    }
+
+    public function findById($id, string $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->with(['discount:id,name'])
+            ->find($id);
+    }
+
+    public function decrementTimesUsed(int $id, string $databaseName, int $numDecrement)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('id', $id)
+            ->decrement('times_used', $numDecrement);
+    }
+
+    public function findByCode(string $code, string $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('code', $code)
+            ->first();
+    }
+
+    public function updateCoupon(int $id, string $databaseName, array $data)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('id', $id)
+            ->update($data);
+    }
+
+    public function findByDiscountIdAndCode(int $discountId, string $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('discount_id', $discountId)
+            ->where('code', 'like', 'GENAUTO%')
+            ->first();
+    }
+
+    public function deleteCoupon(int $id, string $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('id', $id)
+            ->delete();
+    }
+
+    public function findByDiscountIdandShop($discountId, $shopName, $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('discount_id', $discountId)
+            ->where('shop', $shopName)
+            ->orderBy('created_at', 'desc')
+            ->first();
+    }
+
+    public function deleteByDiscountId(int $discountId, string $databaseName)
+    {
+        return $this->getModel()
+            ->on($databaseName)
+            ->where('discount_id', $discountId)
+            ->delete();
+    }
+
+    public function countByDiscountIdAndCode(int $discountId, string $databaseName)
     {
         return $this->getModel()
             ->on($databaseName)

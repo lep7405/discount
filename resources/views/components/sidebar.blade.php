@@ -83,9 +83,9 @@
                 </li>
 
                 <li class="px-3">
-                    <a href="{{ route('admin.get_generate') }}"
+                    <a href="{{ route('admin.indexGenerate') }}"
                        class="flex items-center p-2 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200"
-                       :class="{ 'bg-gray-700': '{{ request()->routeIs('admin.get_generate') }}' }">
+                       :class="{ 'bg-gray-700': '{{ request()->routeIs('admin.indexGenerate') }}' }">
                         <div class="flex items-center justify-center w-6 h-6">
                             <i class="fas fa-code"></i>
                         </div>

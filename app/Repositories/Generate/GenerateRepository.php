@@ -6,19 +6,19 @@ use Prettus\Repository\Contracts\RepositoryInterface;
 
 interface GenerateRepository extends RepositoryInterface
 {
-    public function getAllGenerates(array $filters);
+    public function getAll(array $filters);
 
     public function countGenerate();
 
-    public function getGenerateByDiscountIdAndAppName($discount_id, $app_name);
+    public function findByDiscountIdAndAppName(int $discount_id,string $app_name);
 
-    public function createGenerate(array $data);
+    public function createGenerate(array $attributes);
 
-    public function updateGenerate($id, array $data);
+    public function updateGenerate(int $id, array $attributes);
 
-    public function updateGenerateStatus($id, $status);
+    public function updateGenerateStatus(int $id, $status);
 
-    public function destroyGenerate($id);
+    public function destroyGenerate(int $id);
 
-    public function getGenerateById($id);
+    public function findById(int $id);
 }

@@ -5,21 +5,15 @@ namespace App\Services\Discount;
 interface DiscountService
 {
     // get all discounts,
-    public function index(array $filters, $databaseName);
+    public function index(string $databaseName, array $filters);
 
-    public function getAllDiscountIdAndName($databaseName);
+    public function store(string $databaseName, array $attributes);
 
-    public function store(array $attributes, $databaseName);
+    public function update(int $id, string $databaseName, array $attributes);
 
-    public function update($id, array $attributes, $databaseName);
+    public function delete(int $id, string $databaseName);
 
-    public function delete($id, $databaseName);
+    public function getAllDiscountIdAndName(string $databaseName);
 
-    // for edit
-    //    public function getDiscountAndStatus($id, $databaseName);
-
-    // get discount info
     public function getDiscountInfo(int $id, string $databaseName);
-
-    // cái method này để lấy cái discount id với discount name cho coupon trong select
 }

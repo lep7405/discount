@@ -11,7 +11,6 @@ use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
 use App\Repositories\Generate\GenerateRepository;
 use App\Validator\GenerateUpdateValidator;
-use Carbon\Carbon;
 use Customerio\Client;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -23,55 +22,58 @@ class GenerateServiceImp implements GenerateService
 
     public function index(array $filters)
     {
-        // Lấy số bản ghi tổng và cấu hình cho pagination
-        $count_all = $this->generateRepository->countGenerate();
-        $perPage = Arr::get($filters, 'per_page', 5);
-        $perPage = ($perPage == -1) ? $count_all : $perPage;
+        $countAll = $this->generateRepository->countGenerate();
+        $filters = $this->handleFilters($countAll, $filters);
+        $generateData = $this->generateRepository->getAll($filters);
+        $generateDataItems = $this->handleGenerateData($generateData);
+
+        return [
+            'generateData' => $generateDataItems,
+            'totalPages' => $generateData->lastPage(),
+            'totalItems' => $generateData->total(),
+            'currentPages' => $generateData->currentPage(),
+        ];
+    }
+    public function handleFilters($countAll,$filters)
+    {
+        $perPage = Arr::get($filters, 'perPage', config('constant.DEFAULT_PER_PAGE'));
+        $perPage = ($perPage == -1) ? $countAll : $perPage;
+        Arr::set($filters, 'perPage', $perPage);
         $status = Arr::get($filters, 'status');
-        Arr::set($filters, 'per_page', $perPage);
-        Arr::set($filters, 'status', $status !== null ? (int) $status : null);
+        if ($status && ! in_array($status, ['0', '1'])) {
+            Arr::set($filters, 'status', null);
+        }
+        return $filters;
+    }
 
-        // Lấy dữ liệu generate
-        $generateData = $this->generateRepository->getAllGenerates($filters);
+    public function handleGenerateData($generateData)
+    {
+
         $groupedGenerates = $generateData->groupBy('app_name');
-
-        // Mảng để lưu thông tin discounts theo app
         $discountMap = [];
-
-        // Lấy discounts một lần cho từng app_name
         foreach ($groupedGenerates as $appName => $group) {
-            $discountIds = $group->pluck('discount_id')->unique();
-            $discounts = $this->discountRepository->findDiscountsByIdsAndApp($discountIds, $appName);
+            $discountIds = $group->pluck('discount_id')->unique()->toArray();
+            $discounts = $this->discountRepository->findByIdsAndApp($discountIds, $appName);
             $discountMap[$appName] = $discounts->keyBy('id');
         }
 
-        // Xử lý dữ liệu generate
-        $generateDatas = $generateData->map(function ($gen) use ($discountMap) {
+        return $generateData->map(function ($gen) use ($discountMap) {
+
             $discount = $discountMap[$gen['app_name']][$gen['discount_id']] ?? null;
-
             if (! $discount) {
-                throw DiscountException::notFound(['error' => ['Discount not found']]);
+                throw NotFoundException::notFound('Discount not found');
             }
-
             $gen['db_name'] = $gen['app_name'];
             $gen['app_name'] = config('database.connections.' . $gen['app_name'] . '.app_name');
-            $gen['expired'] = $discount->expired_at && now()->timestamp > Carbon::parse($discount->expired_at)->timestamp;
+            $gen['expired'] = $discount->expired_at && now()->greaterThan($discount->expired_at);
             $gen['discount_name'] = $discount->name;
             $gen['discount_id'] = $discount->id;
 
             return $gen;
         });
-
-        // Trả về kết quả
-        return [
-            'generateData' => $generateDatas,
-            'total_pages' => $generateData->lastPage(),
-            'total_items' => $generateData->total(),
-            'current_pages' => $generateData->currentPage(),
-        ];
     }
 
-    public function showCreate(array $databaseName)
+    public function create(array $databaseName)
     {
         $discountData = [];
         foreach ($databaseName as $db) {
@@ -82,144 +84,91 @@ class GenerateServiceImp implements GenerateService
                 $discountData[] = $d;
             }
         }
+
         return $discountData;
     }
-    public function create(array $data)
+
+    //create
+    public function store(array $attributes)
     {
-        [$discount_id, $app_name] = explode('&', $data['discount_app']);
-        $data['app_name'] = $app_name;
-        $data['discount_id'] = $discount_id;
-        $this->validationDiscount($discount_id,$app_name);
-        $this->checkUniqueGenerate($discount_id, $app_name);
-        $this->prepareData($data);
-        return $this->generateRepository->createGenerate($data);
+        [$discountId, $appName] = explode('&', Arr::get($attributes, 'discount_app'));
+
+        $this->checkDiscount($discountId, $appName);
+        $this->checkUniqueGenerate($discountId, $appName);
+
+        $attributes['app_name'] = $appName;
+        $attributes['discount_id'] = $discountId;
+        $this->prepareData($attributes);
+        $attributes = array_intersect_key($attributes, array_flip((new Generate)->getFillable()));
+        return $this->generateRepository->createGenerate($attributes);
     }
-    public function prepareData($data)
+
+    public function checkDiscount($discountId, $appName)
     {
-        $data['conditions'] = $this->handleCondition(Arr::get($data, 'condition_object'));
-        $this->handleMessage($data);
-        return $data;
+        $discount = $this->findDiscountByIdNoCoupon($discountId, $appName);
+
+        if (! $discount->expired_at || (now()->greaterThan($discount->expired_at))) {
+            throw DiscountException::discountExpired();
+        }
     }
-    public function validationDiscount($discount_id,$app_name)
+
+    public function findDiscountByIdNoCoupon($discountId, $appName)
     {
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $app_name);
+        $discount = $this->discountRepository->findByIdWithoutCoupon($discountId, $appName);
         if (! $discount) {
             throw NotFoundException::Notfound('Discount not found');
         }
-        if ($discount->expired_at && now()->greaterThan(Carbon::parse($discount->expired_at))) {
-            throw DiscountException::discountExpired(['error' => ['Discount expired']]);
-        }
+
+        return $discount;
     }
-    public function checkUniqueGenerate($discount_id, $app_name)
+
+    public function checkUniqueGenerate(int $discountId,string $appName)
     {
-        $generate = $this->generateRepository->getGenerateByDiscountIdAndAppName($discount_id, $app_name);
+        $generate = $this->generateRepository->findByDiscountIdAndAppName($discountId, $appName);
         if ($generate) {
-            throw GenerateException::generateExist(['error' => ['Generate existed discount_id']]);
+            throw GenerateException::generateExist();
         }
     }
 
-    public function showUpdate($id)
+    public function prepareData(&$attributes)
     {
-        $generate = $this->getGenerateById($id);
-        $coupon = $this->couponRepository->getCouponByDiscountIdAndCode($generate->discount_id, $generate->app_name);
-        $status_del = true;
-        if ($coupon) {
-            $status_del = false;
+        $attributes['conditions'] = $this->handleCondition(Arr::get($attributes, 'condition_object'));
+        $this->handleMessage($attributes);
+
+        return $attributes;
+    }
+
+    public function handleCondition($data): array
+    {
+        if (empty($data)) {
+            return [];
         }
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($generate->discount_id, $generate->app_name);
-
-        return [
-            'generate' => $generate,
-            'discount' => $discount,
-            'status_del' => $status_del,
-        ];
-    }
-
-    public function update($id, array $data)
-    {
-        $generate = $this->getGenerateById($id);
-        $currentDiscountId = $generate->discount_id;
-        $currentAppName = $generate->app_name;
-
-        $existingCoupon = $this->couponRepository->getCouponByDiscountIdAndCode($currentDiscountId, $currentAppName);
-        GenerateUpdateValidator::validateUpdate(!$existingCoupon, $data);
-
-        if (!$existingCoupon) {
-            [$newDiscountId, $newAppName] = explode('&', $data['discount_app']);
-            if ($currentDiscountId != $newDiscountId || $currentAppName != $newAppName) {
-                $this->validationDiscount($newDiscountId, $newAppName);
-                $this->checkUniqueGenerate($newDiscountId, $newAppName);
-                $data['discount_id'] = $newDiscountId;
-                $data['app_name'] = $newAppName;
-            }
+        $conditionArray = json_decode($data, true);
+        if (! is_array($conditionArray)) {
+            return [];
         }
-        $this->prepareData($data);
-        $data = array_intersect_key($data, array_flip((new Generate())->getFillable()));
-        return $this->generateRepository->updateGenerate($id, $data);
-    }
-
-    public function destroy($id)
-    {
-        $generate = $this->getGenerateById($id);
-        $this->generateRepository->destroyGenerate($id);
-    }
-
-    public function changeStatus($id)
-    {
-        $generate = $this->getGenerateById($id);
-        $this->generateRepository->updateGenerateStatus($id, $generate->status);
-    }
-
-    public function getGenerateById($id)
-    {
-        $generate = $this->generateRepository->find($id);
-        if (! $generate) {
-            throw GenerateException::notFound(['error' => ['Generate not found']]);
-        }
-        return $generate;
-    }
-
-    public function handleCondition($data)
-    {
-        // Kiểm tra nếu 'condition_object' có dữ liệu
-        if (! empty($data)) {
-            // Giải mã JSON thành mảng PHP
-            $conditionArray = json_decode($data, true);
-
-            // Nếu JSON không hợp lệ, trả về mảng rỗng
-            if (! is_array($conditionArray)) {
-                return [];
+        $conditions = [];
+        foreach ($conditionArray as $condition) {
+            if (! is_array($condition['apps']) || empty($condition['apps'])) {
+                continue;
             }
 
-            // Mảng chứa điều kiện đã xử lý
-            $conditions = [];
-
-            // Duyệt qua từng điều kiện trong mảng
-            foreach ($conditionArray as $cd) {
-                if (isset($cd['apps']) && is_array($cd['apps']) && count($cd['apps']) > 0) {
-                    // Mảng lưu các điều kiện đã ghép của từng app
-                    $apps = [];
-
-                    // Lặp qua từng app và nối `name&status`
-                    foreach ($cd['apps'] as $app) {
-                        if (isset($app['name']) && isset($app['status'])) {
-                            $apps[] = $app['name'] . '&' . $app['status'];
-                        }
-                    }
-
-                    // Nếu có app hợp lệ, nối các điều kiện bằng '||'
-                    if (! empty($apps)) {
-                        $conditions[] = implode('||', $apps);
-                    }
+            $appConditions = [];
+            foreach ($condition['apps'] as $app) {
+                if (isset($app['name'], $app['status'])) {
+                    $appConditions[] = $app['name'] . '&' . $app['status'];
                 }
             }
 
-            return $conditions; // Trả về mảng kết quả thay vì JSON encode
+            if (! empty($appConditions)) {
+                $conditions[] = implode('||', $appConditions);
+            }
         }
-        return [];
+
+        return $conditions;
     }
 
-    public function handleMessage(&$data)
+    public function handleMessage(&$data): void
     {
         $successMessage = array_filter([
             'message' => $data['success_message'] ?? null,
@@ -235,80 +184,152 @@ class GenerateServiceImp implements GenerateService
         $data['fail_message'] = ! empty($failMessage) ? $failMessage : null;
     }
 
-    //private generate coupon
+    //update
+    public function edit(int $id,array $databaseName)
+    {
+        $generate = $this->findGenerateById($id);
+        $coupon = $this->couponRepository->findByDiscountIdAndCode($generate->discount_id, $generate->app_name);
+        $discount = $this->findDiscountByIdNoCoupon($generate->discount_id, $generate->app_name);
+        $discountData = [];
+        foreach ($databaseName as $db) {
+            $data = $this->discountRepository->getAllDiscountIdAndName($db);
+            foreach ($data as $d) {
+                $d['databaseName'] = $db;
+                $d['appName'] = config('database.connections.' . $db . '.app_name');
+                $discountData[] = $d;
+            }
+        }
+        return [
+            'generate' => $generate,
+            'discountData' => $discountData,
+            'status_del' => ! $coupon,
+        ];
+    }
 
-    public function privateGenerateCoupon($ip, $generateId, $shopName)
+    public function update(int $id, array $attributes)
+    {
+        $generate = $this->findGenerateById($id);
+        $currentDiscountId = $generate->discount_id;
+        $currentAppName = $generate->app_name;
+
+        $existingCoupon = $this->couponRepository->findByDiscountIdAndCode($currentDiscountId, $currentAppName);
+        GenerateUpdateValidator::validateUpdate(! $existingCoupon, $attributes);
+
+        if (! $existingCoupon) {
+            [$newDiscountId, $newAppName] = explode('&', Arr::get($attributes, 'discount_app'));
+            if ($currentDiscountId != $newDiscountId || $currentAppName != $newAppName) {
+                $this->checkDiscount($newDiscountId, $newAppName);
+                $this->checkUniqueGenerate($newDiscountId, $newAppName);
+                $data['discount_id'] = $newDiscountId;
+                $data['app_name'] = $newAppName;
+            }
+        }
+        $this->prepareData($attributes);
+        $attributes = array_intersect_key($attributes, array_flip((new Generate)->getFillable()));
+
+        return $this->generateRepository->updateGenerate($id, $attributes);
+    }
+
+    public function destroy(int $id)
+    {
+        $this->findGenerateById($id);
+        $this->generateRepository->destroyGenerate($id);
+    }
+
+    public function changeStatus(int $id)
+    {
+        $generate = $this->findGenerateById($id);
+        $this->generateRepository->updateGenerateStatus($id, $generate->status);
+    }
+
+    public function findGenerateById(int $id)
+    {
+        $generate = $this->generateRepository->findById($id);
+        if (! $generate) {
+            throw NotFoundException::notFound('Generate not found');
+        }
+
+        return $generate;
+    }
+    public function privateGenerateCoupon($ip, int $generateId,string $shopName)
     {
         if (! $this->validateIp($ip)) {
-            return $this->response(false,'Ip not valid!');
+            return $this->privateGenerateResponse(false, 'Ip not valid!');
         }
 
-        $generate = $this->generateRepository->getGenerateById($generateId);
-        if (!$generate) {
-            return $this->response(false,'Generate not exist!');
+        $generate = $this->generateRepository->findById($generateId);
+        if (! $generate) {
+            return $this->privateGenerateResponse(false, 'Generate not exist!');
         }
-        if (!$generate->status) {
-            return $this->response(false,'Generate not active!');
+        if (! $generate->status) {
+            return $this->privateGenerateResponse(false, 'Generate not active!');
         }
 
         $app = $generate->app_name;
-        $discount_id = $generate->discount_id;
+        $discountId = $generate->discount_id;
 
-        $coupon = $this->couponRepository->getCouponByDiscountIdandShop($discount_id, "{$shopName}.myshopify.com", $app);
+        $coupon = $this->couponRepository->findByDiscountIdandShop($discountId, "{$shopName}.myshopify.com", $app);
         if ($coupon) {
             if ($coupon->times_used > 0) {
-                return $this->response(false,'Coupon used!');
+                return $this->privateGenerateResponse(false, 'Coupon used!');
             }
-            return $this->response(true,'Coupon created!');
+
+            return $this->privateGenerateResponse(true, 'Coupon created!');
         }
 
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $app);
-        if ($discount === null) {
-            return $this->response(false,'Discount not found!');
+        $discount = $this->discountRepository->findByIdWithoutCoupon($discountId, $app);
+        if (! $discount) {
+            return $this->privateGenerateResponse(false, 'Discount not found!');
         }
-        $discount_expired = $discount->expired_at ? Carbon::parse($discount->expired_at)->timestamp : null;
-        if ($discount_expired != null && now()->timestamp > $discount_expired) {
-            return $this->response(false,'Discount expired!');
-        }
-
-        $number_coupon = $this->couponRepository->countCouponByDiscountIdAndCode($discount_id, $app);
-        if ($generate->limit && $generate->limit <= $number_coupon) {
-            return $this->response(false,'Limit Coupon!');
+        if ($discount->expired_at != null && now()->greaterThan($discount->expired_at)) {
+            return $this->privateGenerateResponse(false, 'Discount expired!');
         }
 
-        $this->createCouponForShop($discount_id,$shopName,$app);
+        $numberCoupon = $this->couponRepository->countByDiscountIdAndCode($discountId, $app);
+        if ($generate->limit && $generate->limit <= $numberCoupon) {
+            return $this->privateGenerateResponse(false, 'Limit Coupon!');
+        }
 
-        return $this->response(true,'Success generate coupon!');
+        $this->createCouponForShop($discountId, $shopName, $app);
+
+        return $this->privateGenerateResponse(true, 'Success generate coupon!');
     }
-    public function validateIp($ip){
-        $ip_server = config('Discount_manager.ip_server');
-        $ip_server = str_replace(' ', '', trim($ip_server));
-        $ip_server_array = explode(',', $ip_server);
-        foreach ($ip_server_array as $ipValue) {
+
+    public function validateIp($ip)
+    {
+        $ipServer = config('Discount_manager.ip_server');
+        $ipServer = str_replace(' ', '', trim($ipServer));
+        $ipServerArray = explode(',', $ipServer);
+        foreach ($ipServerArray as $ipValue) {
             if (! filter_var($ipValue, FILTER_VALIDATE_IP)) {
-                unset($ip_server_array[array_search($ipValue, $ip_server_array)]);
+                unset($ipServerArray[array_search($ipValue, $ipServerArray)]);
             }
         }
-        if (! in_array($ip, $ip_server_array)) {
+        if (! in_array($ip, $ipServerArray)) {
             return false;
         }
+
         return true;
     }
-    public function createCouponForShop($discount_id,$shopName,$app){
+
+    public function createCouponForShop(int $discountId,string $shopName,string $app)
+    {
         $dataCoupon = [
-            'discount_id' => $discount_id,
+            'discount_id' => $discountId,
             'shop' => $shopName . '.myshopify.com',
             'times_used' => 0,
             'status' => 1,
-            'code' => $this->generateUniqueCouponCode($discount_id, $shopName, $app)
+            'code' => $this->generateUniqueCouponCode($discountId, $shopName, $app),
         ];
 
         if ($this->isAutomaticCoupon($app)) {
             $dataCoupon['automatic'] = true;
         }
-        $this->couponRepository->createCoupon($dataCoupon, $app);
+        $this->couponRepository->createCoupon($app,$dataCoupon);
     }
-    public function response($status,$message){
+
+    public function privateGenerateResponse($status, $message)
+    {
         return [
             'status' => $status,
             'message' => $message,
@@ -317,164 +338,127 @@ class GenerateServiceImp implements GenerateService
 
     //end private generate coupon
 
-
-    public function generateCouponResponse($header_message,$content_message,$reasons,$app_url,$generate_id,$custom_fail,$extend_message,$coupon_code){
-        $data= [
-            'header_message' => $header_message,
-            'content_message' => $content_message,
-        ];
-        if ($reasons !== null) $data['reasons'] = $reasons;
-        if ($app_url !== null) $data['app_url'] = $app_url;
-        if ($generate_id !== null) $data['generate_id'] = $generate_id;
-        if ($custom_fail !== null) $data['custom_fail'] = $custom_fail;
-        if ($extend_message !== null) $data['extend_message'] = $extend_message;
-        if ($coupon_code !== null) $data['coupon_code'] = $coupon_code;
-
-        return $data;
-
-    }
-    public function generateCoupon($generate_id, $timestamp, $shop_id)
+    //generate coupon
+    /**
+     * @throws NotFoundException
+     */
+    public function generateCoupon(int $generateId, $timeStamp, $shopId)
     {
-        $generate = $this->generateRepository->getGenerateById($generate_id);
-        $header_message = config('constant.DEFAULT_HEADER_MESSAGE');
+        $generate = $this->generateRepository->getGenerateById($generateId);
+        $headerMessage = config('constant.DEFAULT_HEADER_MESSAGE');
         if (! $generate) {
-            return $this->generateCouponResponse($header_message,'WHOOPS!','This offer does not exist!',null,null,null,null,null);
+            return $this->generateCouponResponse($headerMessage, contentMessage: 'WHOOPS!', reasons: 'This offer does not exist!');
         }
-        $app_url = $generate->app_url;
+        $appUrl = $generate->app_url;
         if (! $generate->status) {
-            return $this->generateCouponResponse($header_message,'WHOOPS!','This offer was disabled!',$app_url,$generate_id,null,null,null);
+            return $this->generateCouponResponse($headerMessage, contentMessage: 'WHOOPS!', reasons: 'This offer was disabled!', appUrl: $appUrl, generateId: $generateId);
         }
         $app = $generate->app_name;
-        $discount_id = $generate->discount_id;
-        $conditions = $generate->conditions ?? [];
+        $discountId = $generate->discount_id;
 
         $messages = $this->getMessagesFromGenerate($generate);
-        $header_message = $generate->header_message ?? config('constant.DEFAULT_HEADER_MESSAGE');
-        $used_message = $generate->used_message ?? config('constant.DEFAULT_USED_MESSAGE');
+        $headerMessage = $generate->header_message ?? config('constant.DEFAULT_HEADER_MESSAGE');
+        $usedMessage = $generate->used_message ?? config('constant.DEFAULT_USED_MESSAGE');
 
         // Lấy thông tin Shop từ API Customer.io
+//        $attributes = $this->getShopAttributes($shopId);
+//        if (! $attributes) {
+//            return $this->generateCouponResponse(headerMessage: 'Connection Error!', contentMessage: 'Oops! Can not connect to shop!', reasons: 'The shop may be down or experiencing issues. Please try again!', appUrl: $appUrl, generateId: $generateId);
+//        }
+//        $shopName = $attributes->shop_name ?? null;
 
-        //        $attributes = $this->getShopAttributes($shop_id, $app_url, $generate_id);
-        //        $shop_name = $attributes->shop_name ?? null;
-
-        //test
-        $attributes = [
-            'shop_name' => 'shop3',
-            'name_status' => 'fg',
-            'fg_status' => 'charged',
-        ];
-        $shop_name = $attributes['shop_name'];
-        // Kiểm tra nếu shop đã có Coupon
-        $coupon = $this->couponRepository->getCouponByDiscountIdandShop($discount_id, "{$shop_name}.myshopify.com", $app);
+        $shopName = 'shopname';
+        $coupon = $this->couponRepository->findByDiscountIdandShop($discountId, "{$shopName}.myshopify.com", $app);
         if ($coupon) {
             if ($coupon->times_used > 0) {
-                return $this->generateCouponResponse($header_message,$messages['fail_message'],$used_message,$app_url,$generate_id,null,null,null);
+                return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['fail_message'], reasons: $usedMessage, appUrl: $appUrl, generateId: $generateId);
             }
-            return $this->generateCouponResponse($header_message,$messages['success_message'],null,$app_url,$generate_id,null,$messages['extend_message'],$coupon->code);
+
+            return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['success_message'], appUrl: $appUrl, generateId: $generateId, extendMessage: $messages['extend_message'], couponCode: $coupon->code);
         }
-        // Kiểm tra thời gian hết hạn
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discount_id, $app);
-        $discount_expired = $discount->expired_at ? Carbon::parse($discount->expired_at)->timestamp : null;
 
-        $expired_timestamp = $timestamp + ($generate->expired_range * 24 * 60 * 60);
-        if (($discount_expired && now()->timestamp > $discount_expired) || now()->timestamp > $expired_timestamp) {
-            return $this->generateCouponResponse($header_message,$messages['fail_message'],$messages['reason_expired'],$app_url,$generate_id,null,null,null);
+        $discount = $this->findDiscountByIdNoCoupon($discountId, $app);
+        $expiredTimestamp = $timeStamp + ($generate->expired_range * 24 * 60 * 60);
+        if (($discount->expired_at && now()->greaterThan($discount->expired_at)) || now()->timestamp > $expiredTimestamp) {
+            return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['fail_message'], reasons: $messages['reason_expired'], appUrl: $appUrl, generateId: $generateId);
         }
-        // 9️⃣ Kiểm tra giới hạn sử dụng Coupon
-        $number_coupon = $this->couponRepository->countCouponByDiscountIdAndCode($discount_id, $app);
-        if ($generate->limit && $generate->limit <= $number_coupon) {
-            return $this->generateCouponResponse($header_message,$messages['fail_message'],$messages['reason_limit'],$app_url,$generate_id,null,null,null);
+
+        $numberCoupon = $this->couponRepository->countCouponByDiscountIdAndCode($discountId, $app);
+        if ($generate->limit && $generate->limit <= $numberCoupon) {
+            return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['fail_message'], reasons: $messages['reason_limit'], appUrl: $appUrl, generateId: $generateId);
         }
-        // 🔟 Kiểm tra điều kiện (Conditions)
-        if ($conditions) {
-            $prefix_app = [
-                'qv' => 'Quick View',
-                'fg' => 'Free gift',
-                'pp' => 'Promotion Popup',
-                'sl' => 'Store Locator',
-                'sp' => 'Store Pickup',
-                'bn' => 'Banner Slider',
-                'cs' => 'Currency Switcher',
-                'pl' => 'Product Label',
-                'ca' => 'Customer Attribute',
-                'sw' => 'Spin To Win',
-                'io' => 'Smart Image Optimizer',
-            ];
-            foreach ($conditions as $cd) {
-                $arr_or = explode('||', $cd); // Tách trên 1 hàng các điều kiện OR
-                $text_or = '';
-                for ($i = 0; $i < count($arr_or); $i++) {
 
-                    $arr_con = explode('&', $arr_or[$i]); // Dạng của điều kiện name&status
-
-                    $name_status = $arr_con[0] . '_status';
-                    $status = $arr_con[1];
-                    // Nếu không có app_status
-                    // Hoặc app_status khác
-                    // thì lưu text.
-                    // Nếu không thì text = ""
-
-                    try {
-                        $customer_status = $attributes[$name_status];
-
-                    } catch (Exception $e) {
-                        $customer_status = 'notinstalledyet';
-                    }
-                    if ($customer_status == $status) {
-
-                        $text_or = '';
-                        break;
-                    } else {
-                        $text_or .= '<p>';
-                        if (count($arr_or) > 1) {
-                            $text_or .= "<strong class='or_status'>OR</strong>";
-                        }
-                        if ($status == 'notinstalledyet') {
-                            $text_or .= "<span class='app_status'> " . $prefix_app[$arr_con[0]] . "</span> must be <span class='app_status'>Not Installed yet</span></p>";
-                        } else {
-                            $text_or .= "<span class='app_status'> " . $prefix_app[$arr_con[0]] . "</span> must be <span class='app_status'>" . $status . '</span></p>';
-                        }
-
-                    }
-                }
-
-                // Nếu có $text_or thì chứng tỏ điều kiện này ko thoả mãn. Break luôn.
-                if ($text_or) {
-                    $text = $text_or;
-                    break;
-                }
-            }
-            if ($text_or) {
-                return $this->generateCouponResponse($header_message,$messages['fail_message'],$messages['reason_condition'],$app_url,$generate_id,$text_or,null,null);
-            }
+        $textOr = $this->checkConditions($generate->conditions, $attributes);
+        if ($textOr) {
+            return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['fail_message'], reasons: $messages['reason_condition'], appUrl: $appUrl, generateId: $generateId, customFail: $textOr);
         }
-        // 🔥 Nếu tất cả điều kiện đạt -> Tạo mới Coupon
 
-        $this->generateCouponn($discount_id,$shop_name,$app);
-        return $this->generateCouponResponse($header_message,$messages['success_message'],null,$app_url,$generate_id,null,$messages['extend_message'],null);
-    }
-    public function generateCouponn($discount_id,$shop_name,$app){
-        $dataCoupon = [];
-        $dataCoupon['discount_id'] = $discount_id;
-        $dataCoupon['shop'] = $shop_name . '.myshopify.com';
-        $dataCoupon['times_used'] = 0;
-        $dataCoupon['status'] = 1;
-        $dataCoupon['code'] = $this->generateUniqueCouponCode($discount_id, $shop_name, $app);
+        $this->createCouponForShop($discountId, $shopName, $app);
 
-        if ($this->isAutomaticCoupon($app)) {
-            $dataCoupon['automatic'] = true;
-        }
-        $this->couponRepository->createCoupon($dataCoupon, $app);
+        return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['success_message'], appUrl: $appUrl, generateId: $generateId, customFail: $messages['extend_message']);
     }
 
-
-
-
-
-    public function createCouponFromAffiliatePartner(array $data, string $appCode, string $shopName)
+    public function checkConditions($conditions,array $attributes)
     {
-        $percentage = Arr::get($data, 'percentage', 0);
-        $trialDays = Arr::get($data, 'trial_days', 0);
+        $prefixApp = [
+            'qv' => 'Quick View',
+            'fg' => 'Free gift',
+            'pp' => 'Promotion Popup',
+            'sl' => 'Store Locator',
+            'sp' => 'Store Pickup',
+            'bn' => 'Banner Slider',
+            'cs' => 'Currency Switcher',
+            'pl' => 'Product Label',
+            'ca' => 'Customer Attribute',
+            'sw' => 'Spin To Win',
+            'io' => 'Smart Image Optimizer',
+        ];
+
+        foreach ($conditions as $cd) {
+            $arrOr = explode('||', $cd); // Tách trên 1 hàng các điều kiện OR
+            $textOr = '';
+
+            for ($i = 0; $i < count($arrOr); $i++) {
+                $arrCon = explode('&', $arrOr[$i]); // Dạng của điều kiện name&status
+                $nameStatus = $arrCon[0] . '_status';
+                $status = $arrCon[1];
+
+                try {
+                    $customerStatus = $attributes[$nameStatus];
+                } catch (Exception $e) {
+                    $customerStatus = 'notinstalledyet';
+                }
+
+                if ($customerStatus == $status) {
+                    $textOr = '';
+                    break;
+                } else {
+                    $textOr .= '<p>';
+                    if (count($arrOr) > 1) {
+                        $textOr .= "<strong class='or_status'>OR</strong>";
+                    }
+
+                    if ($status == 'notinstalledyet') {
+                        $textOr .= "<span class='app_status'> " . $prefixApp[$arrCon[0]] . "</span> must be <span class='app_status'>Not Installed yet</span></p>";
+                    } else {
+                        $textOr .= "<span class='app_status'> " . $prefixApp[$arrCon[0]] . "</span> must be <span class='app_status'>" . $status . '</span></p>';
+                    }
+                }
+            }
+
+            // Nếu có $textOr thì chứng tỏ điều kiện này ko thoả mãn. Break luôn.
+            if ($textOr) {
+                break;
+            }
+        }
+
+        return $textOr;
+    }
+
+    public function createCouponFromAffiliatePartner(array $formData, string $appCode, string $shopName)
+    {
+        $percentage = Arr::get($formData, 'percentage', 0);
+        $trialDays = Arr::get($formData, 'trial_days', 0);
 
         $connectionMap = [
             'up_promote' => env('DB_CONNECTION_APP_13'),
@@ -487,23 +471,33 @@ class GenerateServiceImp implements GenerateService
         $connection = $connectionMap[$appCode] ?? '';
 
         if (! $connection) {
-            throw new Exception('Not found connection');
+            return [
+                'message' => 'Not found connection',
+            ];
         }
 
         $name = "affiliate_partner_{$appCode}_{$percentage}_{$trialDays}";
-
-        $discount = $this->discountRepository->UpdateOrCreateDiscountInAffiliatePartner($name, $percentage, $trialDays, $connection);
+        $attributes= [
+            'name' => $name,
+            'type' => 'percentage',
+            'value' => $percentage,
+            'trial_days' => $trialDays,
+        ];
+        $discount = $this->discountRepository->UpdateOrCreateDiscountInAffiliatePartner($connection,$attributes);
         $shop = "{$shopName}.myshopify.com";
 
         $existingCoupon = $this->couponRepository->getCouponByDiscountIdandShop($discount, $shop, $connection);
         if ($existingCoupon) {
             if ($existingCoupon->times_used == 0) {
-                throw new Exception('Coupon already exists');
+                return [
+                    'message' => 'Coupon already exists',
+                ];
             }
         }
+
         $codeName = $this->generateCodeName($connection, $appCode, $discount->id, 'AF-');
 
-        $data = [
+        $attributes = [
             'code' => $codeName,
             'discount_id' => $discount->id,
             'shop' => $shop,
@@ -512,22 +506,12 @@ class GenerateServiceImp implements GenerateService
             'automatic' => true,
         ];
 
-        return $this->couponRepository->createCoupon($data, $connection);
-    }
-    private function generateCodeName(
-        string $connection,
-        string $appCode,
-        int $discountId,
-        string $prefix = ''
-    ) {
-        $partialCode = $appCode . $discountId . random_int(1, 10000) . time();
-        $code = $prefix . md5($partialCode);
-        $exist = Coupon::on($connection)->where('code', $code)->first();
-        if ($exist) {
-            return $this->generateCodeName($connection, $appCode, $discountId, $prefix);
-        }
+        $coupon = $this->couponRepository->createCoupon($connection,$attributes);
 
-        return $code;
+        return [
+            'message' => 'Coupon created successfully',
+            'coupon' => $coupon,
+        ];
     }
 
     private function getMessagesFromGenerate($generate)
@@ -542,33 +526,25 @@ class GenerateServiceImp implements GenerateService
         ];
     }
 
-    private function getShopAttributes($shop_id, $app_url, $generate_id)
+    private function getShopAttributes($shopId)
     {
         $client = new Client($this->apiKey, $this->siteId);
-        $endpoint = "/customers/{$shop_id}/attributes";
+        $endpoint = "/customers/{$shopId}/attributes";
         $client->setAppAPIKey($this->appKey);
 
         try {
-            $get_customerio = $client->get($endpoint);
-
-            return $get_customerio->customer->attributes;
+            $getCustomerio = $client->get($endpoint);
+            return $getCustomerio->customer->attributes;
         } catch (GuzzleException $e) {
-            return [
-                'header_message' => 'Connection Error!',
-                'content_message' => 'Oops! Can not connect to shop!',
-                'reasons' => 'The shop may be down or experiencing issues. Please try again!',
-                'app_url' => $app_url,
-                'generate_id' => $generate_id,
-            ];
+            return false;
         }
     }
 
-
-    private function generateUniqueCouponCode($discount_id, $shop_name, $app)
+    private function generateUniqueCouponCode($discountId, $shopName, $app)
     {
         do {
-            $newCode = strtoupper('GENAUTO' . random_int(1, 1000) . substr(md5("{$app}_{$discount_id}_{$shop_name}"), 2, 4));
-            $exists = $this->couponRepository->getCouponByCode($newCode, $app);
+            $newCode = strtoupper('GENAUTO' . random_int(1, 1000) . substr(md5("{$app}_{$discountId}_{$shopName}"), 2, 4));
+            $exists = $this->couponRepository->findByCode($newCode, $app);
         } while ($exists);
 
         return $newCode;
@@ -576,14 +552,68 @@ class GenerateServiceImp implements GenerateService
 
     private function isAutomaticCoupon($app)
     {
-        $automatic_apps = [
+        $automaticApps = [
             'banner', 'cs',
             'pl', 'customer_attribute', 'spin_to_win', 'smart_image_optimizer',
             'seo_booster', 'affiliate', 'loyalty', 'freegifts',
             'freegifts_new', 'reviews_importer',
         ];
 
-        return in_array($app, $automatic_apps);
+        return in_array($app, $automaticApps);
     }
 
+    private function generateCouponResponse(
+        string $headerMessage,
+        string $contentMessage,
+        ?string $reasons = null,
+        ?string $appUrl = null,
+        ?int $generateId = null,
+        ?string $customFail = null,
+        ?string $extendMessage = null,
+        ?string $couponCode = null
+    ): array {
+        $response = [
+            'header_message' => $headerMessage,
+            'content_message' => $contentMessage,
+        ];
+
+        if ($reasons !== null) {
+            $response['reasons'] = $reasons;
+        }
+        if ($appUrl !== null) {
+            $response['app_url'] = $appUrl;
+        }
+        if ($generateId !== null) {
+            $response['generate_id'] = $generateId;
+        }
+        if ($customFail !== null) {
+            $response['custom_fail'] = $customFail;
+        }
+        if ($extendMessage !== null) {
+            $response['extend_message'] = $extendMessage;
+        }
+        if ($couponCode !== null) {
+            $response['coupon_code'] = $couponCode;
+        }
+
+        return $response;
+    }
+
+    private function generateCodeName(
+        string $connection,
+        string $appCode,
+        int $discountId,
+        string $prefix = ''
+    ) {
+        $partialCode = $appCode . $discountId . random_int(1, 10000) . time();
+        $code = $prefix . md5($partialCode);
+        $exist = Coupon::on($connection)->where('code', $code)->first();
+
+        if ($exist) {
+            return $this->generateCodeName($connection, $appCode, $discountId, $prefix);
+        }
+
+        return $code;
+    }
+    //end create coupon from affiliate partner
 }

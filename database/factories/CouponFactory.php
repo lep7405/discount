@@ -23,7 +23,7 @@ class CouponFactory extends Factory
         return [
             'code' => $this->faker->unique()->word,
             'shop' => $this->faker->optional()->company,
-            'discount_id' => Discount::factory(),
+//            'discount_id' => Discount::factory(),
         ];
     }
 }

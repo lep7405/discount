@@ -14,73 +14,100 @@ class ReportServiceImp implements ReportService
 
     public function index(array $filters, string $databaseName)
     {
-        $count_all_discount = $this->discountRepository->countDiscount($databaseName);
-        $perPageDiscount = Arr::get($filters, 'per_page_discount', 5);
-        $perPageDiscount = $perPageDiscount == -1 ? $count_all_discount : $perPageDiscount;
-        $started_at = Arr::get($filters, 'started_at');
-        if ($started_at && ! in_array($started_at, ['desc', 'asc'])) {
-            throw DiscountException::inValidStartedAt();
-        }
-        $page_discount = Arr::get($filters, 'page_discount', 1);
-        Arr::set($filters, 'per_page_discount', $perPageDiscount);
-        Arr::set($filters, 'started_at', $started_at);
-        Arr::set($filters, 'page_discount', $page_discount);
-        $discountData = $this->discountRepository->getAllDiscountsReports($filters, $databaseName);
-        $total_items_discount = $discountData->total();
-        $total_pages_discount = $discountData->lastPage();
-        $current_pages_discount = $discountData->currentPage();
+        // Process discount data
+        $discountStats = $this->processDiscountData($filters, $databaseName);
 
-        $count_all_coupon = $this->couponRepository->countCoupons($databaseName);
-        $perPageCoupon = Arr::get($filters, 'per_page_coupon', 5);
-        $perPageCoupon = $perPageCoupon == -1 ? $count_all_coupon : $perPageCoupon;
-        $status = Arr::get($filters, 'status');
-        $status = $status !== null ? (int) $status : null;
-        $arrange_times_used = Arr::get($filters, 'time_used');
-        if ($arrange_times_used && ! in_array($arrange_times_used, ['desc', 'asc'])) {
-            throw CouponException::inValidArrangeTime();
-        }
-        $page_coupon = Arr::get($filters, 'page_coupon', 1);
-        Arr::set($filters, 'per_page_coupon', $perPageCoupon);
-        Arr::set($filters, 'status', $status);
-        Arr::set($filters, 'page_coupon', $page_coupon);
+        // Process coupon data
+        $couponStats = $this->processCouponData($filters, $databaseName);
 
-        $couponData = $this->couponRepository->getAllCouponsReport($filters, $databaseName);
-        $total_items_coupon = $couponData->total();
-        $total_pages_coupon = $couponData->lastPage();
-        $current_pages_coupon = $couponData->currentPage();
+        // Process summary statistics
+        $summaryStats = $this->calculateSummaryStats($databaseName);
 
-        $discounts = $this->discountRepository->getAllNotFilterWithCoupon($databaseName);
-        $count_discount = $discounts->count();
-        $count_discount_used = 0;
-        $count_coupon = 0;
-        $count_coupon_used = 0;
-        foreach ($discounts as $key => $discount) {
-            $total = 0;
-            foreach ($discount->coupon as $coupon) {
-                $count_coupon++;
-                $total += $coupon->times_used;
-            }
-            $count_coupon_used = $count_coupon_used + $total;
-            if ($total > 0) {
-                $count_discount_used += 1;
-            }
-        }
+        // Combine all results
+        return array_merge($discountStats, $couponStats, $summaryStats);
+    }
+
+    private function processDiscountData(array &$filters, string $databaseName): array
+    { $countAll = $this->discountRepository->countDiscount($databaseName);
+        $filters = $this->handleFiltersDiscount($countAll, $filters);
+        $discountData = $this->discountRepository->getAll( $databaseName ,$filters);
 
         return [
             'discountData' => $discountData,
-            'total_pages_discount' => $total_pages_discount,
-            'total_items_discount' => $total_items_discount,
-            'current_pages_discount' => $current_pages_discount,
+            'totalPagesDiscount' => $discountData->lastPage(),
+            'totalItemsDiscount' => $discountData->total(),
+            'currentPagesDiscount' => $discountData->currentPage(),
+            'totalItems' => $countAll,
+        ];
+    }
+    public function handleFiltersDiscount(int $countAll, array $filters){
+        $perPage = Arr::get($filters, 'perPageDiscount', config('constant.default_per_page'));
+        $perPage = $perPage == -1 ? $countAll : $perPage;
+        Arr::set($filters, 'perPageDiscount', $perPage);
+        $startedAt = Arr::get($filters, 'startedAt');
+        if ($startedAt && ! in_array($startedAt, ['desc', 'asc'])) {
+            Arr::set($filters, 'startedAt', null);
+        }
+        return $filters;
+    }
+    private function processCouponData(array &$filters, string $databaseName): array
+    {
+        $countAll = $this->couponRepository->countCoupons($databaseName);
+        $filters = $this->handleFiltersCoupon($countAll, $filters);
+        $couponData = $this->couponRepository->getAll(null, $databaseName, $filters);
 
+        return [
             'couponData' => $couponData,
-            'total_pages_coupon' => $total_pages_coupon,
-            'total_items_coupon' => $total_items_coupon,
-            'current_pages_coupon' => $current_pages_coupon,
+            'totalPagesCoupon' => $couponData->lastPage(),
+            'totalItemsCoupon' => $couponData->total(),
+            'currentPagesCoupon' => $couponData->currentPage(),
+            'totalItems' => $countAll,
+        ];
+    }
+    public function handleFiltersCoupon(int $countAll, array $filters)
+    {
+        $perPage = Arr::get($filters, 'perPageCoupon', 5);
+        $perPage = $perPage == -1 ? $countAll : $perPage;
+        Arr::set($filters, 'perPageCoupon', $perPage);
 
-            'count_discount' => $count_discount,
-            'count_discount_used' => $count_discount_used,
-            'count_coupon' => $count_coupon,
-            'count_coupon_used' => $count_coupon_used,
+        $arrangeTimesUsed = Arr::get($filters, 'timeUsed');
+        if ($arrangeTimesUsed && ! in_array($arrangeTimesUsed, ['desc', 'asc'])) {
+            Arr::set($filters, 'timeUsed', null);
+        }
+        $status = Arr::get($filters, 'status');
+        if ($status && ! in_array($status, ['0', '1'])) {
+            Arr::set($filters, 'status', null);
+        }
+
+        return $filters;
+    }
+
+    private function calculateSummaryStats(string $databaseName): array
+    {
+        $discounts = $this->discountRepository->getAllNotFilterWithCoupon($databaseName);
+        $countDiscount = $discounts->count();
+        $countDiscountUsed = 0;
+        $countCoupon = 0;
+        $countCouponUsed = 0;
+
+        foreach ($discounts as $discount) {
+            $total = 0;
+            foreach ($discount->coupon as $coupon) {
+                $countCoupon++;
+                $total += $coupon->times_used;
+            }
+
+            $countCouponUsed += $total;
+
+            if ($total > 0) {
+                $countDiscountUsed++;
+            }
+        }
+        return [
+            'countDiscount' => $countDiscount,
+            'countDiscountUsed' => $countDiscountUsed,
+            'countCoupon' => $countCoupon,
+            'countCouponUsed' => $countCouponUsed,
         ];
     }
 }

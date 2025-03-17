@@ -7,14 +7,14 @@
 @section("li_breadcumb")
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}"><span class="mr-2">/</span>{{ 'Discounts' }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.edit_discount', $discount->id) }}"><span class="mr-2">/</span>{{ $discount->name }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.editDiscount', $discount->id) }}"><span class="mr-2">/</span>{{ $discount->name }}</a></li>
 @endsection
 
 @section('title_admin_breadcumb')
     <span class="mr-2">/</span>{{ 'Create Coupon' }}
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
             <div class="flex flex-col lg:flex-row gap-6">

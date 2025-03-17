@@ -22,28 +22,23 @@ class DiscountException extends InternalException
         return self::new($messages);
     }
 
-    public static function canNotDelete(array $messages): self
+    public static function canNotDelete(): self
     {
-        return self::new($messages);
+        return self::new(['error' => 'Can not delete discount']);
     }
 
-    public static function validateEdit(array $message)
+    public static function discountExpired(): self
     {
-        return new self(null, $message);
+        return self::new(['error' => 'Discount expired']);
     }
 
-    public static function generateExist(array $messages): self
+    public static function inValidStartedAt(): self
     {
-        return self::new($messages);
+        return self::new(['error' => 'Invalid started_at']);
     }
 
-    public static function discountExpired(array $messages): self
+    public static function restrictUpdateFieldsForUsedDiscount(): self
     {
-        return self::new($messages);
-    }
-
-    public static function inValidStartedAt(array $messages): self
-    {
-        return self::new($messages);
+        return self::new(['error' => 'Cannot update type, value, trial_days, discount_for_x_month after discount is used.']);
     }
 }

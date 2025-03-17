@@ -26,11 +26,13 @@ class testReturn extends Command
     public function test1(): string
     {
         echo 'test1';
+
         return 'test2';
     }
+
     public function handle()
     {
-         $this->test1();
+        $this->test1();
         echo 2;
     }
 }

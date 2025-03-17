@@ -19,28 +19,32 @@ class CouponException extends InternalException
         return self::new($messages);
     }
 
-    public static function cannotUpdate(array $messages): self
+    public static function cannotUpdate(): self
     {
-        return self::new($messages);
+        return self::new(['error' => 'Coupon can not update']);
     }
 
-    public static function timesUsedLessThanDecrement(array $messages): self
+    public static function timesUsedLessThanDecrement(): self
     {
-        return self::new($messages);
+        return self::new(['error' => ['Invalid numDecrement']]);
     }
 
-    public static function codeAlreadyExist(array $messages): self
+    public static function codeAlreadyExist(): self
     {
-        return self::new($messages);
+        return self::new(['error' => 'Code existed']);
     }
 
-    public static function cannotDelete(array $messages): self
+    public static function cannotDelete(): self
     {
-        return self::new($messages);
+        return self::new(['message' => ['Can not delete coupon']]);
     }
 
     public static function inValidArrangeTime()
     {
         return new self('Invalid arrange time', 400);
+    }
+    public static function cannotDeleteCouponAlreadyUsed()
+    {
+        return self::new(['error' => 'Can not delete coupon already used']);
     }
 }

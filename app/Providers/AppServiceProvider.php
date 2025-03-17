@@ -12,6 +12,8 @@ use App\Repositories\User\UserRepository;
 use App\Repositories\User\UserRepositoryEloquent;
 use App\Services\Coupon\CouponService;
 use App\Services\Coupon\CouponServiceImp;
+use App\Services\DashBoard\DashBoardService;
+use App\Services\DashBoard\DashBoardServiceImp;
 use App\Services\Discount\DiscountService;
 use App\Services\Discount\DiscountServiceImp;
 use App\Services\Generate\GenerateService;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         GenerateRepository::class => GenerateRepositoryEloquent::class,
 
         ReportService::class => ReportServiceImp::class,
+        DashBoardService::class => DashBoardServiceImp::class,
     ];
 
     /**

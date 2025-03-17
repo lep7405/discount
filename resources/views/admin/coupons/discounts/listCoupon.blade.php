@@ -7,22 +7,28 @@
 @section("li_breadcumb")
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}"><span class="mr-2">/</span>{{ 'Discounts' }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.edit_discount', $discountData->id) }}"><span class="mr-2">/</span>{{ $discountData->name }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.editDiscount', $discountData->id) }}"><span class="mr-2">/</span>{{ $discountData->name }}</a></li>
 @endsection
 
 @section('title_admin_breadcumb')
     <span class="mr-2">/</span>{{ 'Coupons List' }}
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <div class="bg-white rounded-xl shadow-lg border border-gray-100">
         <!-- Card Header -->
         <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
-            <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Coupons List</h2>
-            <a href="{{ route('admin.'.$databaseName.'.create_coupon') }}"
+            <div class="flex items-center">
+                <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Coupons List</h2>
+                <button id="clear-filters-btn"
+                        class="ml-4 px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 flex items-center">
+                    <i class="fas fa-filter-slash mr-1"></i> Clear filters
+                </button>
+            </div>
+            <a href="{{ route('admin.'.$databaseName.'.createCouponInDiscount',$discountData->id) }}"
                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                 <i class="fas fa-plus mr-2"></i>
-                Add New Coupon
+                Add New Couponn
             </a>
         </div>
 
@@ -30,17 +36,17 @@
         <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gray-50/50">
             <form id="coupon-entries-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
                 <label class="text-sm text-gray-600">Show</label>
-                <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
+                <input type="hidden" name="searchCoupon" value="{{ $searchCoupon }}">
                 <input type="hidden" name="status" value="{{ $status }}">
-                <input type="hidden" name="time_used" value="{{ $time_used }}">
+                <input type="hidden" name="timeUsed" value="{{ $timeUsed }}">
                 <div class="relative inline-block">
-                    <select id="coupon-entries-select" name="per_page_coupon"
+                    <select id="coupon-entries-select" name="perPageCoupon"
                             class="appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-10 hover:border-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             onchange="this.form.submit()">
-                        <option value="5" {{ $per_page_coupon == 5 ? 'selected' : '' }}>5</option>
-                        <option value="10" {{ $per_page_coupon == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ $per_page_coupon == 20 ? 'selected' : '' }}>20</option>
-                        <option value="-1" {{ $per_page_coupon == -1 ? 'selected' : '' }}>All</option>
+                        <option value="5" {{ $perPageCoupon == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $perPageCoupon == 10 ? 'selected' : '' }}>10</option>
+                        <option value="20" {{ $perPageCoupon == 20 ? 'selected' : '' }}>20</option>
+                        <option value="-1" {{ $perPageCoupon == -1 ? 'selected' : '' }}>All</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -54,14 +60,14 @@
             </form>
             <div class="flex items-center">
                 <form id="coupon-search-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
-                    <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
+                    <input type="hidden" name="perPageCoupon" value="{{ $perPageCoupon }}">
                     <input type="hidden" name="status" value="{{ $status }}">
-                    <input type="hidden" name="time_used" value="{{ $time_used }}">
+                    <input type="hidden" name="timeUsed" value="{{ $timeUsed }}">
                     <label for="coupon-table-search" class="text-sm font-medium text-gray-600 mr-2">Search:</label>
                     <input type="search"
-                           name="search_coupon"
+                           name="searchCoupon"
                            id="coupon-table-search"
-                           value="{{ $search_coupon }}"
+                           value="{{ $searchCoupon }}"
                            class="min-w-[200px] border-2 border-gray-200 rounded-lg text-sm px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                            placeholder="Search coupons...">
                 </form>
@@ -147,12 +153,12 @@
                         @foreach ($couponData as $item)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <a href="{{ route('admin.' . $databaseName . '.edit_coupon', $item->id) }}" class="text-blue-600 hover:text-blue-800">
+                                    <a href="{{ route('admin.' . $databaseName . '.editCoupon', $item->id) }}" class="text-blue-600 hover:text-blue-800">
                                         {{ $item->id }}
                                     </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900" >
-                                    <a href="{{ route('admin.' . $databaseName . '.edit_coupon', $item->id) }}" class="text-blue-600 hover:text-blue-800">
+                                    <a href="{{ route('admin.' . $databaseName . '.editCoupon', $item->id) }}" class="text-blue-600 hover:text-blue-800">
                                         {{ $item->code }}
                                     </a>
                                 </td>
@@ -160,7 +166,7 @@
                                     {{ $item->shop }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" >
-                                    <a href="{{ route('admin.'.$databaseName.'.edit_discount',$discountData->id) }}" class="text-blue-600 hover:text-blue-800">
+                                    <a href="{{ route('admin.'.$databaseName.'.editDiscount',$discountData->id) }}" class="text-blue-600 hover:text-blue-800">
                                         {{ $discountData->name }}
                                     </a>
                                 </td>
@@ -185,14 +191,14 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <!-- Showing entries info -->
                         <div class="text-sm text-gray-600 font-medium">
-                            Showing {{ ($current_pages_coupon - 1) * $per_page_coupon + 1 }} to {{ min($current_pages_coupon * $per_page_coupon, $total_items_coupon) }} of {{ $total_items_coupon }} entries
+                            Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries
                         </div>
 
                         <!-- Pagination controls -->
                         <div class="flex items-center space-x-1">
                             <!-- First Page -->
-                            @if ($current_pages_coupon > 1)
-                                <a href="?page=1&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                            @if ($currentPagesCoupon > 1)
+                                <a href="?pageCoupon=1&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-double-left"></i>
                                 </a>
@@ -203,8 +209,8 @@
                             @endif
 
                             <!-- Previous Page -->
-                            @if ($current_pages_coupon > 1)
-                                <a href="?page={{ $current_pages_coupon - 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                            @if ($currentPagesCoupon > 1)
+                                <a href="?pageCoupon={{ $currentPagesCoupon - 1 }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-left"></i>
                                 </a>
@@ -216,12 +222,12 @@
 
                             <!-- Current Page Indicator -->
                             <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md">
-                                {{ $current_pages_coupon }}/{{ $total_pages_coupon }}
+                                {{ $currentPagesCoupon }}/{{ $totalPagesCoupon }}
                             </span>
 
                             <!-- Next Page -->
-                            @if ($current_pages_coupon < $total_pages_coupon)
-                                <a href="?page={{ $current_pages_coupon + 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                            @if ($currentPagesCoupon < $totalPagesCoupon)
+                                <a href="?pageCoupon={{ $currentPagesCoupon + 1 }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-right"></i>
                                 </a>
@@ -232,8 +238,8 @@
                             @endif
 
                             <!-- Last Page -->
-                            @if ($current_pages_coupon < $total_pages_coupon)
-                                <a href="?page={{ $total_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                            @if ($currentPagesCoupon < $totalPagesCoupon)
+                                <a href="?pageCoupon={{ $totalPagesCoupon }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                     <i class="fas fa-angle-double-right"></i>
                                 </a>
@@ -249,13 +255,13 @@
         </div>
         <form id="status-form" method="GET" action="{{ url()->current() }}" class="hidden">
             <input type="hidden" name="status" id="status-input">
-            <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
-            <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
+            <input type="hidden" name="searchCoupon" value="{{ $searchCoupon }}">
+            <input type="hidden" name="perPageCoupon" value="{{ $perPageCoupon }}">
         </form>
         <form id="times-used-form" method="GET" action="{{ url()->current() }}" class="hidden">
-            <input type="hidden" name="time_used" id="times-used-input">
-            <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
-            <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
+            <input type="hidden" name="timeUsed" id="times-used-input">
+            <input type="hidden" name="searchCoupon" value="{{ $searchCoupon }}">
+            <input type="hidden" name="perPageCoupon" value="{{ $perPageCoupon }}">
         </form>
     </div>
 @endsection
@@ -274,7 +280,30 @@
                     });
                 }, 100);
             }
+            const clearFiltersBtn = document.getElementById('clear-filters-btn');
+
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    // Lấy đường dẫn cơ bản không có query params
+                    const baseUrl = window.location.href.split('?')[0];
+
+                    // Chuyển hướng đến URL không có tham số
+                    window.location.href = baseUrl;
+                });
+            }
+
+            // Kiểm tra nếu đang có bộ lọc để hiển thị/ẩn nút
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.toString()) {
+                clearFiltersBtn.classList.remove('opacity-50');
+            } else {
+                clearFiltersBtn.classList.add('opacity-50');
+            }
         });
+
+
+
+
 
         function toggleDropdownTime() {
             const dropdown = document.getElementById('timeDropdown');

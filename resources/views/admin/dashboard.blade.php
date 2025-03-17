@@ -4,7 +4,7 @@
     Dashboard
 @endsection
 
-@section('main_content')
+@section('mainContent')
     <div class="p-6 space-y-6">
         {{-- Stats Cards --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -38,7 +38,7 @@
             <div class="bg-[#ffc107] rounded-lg shadow-sm overflow-hidden">
                 <div class="p-6 relative">
                     <div class="relative z-10">
-                        <h3 class="text-4xl font-bold text-white mb-2">{{ $count_discount_used }}</h3>
+                        <h3 class="text-4xl font-bold text-white mb-2">{{ $countDiscountUsed }}</h3>
                         <p class="text-white/90 text-lg">Discounts Used</p>
                     </div>
                     <div class="absolute top-6 right-6 text-white/30">
@@ -51,7 +51,7 @@
             <div class="bg-[#28a745] rounded-lg shadow-sm overflow-hidden">
                 <div class="p-6 relative">
                     <div class="relative z-10">
-                        <h3 class="text-4xl font-bold text-white mb-2">{{ $count_coupon_used }}</h3>
+                        <h3 class="text-4xl font-bold text-white mb-2">{{ $countCouponUsed }}</h3>
                         <p class="text-white/90 text-lg">Coupons Used</p>
                     </div>
                     <div class="absolute top-6 right-6 text-white/30">
@@ -93,19 +93,19 @@
                     @foreach ($dashboard_apps as $item)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $item['app_name'] }}
+                                {{ $item['appName'] }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <a href="{{ route('admin.'.$item['db'].'.discounts') }}"
                                    class="text-blue-500 hover:text-blue-700 hover:underline">
-                                    {{ $item['count_discount'] }}
+                                    {{ $item['countDiscount'] }}
                                 </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item['count_coupon'] }}
+                                {{ $item['countCoupon'] }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item['count_coupon_used'] }}
+                                {{ $item['countCouponUsed'] }}
                             </td>
                         </tr>
                     @endforeach
