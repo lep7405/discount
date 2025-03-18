@@ -4,20 +4,12 @@ namespace App\Exceptions;
 
 class DiscountException extends InternalException
 {
-    //    public static function validateCreate(array $message){
-    //        return new self($message);
-    //    }
     public static function validateCreate(array $messages): self
     {
         return self::new($messages);
     }
 
     public static function validateUpdate(array $messages): self
-    {
-        return self::new($messages);
-    }
-
-    public static function notFound(array $messages): self
     {
         return self::new($messages);
     }
@@ -32,10 +24,6 @@ class DiscountException extends InternalException
         return self::new(['error' => 'Discount expired']);
     }
 
-    public static function inValidStartedAt(): self
-    {
-        return self::new(['error' => 'Invalid started_at']);
-    }
 
     public static function restrictUpdateFieldsForUsedDiscount(): self
     {

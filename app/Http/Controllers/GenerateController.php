@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateGenerateRequest;
 use App\Http\Requests\UpdateGenerateRequest;
+use App\Models\Generate;
 use App\Services\Generate\GenerateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,12 +16,6 @@ class GenerateController extends Controller
 
     protected array $apps;
 
-    private string $apiKey;
-
-    private string $siteId;
-
-    private string $appKey;
-
     public function __construct()
     {
         $config = config('database.connections');
@@ -28,12 +23,6 @@ class GenerateController extends Controller
             Arr::except($config, ['mysql', 'mariadb', 'pgsql', 'sqlsrv', 'sqlite'])
         );
         $this->apps = array_map(fn ($db) => $db['app_name'] ?? '', $config);
-
-        $this->apiKey = config('Discount_manager.customerio.apiKey');
-
-        $this->siteId = config('Discount_manager.customerio.siteId');
-
-        $this->appKey = config('Discount_manager.customerio.appKey');
     }
 
     public function index(Request $request,GenerateService $generateService)
@@ -42,11 +31,12 @@ class GenerateController extends Controller
         return view('admin.generates.index', [
             'generateData' => $data['generateData'],
             'totalPages' => $data['totalPages'],
-            'totalItem' => $data['totalItems'],
+            'totalItems' => $data['totalItems'],
+            'totalGenerates' => $data['totalGenerates'],
             'currentPage' => $data['currentPages'] ?? 1,
             'perPage' => $request->query('perPage', 5),
-            'search' => $request->query('search'),
-            'status' => $request->query('status'),
+            'search' => $request->query('search') ?? null,
+            'status' => $request->query('status') ?? null,
         ]);
     }
 
@@ -104,9 +94,9 @@ class GenerateController extends Controller
         return back()->with('success', 'Change Status Generate Success');
     }
 
-    public function generateCoupon(int $generateId, $timeStamp, $shopId, GenerateService $generateService)
+    public function generateCoupon(int $generateId, $timestamp, $shopId, GenerateService $generateService)
     {
-        $data = $generateService->generateCoupon($generateId, $timeStamp, $shopId);
+        $data = $generateService->generateCoupon($generateId, $timestamp, $shopId);
 
         return view('customer.coupon.layout',
             [

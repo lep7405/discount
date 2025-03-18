@@ -160,10 +160,10 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <!-- Showing entries info -->
                         <div class="text-sm text-gray-600 font-medium">
-                            @if ($totalItemsDiscount == $totalItems)
+                            @if ($totalItemsDiscount == $totalDiscounts)
                                 Showing {{ ($currentPagesDiscount - 1) * $perPageDiscount + 1 }} to {{ min($currentPagesDiscount * $perPageDiscount, $totalItemsDiscount) }} of {{ $totalItemsDiscount }} entries
                             @else
-                                Showing {{ ($currentPagesDiscount - 1) * $perPageDiscount + 1 }} to {{ min($currentPagesDiscount * $perPageDiscount, $totalItemsDiscount) }} of {{ $totalItemsDiscount }} entries of {{ $totalItems }} total items
+                                Showing {{ ($currentPagesDiscount - 1) * $perPageDiscount + 1 }} to {{ min($currentPagesDiscount * $perPageDiscount, $totalItemsDiscount) }} of {{ $totalItemsDiscount }} entries of {{ $totalDiscounts }} total items
                             @endif
                         </div>
 

@@ -30,11 +30,6 @@ class Generate extends Model
 
     ];
 
-    public static function changeLogName($logName)
-    {
-        self::$logName = $logName;
-    }
-
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

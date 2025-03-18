@@ -78,7 +78,7 @@ class CouponServiceImp implements CouponService
         if ($coupon->timesUsed && $coupon->timesUsed > 0) {
             throw CouponException::cannotUpdate();
         }
-        $couponByCode = $this->couponRepository->getCouponByCode(Arr::get($attributes, 'code'), $databaseName);
+        $couponByCode = $this->couponRepository->findByCode(Arr::get($attributes, 'code'), $databaseName);
         if ($couponByCode) {
             if ($couponByCode->id != $id) {
                 throw CouponException::codeAlreadyExist();
@@ -119,7 +119,7 @@ class CouponServiceImp implements CouponService
 
     public function createCouponByDiscount(int $discountId, string $databaseName, array $attributes)
     {
-        $discount = $this->discountRepository->findDiscountByIdNoCoupon($discountId, $databaseName);
+        $discount = $this->discountRepository->findById($discountId, $databaseName);
         if (! $discount) {
             throw NotFoundException::Notfound('Discount not found');
         }

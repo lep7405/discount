@@ -11,7 +11,7 @@ class Discount extends Model
 {
     use HasFactory;
     use LogsActivity;
-    //    protected $connection = 'cs';
+//        protected $connection = 'cs';
 
     /**
      * Log Activity Attributes

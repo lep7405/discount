@@ -11,6 +11,7 @@ use App\Repositories\Discount\DiscountRepository;
 use App\Services\Coupon\CouponService;
 use App\Services\Coupon\CouponServiceImp;
 use Exception;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Mockery;
 uses(\Tests\TestCase::class);
@@ -22,199 +23,161 @@ beforeEach(function () {
         'couponRepository' => $this->couponRepository,
         'discountRepository' => $this->discountRepository,
     ]);
+
+    $this->couponService2 = app(CouponService::class);
+    $this->databaseName = 'cs';
+    Coupon::on($this->databaseName)->delete();
+    Discount::on($this->databaseName)->delete();
+
 });
 
 //test index
-test('it returns paginated coupons correctly', function () {
-    // Tạo dữ liệu giả cho kết quả phân trang
-    $couponCollection = collect([
-        (object) ['id' => 1, 'code' => 'TEST1', 'discount_id' => 1, 'times_used' => 1],
-        (object) ['id' => 2, 'code' => 'TEST2', 'discount_id' => 1, 'times_used' => 2],
-        (object) ['id' => 3, 'code' => 'TEST3', 'discount_id' => 1, 'times_used' => 0],
-        (object) ['id' => 4, 'code' => 'TEST4', 'discount_id' => 1, 'times_used' => 1],
-        (object) ['id' => 5, 'code' => 'TEST5', 'discount_id' => 1, 'times_used' => 2],
+it('index return correct pagination ', function () {
+    // Arrange
+    // Create a discount
+    $discount = Discount::on($this->databaseName)->create([
+        'name' => 'Test Discount',
+        'code' => 'TEST',
+        'value' => 10,
+        'type' => 'percentage',
     ]);
 
-    $paginatedData = new LengthAwarePaginator(
-        $couponCollection,
-        5,
-        5,
-        1
-    );
-    $this->couponRepository->shouldReceive('countCoupons')
-        ->once()
-        ->with('cs')
-        ->andReturn(5);
-    $this->couponRepository->shouldReceive('getAllCoupons')
-        ->once()
-        ->with(null, ['perPageCoupon' => 5, 'pageCoupon' => 1], 'cs')
-        ->andReturn($paginatedData);
+    // Create coupons
+    Coupon::factory()->count(3)->make()->each(function ($coupon) use ($discount) {
+        $coupon->discount_id = $discount->id;
+        $coupon->setConnection($this->databaseName)->save();
+    });
 
-    $result = $this->couponService->index([
-        'perPageCoupon' => 5,
-        'pageCoupon' => 1,
-    ], 'cs');
-
-    expect($result)->toBeArray()
-        ->and($result)->toHaveKeys(['couponData', 'totalItemsCoupon', 'currentPagesCoupon'])
-        ->and($result['couponData'])->toHaveCount(5)
-        ->and($result['totalItemsCoupon'])->toBe(5)
-        ->and($result['currentPagesCoupon'])->toBe(1);
-});
-
-test('index returns paginated coupon data with custom parameters', function () {
-    // Arrange
-    $filters = ['perPageCoupon' => 5];
-    $databaseName = 'test_db';
-    $totalCount = 15;
-
-    $couponItems = collect([
-        (object) ['id' => 1, 'code' => 'COUPON1', 'timesUsed' => 0, 'shop' => 'shop1'],
-        (object) ['id' => 2, 'code' => 'COUPON2', 'timesUsed' => 3, 'shop' => 'shop2'],
-    ]);
-
-    $paginatedData = new LengthAwarePaginator($couponItems, $totalCount, 5, 1);
-
-    $this->couponRepository->shouldReceive('countCoupons')
-        ->once()
-        ->with($databaseName)
-        ->andReturn($totalCount);
-
-    $this->couponRepository->shouldReceive('getAll')
-        ->withArgs(function ($discountId, $dbName, $filtersArg) use ($databaseName) {
-            return $discountId === null &&
-                $dbName === $databaseName &&
-                $filtersArg['perPageCoupon'] === 5;
-        })
-        ->andReturn($paginatedData);
-
-    // Act
-    $result = $this->couponService->index($databaseName, $filters);
-
-    // Assert
-    expect($result)
-        ->toBeArray()
-        ->toHaveKeys(['couponData', 'totalPagesCoupon', 'totalItemsCoupon', 'currentPagesCoupon', 'totalItems'])
-        ->and($result['couponData'])->toBe($paginatedData)
-        ->and($result['totalPagesCoupon'])->toBe($paginatedData->lastPage())
-        ->and($result['totalItemsCoupon'])->toBe($paginatedData->total())
-        ->and($result['currentPagesCoupon'])->toBe($paginatedData->currentPage())
-        ->and($result['totalItems'])->toBe($totalCount);
-});
-
-test('index sanitizes invalid filter parameters', function () {
-    // Arrange
-    $filters = ['perPageCoupon' => 5, 'timeUsed' => 'invalid', 'status' => '2'];
-    $databaseName = 'test_db';
-    $totalCount = 15;
-
-    $this->couponRepository->shouldReceive('countCoupons')
-        ->once()
-        ->with($databaseName)
-        ->andReturn($totalCount);
-
-    $this->couponRepository->shouldReceive('getAll')
-        ->withArgs(function ($discountId, $dbName, $filtersArg) {
-            return $discountId === null &&
-                $dbName === 'test_db' &&
-                $filtersArg['timeUsed'] === null &&
-                $filtersArg['status'] === null;
-        })
-        ->andReturn(new LengthAwarePaginator(collect([]), $totalCount, 5, 1));
-
-    // Act
-    $result = $this->couponService->index($databaseName, $filters);
-
-    // Assert
-    expect($result)->toBeArray();
-});
-
-test('index applies default pagination when no filters provided', function () {
-    // Arrange
-    $databaseName = 'test_db';
     $filters = [];
-    $countAll = 100;
-    $defaultPerPage = 5; // Default per page value in handleFilters method
-
-    $paginator = Mockery::mock(LengthAwarePaginator::class);
-    $paginator->shouldReceive('lastPage')->andReturn(20);
-    $paginator->shouldReceive('total')->andReturn($countAll);
-    $paginator->shouldReceive('currentPage')->andReturn(1);
-
-    $this->couponRepository->shouldReceive('countCoupons')
-        ->once()
-        ->with($databaseName)
-        ->andReturn($countAll);
-
-    $this->couponRepository->shouldReceive('getAll')
-        ->withArgs(function ($discountId, $dbName, $filtersArg) use ($defaultPerPage) {
-            return $discountId === null &&
-                $dbName === 'test_db' &&
-                isset($filtersArg['perPageCoupon']) &&
-                $filtersArg['perPageCoupon'] == $defaultPerPage;
-        })
-        ->andReturn($paginator);
 
     // Act
-    $result = $this->couponService->index($databaseName, $filters);
+    $result = $this->couponService2->index($this->databaseName, $filters);
 
     // Assert
-    expect($result)->toBe([
-        'couponData' => $paginator,
-        'totalPagesCoupon' => 20,
-        'totalItemsCoupon' => $countAll,
-        'currentPagesCoupon' => 1,
-        'totalItems' => $countAll,
+    expect($result['couponData'])->toBeInstanceOf(\Illuminate\Pagination\LengthAwarePaginator::class)
+        ->and($result['totalPagesCoupon'])->toBe(1)
+        ->and($result['totalItemsCoupon'])->toBe(3)
+        ->and($result['currentPagesCoupon'])->toBe(1)
+        ->and($result['totalCoupons'])->toBe(3)
+        ->and($result['couponData']->items())->toHaveCount(3);
+})->only();
+it('index return correct data with filters contain status', function () {
+    // Arrange
+    // Create a discount
+    $discount = Discount::on($this->databaseName)->create([
+        'name' => 'Test Discount',
+        'code' => 'TEST',
+        'value' => 10,
+        'type' => 'percentage',
     ]);
-});
 
-test('handleFilters correctly processes perPageCoupon parameter', function () {
+    // Create coupons with different status
+    Coupon::factory()->count(2)->make()->each(function ($coupon) use ($discount) {
+        $coupon->discount_id = $discount->id;
+        $coupon->status = 1;
+        $coupon->setConnection($this->databaseName)->save();
+    });
+
+    Coupon::factory()->count(1)->make()->each(function ($coupon) use ($discount) {
+        $coupon->discount_id = $discount->id;
+        $coupon->status = 0;
+        $coupon->setConnection($this->databaseName)->save();
+    });
+
+    $filters = ['status' => '1'];
+
+    $result = $this->couponService2->index($this->databaseName, $filters);
+
+    expect($result['totalItemsCoupon'])->toBe(2);
+    foreach ($result['couponData']->items() as $coupon) {
+        expect($coupon->status)->toBe(1);
+    }
+})->only();
+it('index return correct data with filters contain seachCoupon', function () {
+    $discount = Discount::on($this->databaseName)->create([
+        'name' => 'Test Discount',
+        'code' => 'TEST',
+        'value' => 10,
+        'type' => 'percentage',
+    ]);
+    Coupon::on($this->databaseName)->insert([
+        [
+            'code' => 'CODE123',
+            'shop' => 'Test Shop',
+            'discount_id' => $discount->id
+        ],
+        [
+            'code' => 'CODE456',
+            'shop' => 'Another Shop',
+            'discount_id' => $discount->id
+        ]
+    ]);
+
+    $filters = ['searchCoupon' => 'CODE123'];
+
+    $result = $this->couponService2->index($this->databaseName, $filters);
+
+    expect($result['totalItemsCoupon'])->toBe(1)
+        ->and($result['couponData']->first()->code)->toBe('CODE123');
+})->only();
+it('index return correct data with timesUsed', function () {
     // Arrange
-    $countAll = 100;
-    $service = $this->couponService;
+    $discount = Discount::on($this->databaseName)->create([
+        'name' => 'Test Discount',
+        'code' => 'TEST',
+        'value' => 10,
+        'type' => 'percentage',
+    ]);
 
-    // Test with -1 value (should use countAll)
-    $filters1 = ['perPageCoupon' => -1];
-    $result1 = $service->handleFilters($countAll, $filters1);
-    expect($result1['perPageCoupon'])->toBe($countAll);
+    Coupon::on($this->databaseName)->insert([
+        [
+            'code' => 'CODE123',
+            'shop' => 'Test Shop',
+            'discount_id' => $discount->id,
+            'times_used' => 5
+        ],
+        [
+            'code' => 'CODE456',
+            'shop' => 'Another Shop',
+            'discount_id' => $discount->id,
+            'times_used' => 10
+        ]
+    ]);
 
-    // Test with normal value
-    $filters2 = ['perPageCoupon' => 20];
-    $result2 = $service->handleFilters($countAll, $filters2);
-    expect($result2['perPageCoupon'])->toBe(20);
+    $filters = ['timeUsed' => 'asc'];
 
-    // Test with default value when not provided
-    $filters3 = [];
-    $result3 = $service->handleFilters($countAll, $filters3);
-    expect($result3['perPageCoupon'])->toBe(5);
-});
+    // Act
+    $result = $this->couponService2->index($this->databaseName, $filters);
 
-test('handleFilters sanitizes invalid timeUsed and status parameters', function () {
+    // Assert
+    expect($result['couponData']->first()->times_used)->toBe(5)
+        ->and($result['couponData']->last()->times_used)->toBe(10);
+})->only();
+it('index return correct page', function () {
     // Arrange
-    $countAll = 50;
-    $service = $this->couponService;
+    $discount = Discount::on($this->databaseName)->create([
+        'name' => 'Test Discount',
+        'code' => 'TEST',
+        'value' => 10,
+        'type' => 'percentage',
+    ]);
 
-    // Test with invalid timeUsed
-    $filters1 = ['timeUsed' => 'invalid'];
-    $result1 = $service->handleFilters($countAll, $filters1);
-    expect($result1['timeUsed'])->toBeNull();
+    Coupon::factory()->count(7)->make()->each(function ($coupon) use ($discount) {
+        $coupon->discount_id = $discount->id;
+        $coupon->setConnection($this->databaseName)->save();
+    });
 
-    // Test with valid timeUsed
-    $filters2 = ['timeUsed' => 'desc'];
-    $result2 = $service->handleFilters($countAll, $filters2);
-    expect($result2['timeUsed'])->toBe('desc');
+    $filters = ['perPageCoupon' => 5];
 
-    // Test with invalid status
-    $filters3 = ['status' => '2'];
-    $result3 = $service->handleFilters($countAll, $filters3);
-    expect($result3['status'])->toBeNull();
+    // Act
+    $result = $this->couponService2->index($this->databaseName, $filters);
 
-    // Test with valid status
-    $filters4 = ['status' => '1'];
-    $result4 = $service->handleFilters($countAll, $filters4);
-    expect($result4['status'])->toBe('1');
-});
-
+    // Assert
+    expect($result['totalItemsCoupon'])->toBe(7);
+    expect($result['couponData']->perPage())->toBe(5);
+    expect($result['couponData']->total())->toBe(7);
+    expect($result['totalPagesCoupon'])->toBe(2);
+})->only();
 
 //test update
 test('update coupon successfully when times_used is 0', function () {
@@ -320,7 +283,7 @@ test('update coupon with existing code but same ID', function () {
     expect($result)->toBe($updatedCoupon);
 });
 
-test('update throws exception when coupon has been used', function () {
+test('update coupon fails when coupon has been used', function () {
     $id = 1;
     $databaseName = 'test_db';
     $attributes = [
@@ -348,7 +311,7 @@ test('update throws exception when coupon has been used', function () {
         ->toThrow(CouponException::class);
 });
 
-test('update throws exception when coupon code already exists for different ID', function () {
+test('update coupon fails when coupon code already exists for different ID', function () {
     $id = 1;
     $databaseName = 'test_db';
     $attributes = [
@@ -385,7 +348,7 @@ test('update throws exception when coupon code already exists for different ID',
         ->toThrow(CouponException::class);
 });
 
-test('update throws exception when coupon not found', function () {
+test('update fails when coupon not found', function () {
     $id = 999;
     $databaseName = 'test_db';
     $attributes = [

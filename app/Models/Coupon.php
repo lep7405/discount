@@ -11,14 +11,11 @@ class Coupon extends Model
 {
     use HasFactory;
     use LogsActivity;
-
     protected static $logAttributes = ['code', 'shop', 'discount_id', 'times_used', 'status'];
 
     protected static $logOnlyDirty = true;
 
     protected static $logName = 'coupon_activity';
-
-    protected $connection = 'cs';
 
     protected $table = 'coupons';
 

@@ -17,13 +17,13 @@ interface DiscountRepository extends RepositoryInterface
     public function deleteDiscount(int $id, string $databaseName);
     public function findByIdWithCoupon(int $id, string $databaseName);
 
-    public function findByIdWithoutCoupon(int $id, string $databaseName);
+    public function findById(int $id, string $databaseName);
 
     public function getAllDiscountIdAndName(string $databaseName);
 
     public function findByIdsAndApp(array $discountIds, string $appName);
 
-    public function getAllNotFilterWithCoupon(string $databaseName);
+    public function getAllWithCoupon(string $databaseName);
 
     public function UpdateOrCreateDiscountInAffiliatePartner(string $connection,array $attributes);
 

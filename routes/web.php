@@ -18,19 +18,14 @@ Route::get('/', function () {
 Route::fallback(function(){
     return view('errors.404');
 });
+
 Route::group([], function () {
     Route::get('register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('register', [AuthController::class, 'register']);
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AuthController::class, 'login']);
 });
-Route::get('check-auth', function () {
-    if (auth()->check()) {
-        return 'Đã đăng nhập';
-    } else {
-        return 'Chưa đăng nhập, đáng lẽ phải redirect sang login';
-    }
-})->middleware('auth');
+
 Route::get('coupon/{generateId}/{timeStamp}/{shopId}', [GenerateController::class, 'generateCoupon'])->name('generate.url.coupon');
 
 Route::middleware('auth')->group(function () {
@@ -39,9 +34,6 @@ Route::middleware('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me'])->name('admin.user.current');
         Route::post('changePassWord', [AuthController::class, 'changePassword'])->name('admin.user.changePassword');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-
-        //        Route::get('dashboard', [DashboardController::class, 'index'])->name('admin.dashboard.index');
-        //        Route::post('generate', [DashboardController::class, 'generate'])->name('admin.generate.index');
 
         Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard.index');
 

@@ -106,15 +106,15 @@ class DiscountServiceImp implements DiscountService
     /**
      * @throws NotFoundException
      */
-    public function getDiscountInfo(int $id, string $databaseName): array
+    public function getDiscountInfo(int $id, string $databaseName)
     {
-        $discount = $this->discountRepository->findByIdWithoutCoupon($id, $databaseName);
+        $discount = $this->discountRepository->findById($id, $databaseName);
         if (! $discount) {
             throw NotFoundException::Notfound('Discount not found');
         }
 
-        return Arr::only($discount->toArray(), [
-            'id', 'name', 'started_at', 'expired_at', 'type', 'value', 'usage_limit', 'trial_days',
+        return (object) Arr::only($discount->toArray(), [
+            'id', 'name', 'started_at', 'expired_at', 'type', 'value', 'usage_limit', 'trial_days'
         ]);
     }
 }

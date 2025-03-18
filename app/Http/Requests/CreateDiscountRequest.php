@@ -28,7 +28,7 @@ class CreateDiscountRequest extends FormRequest
             'expired_at' => $this->input('expired_at'),
             'usage_limit' => $this->input('usage_limit'),
             'value' => $this->input('value'),
-            'trial_days' => $this->input('trial_days', 0),
+            'trial_days' => $this->input('trial_days'),
         ];
         if (in_array($databaseName, config('constant.SPECIAL_DATABASE_NAMES'))) {
             $validationData['discount_month'] = $this->input('discount_for_x_month') == '1'
@@ -52,7 +52,7 @@ class CreateDiscountRequest extends FormRequest
         ];
         if (in_array($databaseName, config('constant.SPECIAL_DATABASE_NAMES'))) {
             if ($this->input('discount_for_x_month') == '1') {
-                $rules['discount_month'] = 'required|integer|min:1';
+                $rules['discount_month'] = 'required|numeric|min:0';
             }
         }
 

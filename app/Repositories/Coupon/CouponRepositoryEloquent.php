@@ -48,6 +48,8 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
             })
             ->paginate($perPage, ['*'], 'pageCoupon', $pageCoupon);
     }
+
+
     public function countCoupons(string $databaseName)
     {
         return $this->getModel()
@@ -63,7 +65,7 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
             ->create([
                 'code' => Arr::get($attributes, 'code'),
                 'shop' => Arr::get($attributes, 'shop'),
-                'discount_id' => Arr::get($attributes, 'discount_id'),
+                'discount_id' => Arr::get($attributes, 'discountId'),
                 'automatic' => Arr::get($attributes, 'automatic', 0),
                 'status' => Arr::get($attributes, 'status', 1),
                 'times_used' => Arr::get($attributes, 'timesUsed'),

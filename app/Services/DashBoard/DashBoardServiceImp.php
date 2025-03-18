@@ -108,7 +108,7 @@ class DashBoardServiceImp implements DashBoardService
     private function getDiscountsWithCoupons($db): Collection
     {
         try {
-            return $this->discountRepository->getAllDiscountsWithCoupon($db);
+            return $this->discountRepository->getAllWithCoupon($db);
         } catch (Exception $e) {
             logger()->error("Can't access to app {$db}: {$e->getMessage()}");
             return collect([]);

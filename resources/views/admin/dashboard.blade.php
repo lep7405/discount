@@ -12,7 +12,7 @@
             <div class="bg-[#17a2b8] rounded-lg shadow-sm overflow-hidden">
                 <div class="p-6 relative">
                     <div class="relative z-10">
-                        <h3 class="text-4xl font-bold text-white mb-2">{{ count($discountData) }}</h3>
+                        <h3 class="text-4xl font-bold text-white mb-2">{{ $countDiscountData }}</h3>
                         <p class="text-white/90 text-lg">Discounts</p>
                     </div>
                     <div class="absolute top-6 right-6 text-white/30">
@@ -25,7 +25,7 @@
             <div class="bg-[#dc3545] rounded-lg shadow-sm overflow-hidden">
                 <div class="p-6 relative">
                     <div class="relative z-10">
-                        <h3 class="text-4xl font-bold text-white mb-2">{{ count($couponData) }}</h3>
+                        <h3 class="text-4xl font-bold text-white mb-2">{{ $countCouponData }}</h3>
                         <p class="text-white/90 text-lg">Coupons</p>
                     </div>
                     <div class="absolute top-6 right-6 text-white/30">
@@ -74,7 +74,7 @@
             <div id="appsTableContent" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
-                    <tr>
+                    <tr >
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             App Name
                         </th>
@@ -90,10 +90,14 @@
                     </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach ($dashboard_apps as $item)
-                        <tr class="hover:bg-gray-50">
+                    @foreach ($dashboardApps as $item)
+                        <tr class="hover:bg-gray-50 cursor:pointer" >
+
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $item['appName'] }}
+                                <a href="{{ route('admin.'.$item['db'].'.reports') }}"
+                                   class="text-blue-500 hover:text-blue-700 hover:underline">
+                                    {{ $item['appName'] }}
+                                </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <a href="{{ route('admin.'.$item['db'].'.discounts') }}"
@@ -102,7 +106,10 @@
                                 </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item['countCoupon'] }}
+                                <a href="{{ route('admin.'.$item['db'].'.discounts') }}"
+                                   class="text-blue-500 hover:text-blue-700 hover:underline">
+                                    {{ $item['countCoupon'] }}
+                                </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $item['countCouponUsed'] }}

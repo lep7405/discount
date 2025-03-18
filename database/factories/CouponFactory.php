@@ -18,12 +18,13 @@ class CouponFactory extends Factory
      */
     protected $model = Coupon::class;
 
+
     public function definition(): array
     {
         return [
-            'code' => $this->faker->unique()->word,
+            'code' => 'CODE' . $this->faker->unique()->numberBetween(1, 99999),
             'shop' => $this->faker->optional()->company,
-//            'discount_id' => Discount::factory(),
-        ];
+            'discount_id' => $this->faker->randomElement(range(3, 1002)),
+            ];
     }
 }

@@ -26,15 +26,14 @@ class DashboardController extends Controller
         $data = $dashBoardService->index($this->configDatabase);
 
         return view('admin.dashboard',
-            ['discountData' => $data['discountData'],
-                'couponData' => $data['couponData'],
+            [
+                'countDiscountData' => count($data['discountData']),
+                'countCouponData' => count($data['couponData']),
                 'countDiscountUsed' => $data['countDiscountUsed'],
                 'countCouponUsed' => $data['countCouponUsed'],
                 'apps' => $data['apps'],
-                'dashboard_apps' => $data['dashboardApps'],
+                'dashboardApps' => $data['dashboardApps'],
             ]);
     }
-
-    // Lấy discounts với coupons
 
 }

@@ -17,7 +17,8 @@ interface GenerateService
 
     public function changeStatus(int $id);
 
-    public function generateCoupon(int $generate_id, $timestamp, $shop_id);
+    public function generateCoupon(int $generateId, $timestamp, $shopId);
+    public function privateGenerateCoupon($ip, int $generateId,string $shopName);
 
     public function createCouponFromAffiliatePartner(array $formData, string $appCode, string $shopName);
 }

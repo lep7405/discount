@@ -23,12 +23,6 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
         $affiliate = DB::connection('affiliate')->table('discounts')->select('id as ids', 'name');
 
         return Generate::query()
-//                ->select('generates.*')
-//                ->addSelect(DB::raw(" CASE
-//             WHEN app_name = 'cs' THEN 'currency switcher'
-//            ELSE app_name
-//            end as full_name
-//            "))
             ->leftJoinSub($affiliate, 'discounts_affiliate', function ($join) {
                 $join->on('generates.discount_id', '=', 'discounts_affiliate.ids');
             })
@@ -47,12 +41,9 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
                         ->orWhereRaw("(CASE
                     WHEN app_name = 'cs' THEN 'currency switcher'
                     WHEN app_name = 'affiliate' THEN 'affiliate'
+
                     ELSE app_name
                 END) LIKE ?", ["%{$search}%"])
-//                        ->orwhere('name', 'cs')
-//                        ->whereRaw("'currency switcher' LIKE '%{$search}%'")
-//                        ->orwhere('name', 'affiliate')
-//                        ->whereRaw("'affiliate' LIKE '%{$search}%'")
                         ->orWhere('conditions', 'like', "%{$search}%")
                         ->orWhere('expired_range', 'like', "%{$search}%")
                         ->orWhere('app_url', 'like', "%{$search}%")
@@ -64,7 +55,6 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
                 $query->where('status', $status);
             })
             ->paginate($perPage);
-        //        return $data;
     }
 
     public function countGenerate()
@@ -81,10 +71,10 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
             ->first();
     }
 
-    public function createGenerate(array $data)
+    public function createGenerate(array $attributes)
     {
         return $this->getModel()
-            ->create($data);
+            ->create($attributes);
     }
 
     public function updateGenerate($id, array $data)

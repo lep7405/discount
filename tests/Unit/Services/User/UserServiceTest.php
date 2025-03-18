@@ -86,5 +86,4 @@ test('changePassword method hashes and updates password', function () {
         ->andReturn(true);
 
     $this->userService->changePassword($data, $userId);
-    // The method doesn't return anything, so we just verify the mocks were called as expected
 });

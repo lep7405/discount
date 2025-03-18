@@ -9,10 +9,6 @@ class GenerateException extends InternalException
         return self::new(['error' => 'Generate existed discount_id and app_name']);
     }
 
-    public static function validateEdit(string $message)
-    {
-        return new self("{$message}", 400);
-    }
 
     public static function validateCreate(array $messages): self
     {

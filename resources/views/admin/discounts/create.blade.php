@@ -70,6 +70,7 @@
                                            min="0"
                                            name="discount_month"
                                            value="{{ old('discount_month') }}"
+                                           step="0.01"
                                            placeholder="Nhập giá trị"
                                            class="form-input {{ $errors->has('discount_month') ? 'border-red-500' : 'border-gray-300' }}">
                                     @error('discount_month')
@@ -105,8 +106,6 @@
                                     @enderror
                                 </div>
                             </div>
-
-
                             <div>
                                 <label for="trial_days" class="block text-sm font-semibold text-gray-700">
                                     Trial days

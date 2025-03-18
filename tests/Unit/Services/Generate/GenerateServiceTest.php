@@ -12,6 +12,11 @@ use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
 use App\Repositories\Generate\GenerateRepository;
 use App\Services\Generate\GenerateService;
+use Customerio\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Mockery;
 
 uses(\Tests\TestCase::class);
@@ -32,309 +37,307 @@ beforeEach(function () {
     Generate::query()->delete();
 });
 //test index
-//test('index returns correct data structure with pagination', function () {
-//    $filters = ['perPage' => 5];
-//    $totalCount = 15;
-//
-//    // Giả lập dữ liệu generate
-//    $generateData = new Collection([
-//        new Generate([
-//            'id' => 1,
-//            'app_name' => 'db1',
-//            'discount_id' => 10,
-//            'status' => 1,
-//        ]),
-//        new Generate([
-//            'id' => 2,
-//            'app_name' => 'db1',
-//            'discount_id' => 20,
-//            'status' => 0,
-//        ]),
-//    ]);
-//
-//    // Tạo paginator
-//    $paginatedData = new LengthAwarePaginator(
-//        $generateData,
-//        $totalCount,
-//        5,
-//        1
-//    );
-//
-//    // Thiết lập mock
-//    $this->generateRepository->shouldReceive('countGenerate')
-//        ->once()
-//        ->andReturn($totalCount);
-//
-//    $this->generateRepository->shouldReceive('getAll')
-//        ->once()
-//        ->with($filters)
-//        ->andReturn($paginatedData);
-//
-//    // Mock findDiscountsByIdsAndApp
-//    $this->discountRepository->shouldReceive('findByIdsAndApp')
-//        ->once()
-//        ->withArgs(function ($ids, $appName) {
-//            return is_array($ids)
-//                && $ids == [10, 20]
-//                && $appName === 'db1';
-//        })
-//        ->andReturn(collect([
-//            (object) ['id' => 10, 'name' => 'Discount 1', 'expired_at' => null],
-//            (object) ['id' => 20, 'name' => 'Discount 2', 'expired_at' => now()->addDay()],
-//        ]));
-//
-//    $result = $this->generateService->index($filters);
-//
-//    // Kiểm tra kết quả
-//    expect($result)->toBeArray()
-//        ->toHaveKeys(['generateData', 'totalPages', 'totalItems', 'currentPages'])
-//        ->and($result['totalPages'])->toBe($paginatedData->lastPage())
-//        ->and($result['totalItems'])->toBe($paginatedData->total())
-//        ->and($result['currentPages'])->toBe($paginatedData->currentPage())
-//        ->and($result['generateData'])->toHaveCount(2);
-//
-//    // Kiểm tra các giá trị trong generateData
-//
-//    foreach ($result['generateData'] as $item) {
-//        expect($item)->toHaveKey('app_name')->toHaveKey('db_name')->toHaveKey('discount_name')
-//            ->and($item['app_name'])->toBe('Application One')
-//            ->and($item['db_name'])->toBe('db1');
-//    }
-//});
-//test('index handles -1 perPage value by using all records', function () {
-//    $filters = ['perPage' => -1];
-//    $totalCount = 15;
-//
-//    $this->generateRepository->shouldReceive('countGenerate')
-//        ->once()
-//        ->andReturn($totalCount);
-//
-//    $this->generateRepository->shouldReceive('getAll')
-//        ->once()
-//        ->withArgs(function ($args) use ($totalCount) {
-//            return $args['perPage'] === $totalCount;
-//        })
-//        ->andReturn(new LengthAwarePaginator(
-//            collect([]),
-//            $totalCount,
-//            perPage: $totalCount,
-//            currentPage: 1
-//        ));
-//
-//    $this->discountRepository->shouldReceive('findDiscountsByIdsAndApp')
-//        ->andReturn(collect([]));
-//
-//    $result = $this->generateService->index($filters);
-//
-//    expect($result)->toBeArray()
-//        ->and($result['totalItems'])->toBe($totalCount);
-//});
-//test('index throws NotFoundException when discount is not found', function () {
-//    $filters = ['perPage' => 5];
-//    $totalCount = 1;
-//
-//    // Tạo generate với discount_id không tồn tại
-//    $generateData = new Collection([
-//        new Generate([
-//            'id' => 1,
-//            'app_name' => 'app1',
-//            'discount_id' => 999, // ID không tồn tại
-//            'status' => 1,
-//        ]),
-//    ]);
-//
-//    $paginatedData = new LengthAwarePaginator(
-//        $generateData,
-//        $totalCount,
-//        5,
-//        1
-//    );
-//
-//    $this->generateRepository->shouldReceive('countGenerate')
-//        ->andReturn($totalCount);
-//
-//    $this->generateRepository->shouldReceive('getAll')
-//        ->andReturn($paginatedData);
-//
-//    // Trả về collection rỗng để mô phỏng không tìm thấy discount
-//    $this->discountRepository->shouldReceive('findByIdsAndApp')
-//        ->andReturn(collect([]));
-//
-//    // Phải ném ra NotFoundException
-//    $this->expectException(NotFoundException::class);
-//
-//    $this->generateService->index($filters);
-//});
-////test show create
-//test('showCreate gộp dữ liệu từ nhiều database và thêm thông tin database vào mỗi discount', function () {
-//    $databaseNames = ['db1', 'db2'];
-//
-//    // Mock dữ liệu từ discount repository
-//    $this->discountRepository->shouldReceive('getAllDiscountIdAndName')
-//        ->once()
-//        ->with('db1')
-//        ->andReturn([
-//            ['id' => 1, 'name' => 'Discount 1'],
-//            ['id' => 2, 'name' => 'Discount 2'],
-//        ]);
-//
-//    $this->discountRepository->shouldReceive('getAllDiscountIdAndName')
-//        ->once()
-//        ->with('db2')
-//        ->andReturn([
-//            ['id' => 3, 'name' => 'Discount 3'],
-//        ]);
-//
-//    // Gọi phương thức cần test
-//    $result = $this->generateService->create($databaseNames);
-//    // Kiểm tra kết quả
-//    expect($result)->toBeArray()->toHaveCount(3)
-//        ->and($result[0]['id'])->toBe(1)
-//        ->and($result[0]['name'])->toBe('Discount 1')
-//        ->and($result[0]['databaseName'])->toBe('db1')
-//        ->and($result[0]['appName'])->toBe('Application One');
-//});
-////test create
-//test('create generate fails when discount not found', function () {
-//    $discounIdNotExist = 1000000000;
-//    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
-//        ->with($discounIdNotExist, 'cs')
-//        ->andReturn(null);
-//    $data = [
-//        'discount_app' => $discounIdNotExist . '&cs',
-//    ];
-//    expect(fn () => $this->generateService->store($data))
-//        ->toThrow(NotFoundException::class, 'Discount not found');
-//});
-//test('create generate fails when discount expired', function () {
-//    $discount = (object) [
-//        'id' => 1,
-//        'name' => 'discount',
-//        'type' => 'percentage',
-//        'expired_at' => Carbon::now()->subDays(1),
-//    ];
-//    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
-//        ->with($discount->id, 'cs')
-//        ->andReturn($discount);
-//    $data=[
-//        'discount_app' => $discount->id . '&cs',
-//        'expired_range' => 50,
-//        'app_url' => 'http://localhost:8000/admin',
-//    ];
-//    expect(fn () => $this->generateService->store($data))->toThrow(function (DiscountException $e){
-//        expect($e->getErrors()['error'])->toBe('Discount expired');
-//    });
-//});
-//test('create generate fails when generate existed discount_id and app_name', function () {
-//    $discount = Discount::factory()->make([
-//        'id' => 1,
-//        'name' => 'discount',
-//        'type' => 'percentage',
-//        'expired_at' => now()->addDays(1),
-//    ]);
-//    $generate = Generate::factory()->make([
-//        'id' => 1,
-//        'discount_id' => 1,
-//        'app_name' => 'cs',
-//        'app_url' => 'http://localhost:8000/admin',
-//    ]);
-//    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
-//        ->with($discount->id, 'cs')
-//        ->andReturn($discount);
-//    $this->generateRepository->shouldReceive('findByDiscountIdAndAppName')
-//        ->with($discount->id, 'cs')
-//        ->andReturn($generate);
-//    $data = [
-//        'discount_app' => $discount->id . '&cs',
-//        'expired_range' => 50,
-//        'app_url' => 'http://localhost:8000/admin',
-//    ];
-//    expect(fn () =>  $this->generateService->store($data))
-//        ->toThrow(function (GenerateException $e) {
-//        expect($e->getErrors()['error'])->toBe('Generate existed discount_id and app_name');
-//    });
-//});
-//test('create generate success', function () {
-//    $discount = Discount::factory()->make([
-//        'id' => 1,
-//        'name' => 'discount',
-//        'type' => 'percentage',
-//        'expired_at' => Carbon::now()->addDays(1),
-//    ]);
-//
-//    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
-//        ->with($discount->id, 'cs')
-//        ->andReturn($discount);
-//
-//    $this->generateRepository->shouldReceive('findByDiscountIdAndAppName')
-//        ->with($discount->id, 'cs')
-//        ->andReturn(null);
-//
-//    $data = [
-//        'discount_app' => $discount->id . '&cs',
-//        'expired_range' => 50,
-//        'app_url' => 'http://localhost:8000/admin/generates_new',
-//        'limit' => 5,
-//        'condition_object' => '[{"id":1,"apps":[{"name":"fg","status":"notinstalledyet"}]},{"id":2,"apps":[{"name":"pp","status":"uninstalled"}]}]',
-//        'header_message' => 'header',
-//        'success_message' => 'success',
-//        'used_message' => 'used',
-//        'fail_message' => 'fails',
-//        'extend_message' => 'extend',
-//        'reason_expired' => 'time',
-//        'reason_limit' => 'limit',
-//        'reason_condition' => 'notMatch',
-//    ];
-//    $this->generateRepository->shouldReceive('createGenerate')
-//        ->once()
-//        ->withArgs(function ($actualData) use ($discount) {
-//            return isset($actualData['app_name'])
-//                && $actualData['app_name'] === 'cs'
-//                && isset($actualData['discount_id'])
-//                && $actualData['discount_id'] == $discount->id
-//                && isset($actualData['expired_range'])
-//                && $actualData['expired_range'] === 50;
-//        })
-//        ->andReturn([
-//            'app_name' => 'cs',
-//            'discount_id' => $discount->id,
-//            'conditions' => ['fg&notinstalledyet', 'pp&uninstalled'],
-//            'success_message' => ['message' => 'success', 'extend' => 'extend'],
-//            'fail_message' => ['message' => 'fails', 'reason_expired' => 'time', 'reason_limit' => 'limit', 'reason_condition' => 'notMatch'],
-//        ]);
-//
-//    $result = $this->generateService->store($data);
-//
-//    $this->assertEquals('cs', $result['app_name']);
-//    $this->assertEquals(['fg&notinstalledyet', 'pp&uninstalled'], $result['conditions']);
-//    $this->assertEquals(['message' => 'success', 'extend' => 'extend'], $result['success_message']);
-//    $this->assertEquals(['message' => 'fails', 'reason_expired' => 'time', 'reason_limit' => 'limit', 'reason_condition' => 'notMatch'], $result['fail_message']);
-//});
-////test condition
-//test('test function handle condition', function () {
-//    $condition = '[{"id":1,"apps":[{"name":"fg","status":"notinstalledyet"},{"name":"ca","status":"installed"}]},{"id":2,"apps":[{"name":"pl","status":"charged"}]}]';
-//    $result = $this->generateService->handleCondition($condition);
-//    $this->assertEquals(['fg&notinstalledyet||ca&installed', 'pl&charged'], $result);
-//});
-//test('test function handle condition when condition not string json', function () {
-//    $condition = '[{id:1,"apps":[{"name":"fg","status":"notinstalledyet"},{"name":"ca","status":"installed"}]},{"id":2,"apps":[{"name":"pl","status":"charged"}]}]';
-//    $result = $this->generateService->handleCondition($condition);
-//    $this->assertEquals([], $result);
-//});
-//test('test function handle condition when condition is empty array', function () {
-//    $condition = '[]';
-//    $result = $this->generateService->handleCondition($condition);
-//    $this->assertEquals([], $result);
-//});
-////test show update
+test('index returns correct data structure with pagination', function () {
+    $filters = ['perPage' => 5];
+    $totalCount = 15;
+
+    // Giả lập dữ liệu generate
+    $generateData = new Collection([
+        new Generate([
+            'id' => 1,
+            'app_name' => 'db1',
+            'discount_id' => 10,
+            'status' => 1,
+        ]),
+        new Generate([
+            'id' => 2,
+            'app_name' => 'db1',
+            'discount_id' => 20,
+            'status' => 0,
+        ]),
+    ]);
+
+    // Tạo paginator
+    $paginatedData = new LengthAwarePaginator(
+        $generateData,
+        $totalCount,
+        5,
+        1
+    );
+
+    // Thiết lập mock
+    $this->generateRepository->shouldReceive('countGenerate')
+        ->once()
+        ->andReturn($totalCount);
+
+    $this->generateRepository->shouldReceive('getAll')
+        ->once()
+        ->with($filters)
+        ->andReturn($paginatedData);
+
+    // Mock findDiscountsByIdsAndApp
+    $this->discountRepository->shouldReceive('findByIdsAndApp')
+        ->once()
+        ->withArgs(function ($ids, $appName) {
+            return is_array($ids)
+                && $ids == [10, 20]
+                && $appName === 'db1';
+        })
+        ->andReturn(collect([
+            (object) ['id' => 10, 'name' => 'Discount 1', 'expired_at' => null],
+            (object) ['id' => 20, 'name' => 'Discount 2', 'expired_at' => now()->addDay()],
+        ]));
+
+    $result = $this->generateService->index($filters);
+
+    // Kiểm tra kết quả
+    expect($result)->toBeArray()
+        ->toHaveKeys(['generateData', 'totalPages', 'totalItems', 'currentPages'])
+        ->and($result['totalPages'])->toBe($paginatedData->lastPage())
+        ->and($result['totalItems'])->toBe($paginatedData->total())
+        ->and($result['currentPages'])->toBe($paginatedData->currentPage())
+        ->and($result['generateData'])->toHaveCount(2);
+
+    // Kiểm tra các giá trị trong generateData
+
+    foreach ($result['generateData'] as $item) {
+        expect($item)->toHaveKey('app_name')->toHaveKey('db_name')->toHaveKey('discount_name')
+            ->and($item['app_name'])->toBe('Application One')
+            ->and($item['db_name'])->toBe('db1');
+    }
+});
+test('index handles -1 perPage value by using all records', function () {
+    $filters = ['perPage' => -1];
+    $totalCount = 15;
+
+    $this->generateRepository->shouldReceive('countGenerate')
+        ->once()
+        ->andReturn($totalCount);
+
+    $this->generateRepository->shouldReceive('getAll')
+        ->once()
+        ->withArgs(function ($args) use ($totalCount) {
+            return $args['perPage'] === $totalCount;
+        })
+        ->andReturn(new LengthAwarePaginator(
+            collect([]),
+            $totalCount,
+            perPage: $totalCount,
+            currentPage: 1
+        ));
+
+    $this->discountRepository->shouldReceive('findByIdsAndApp')
+        ->andReturn(collect([]));
+
+    $result = $this->generateService->index($filters);
+
+    expect($result)->toBeArray()
+        ->and($result['totalItems'])->toBe($totalCount);
+});
+test('index throws NotFoundException when discount is not found', function () {
+    $filters = ['perPage' => 5];
+    $totalCount = 1;
+
+    // Tạo generate với discount_id không tồn tại
+    $generateData = new Collection([
+        new Generate([
+            'id' => 1,
+            'app_name' => 'app1',
+            'discount_id' => 999, // ID không tồn tại
+            'status' => 1,
+        ]),
+    ]);
+
+    $paginatedData = new LengthAwarePaginator(
+        $generateData,
+        $totalCount,
+        5,
+        1
+    );
+
+    $this->generateRepository->shouldReceive('countGenerate')
+        ->andReturn($totalCount);
+
+    $this->generateRepository->shouldReceive('getAll')
+        ->andReturn($paginatedData);
+
+    // Trả về collection rỗng để mô phỏng không tìm thấy discount
+    $this->discountRepository->shouldReceive('findByIdsAndApp')
+        ->andReturn(collect([]));
+
+    // Phải ném ra NotFoundException
+    $this->expectException(NotFoundException::class);
+
+    $this->generateService->index($filters);
+});
+//test show create
+test('showCreate gộp dữ liệu từ nhiều database và thêm thông tin database vào mỗi discount', function () {
+    $databaseNames = ['db1', 'db2'];
+
+    // Mock dữ liệu từ discount repository
+    $this->discountRepository->shouldReceive('getAllDiscountIdAndName')
+        ->once()
+        ->with('db1')
+        ->andReturn([
+            ['id' => 1, 'name' => 'Discount 1'],
+            ['id' => 2, 'name' => 'Discount 2'],
+        ]);
+
+    $this->discountRepository->shouldReceive('getAllDiscountIdAndName')
+        ->once()
+        ->with('db2')
+        ->andReturn([
+            ['id' => 3, 'name' => 'Discount 3'],
+        ]);
+
+    // Gọi phương thức cần test
+    $result = $this->generateService->create($databaseNames);
+    // Kiểm tra kết quả
+    expect($result)->toBeArray()->toHaveCount(3)
+        ->and($result[0]['id'])->toBe(1)
+        ->and($result[0]['name'])->toBe('Discount 1')
+        ->and($result[0]['databaseName'])->toBe('db1')
+        ->and($result[0]['appName'])->toBe('Application One');
+});
+//test create
+test('create generate fails when discount not found', function () {
+    $discounIdNotExist = 1000000000;
+    $this->discountRepository->shouldReceive('findById')
+        ->with($discounIdNotExist, 'cs')
+        ->andReturn(null);
+    $data = [
+        'discount_app' => $discounIdNotExist . '&cs',
+    ];
+    expect(fn () => $this->generateService->store($data))
+        ->toThrow(NotFoundException::class, 'Discount not found');
+});
+test('create generate fails when discount expired', function () {
+    $discount = (object) [
+        'id' => 1,
+        'name' => 'discount',
+        'type' => 'percentage',
+        'expired_at' => Carbon::now()->subDays(1),
+    ];
+    $this->discountRepository->shouldReceive('findById')
+        ->with($discount->id, 'cs')
+        ->andReturn($discount);
+    $data=[
+        'discount_app' => $discount->id . '&cs',
+        'expired_range' => 50,
+        'app_url' => 'http://localhost:8000/admin',
+    ];
+    expect(fn () => $this->generateService->store($data))->toThrow(function (DiscountException $e){
+        expect($e->getErrors()['error'])->toBe('Discount expired');
+    });
+});
+test('create generate fails when generate existed discount_id and app_name', function () {
+    $discount = Discount::factory()->make([
+        'id' => 1,
+        'name' => 'discount',
+        'type' => 'percentage',
+        'expired_at' => now()->addDays(1),
+    ]);
+    $generate = Generate::factory()->make([
+        'id' => 1,
+        'discount_id' => 1,
+        'app_name' => 'cs',
+        'app_url' => 'http://localhost:8000/admin',
+    ]);
+    $this->discountRepository->shouldReceive('findById')
+        ->with($discount->id, 'cs')
+        ->andReturn($discount);
+    $this->generateRepository->shouldReceive('findByDiscountIdAndAppName')
+        ->with($discount->id, 'cs')
+        ->andReturn($generate);
+    $data = [
+        'discount_app' => $discount->id . '&cs',
+        'expired_range' => 50,
+        'app_url' => 'http://localhost:8000/admin',
+    ];
+    expect(fn () =>  $this->generateService->store($data))
+        ->toThrow(function (GenerateException $e) {
+        expect($e->getErrors()['error'])->toBe('Generate existed discount_id and app_name');
+    });
+});
+test('create generate success', function () {
+    $discount = Discount::factory()->make([
+        'id' => 1,
+        'name' => 'discount',
+        'type' => 'percentage',
+        'expired_at' => Carbon::now()->addDays(1),
+    ]);
+
+    $this->discountRepository->shouldReceive('findById')
+        ->with($discount->id, 'cs')
+        ->andReturn($discount);
+
+    $this->generateRepository->shouldReceive('findByDiscountIdAndAppName')
+        ->with($discount->id, 'cs')
+        ->andReturn(null);
+
+    $data = [
+        'discount_app' => $discount->id . '&cs',
+        'expired_range' => 50,
+        'app_url' => 'http://localhost:8000/admin/generates_new',
+        'limit' => 5,
+        'condition_object' => '[{"id":1,"apps":[{"name":"fg","status":"notinstalledyet"}]},{"id":2,"apps":[{"name":"pp","status":"uninstalled"}]}]',
+        'header_message' => 'header',
+        'success_message' => 'success',
+        'used_message' => 'used',
+        'fail_message' => 'fails',
+        'extend_message' => 'extend',
+        'reason_expired' => 'time',
+        'reason_limit' => 'limit',
+        'reason_condition' => 'notMatch',
+    ];
+    $this->generateRepository->shouldReceive('createGenerate')
+        ->once()
+        ->withArgs(function ($actualData) use ($discount) {
+            return isset($actualData['app_name'])
+                && $actualData['app_name'] === 'cs'
+                && isset($actualData['discount_id'])
+                && $actualData['discount_id'] == $discount->id
+                && isset($actualData['expired_range'])
+                && $actualData['expired_range'] === 50;
+        })
+        ->andReturn([
+            'app_name' => 'cs',
+            'discount_id' => $discount->id,
+            'conditions' => ['fg&notinstalledyet', 'pp&uninstalled'],
+            'success_message' => ['message' => 'success', 'extend' => 'extend'],
+            'fail_message' => ['message' => 'fails', 'reason_expired' => 'time', 'reason_limit' => 'limit', 'reason_condition' => 'notMatch'],
+        ]);
+
+    $result = $this->generateService->store($data);
+
+    $this->assertEquals('cs', $result['app_name']);
+    $this->assertEquals(['fg&notinstalledyet', 'pp&uninstalled'], $result['conditions']);
+    $this->assertEquals(['message' => 'success', 'extend' => 'extend'], $result['success_message']);
+    $this->assertEquals(['message' => 'fails', 'reason_expired' => 'time', 'reason_limit' => 'limit', 'reason_condition' => 'notMatch'], $result['fail_message']);
+});
+//test condition
+test('test function handle condition', function () {
+    $condition = '[{"id":1,"apps":[{"name":"fg","status":"notinstalledyet"},{"name":"ca","status":"installed"}]},{"id":2,"apps":[{"name":"pl","status":"charged"}]}]';
+    $result = $this->generateService->handleCondition($condition);
+    $this->assertEquals(['fg&notinstalledyet||ca&installed', 'pl&charged'], $result);
+});
+test('test function handle condition when condition not string json', function () {
+    $condition = '[{id:1,"apps":[{"name":"fg","status":"notinstalledyet"},{"name":"ca","status":"installed"}]},{"id":2,"apps":[{"name":"pl","status":"charged"}]}]';
+    $result = $this->generateService->handleCondition($condition);
+    $this->assertEquals([], $result);
+});
+test('test function handle condition when condition is empty array', function () {
+    $condition = '[]';
+    $result = $this->generateService->handleCondition($condition);
+    $this->assertEquals([], $result);
+});
+//test show update
 test('edit should return generate, discount data and deletion status', function () {
-    // Tạo biến cho các giá trị lặp lại
     $generateId = 1;
     $databaseNames = ['cs', 'pp'];
     $appName = 'cs';
     $discountId = 100;
 
-    // Tạo mock objects với thuộc tính tối thiểu
     $generate = Generate::factory()->make([
         'id' => $generateId,
         'discount_id' => $discountId,
@@ -345,7 +348,6 @@ test('edit should return generate, discount data and deletion status', function 
         'id' => $discountId,
     ]);
 
-    // Cấu hình repository mocks
     $this->generateRepository->shouldReceive('findById')
         ->once()
         ->with($generateId)
@@ -356,12 +358,6 @@ test('edit should return generate, discount data and deletion status', function 
         ->with($discountId, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
-        ->once()
-        ->with($discountId, $appName)
-        ->andReturn($discount);
-
-    // Dữ liệu discount đơn giản hóa
     $discountsCs = [
         ['id' => 100, 'name' => 'CS Discount 1'],
         ['id' => 101, 'name' => 'CS Discount 2']
@@ -382,7 +378,6 @@ test('edit should return generate, discount data and deletion status', function 
         ->with('pp')
         ->andReturn($discountsPp);
 
-    // Cấu hình app names
     config(['database.connections.cs.app_name' => 'Currency Switcher']);
     config(['database.connections.pp.app_name' => 'Promotion Popup']);
 
@@ -490,7 +485,7 @@ test('update generate fails when no coupon has code like GENAUTO% and discount n
         ->with($discount->id, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($discountIdNew, $appName)
         ->andReturn(null);
 
@@ -539,7 +534,7 @@ test('update generate fails when no coupon has code like GENAUTO% and discount n
         ->with($discount->id, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($discountIdNew, $appName)
         ->andReturn($discountNew);
 
@@ -591,7 +586,7 @@ test('update generate fails when no coupon has code like GENAUTO% and generate e
         ->with($discount->id, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($discountIdNew, $appName)
         ->andReturn($discountNew);
 
@@ -740,7 +735,7 @@ test('update generate success when no coupon has code like GENAUTO%', function (
         ->with($discountId, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($discountId, $appName)
         ->andReturn($discount);
 
@@ -896,48 +891,23 @@ test('private generate coupon fails when ip not supported', function () {
         ->and($result['status'])->toBeFalse()
         ->and($result['message'])->toBe('Ip not valid!');
 });
-
 test('private generate coupon fails when generate not found', function () {
     // Use descriptive variable names
     $validIp = '127.0.0.1';
-    $nonExistentId = 100000;
+    $generateIdNotExist = 100000;
     $shopName = 'testShop';
 
     $this->generateRepository->shouldReceive('findById')
-        ->with($nonExistentId)
+        ->with($generateIdNotExist)
         ->andReturn(null);
 
-    $result = $this->generateService->privateGenerateCoupon($validIp, $nonExistentId, $shopName);
+    $result = $this->generateService->privateGenerateCoupon($validIp, $generateIdNotExist, $shopName);
 
     expect($result)->toBeArray()
         ->and($result['status'])->toBeFalse()
         ->and($result['message'])->toBe('Generate not exist!');
 });
-
-test('private generate coupon fails when generate is inactive', function () {
-
-    $validIp = '127.0.0.1';
-    $generateId = 123;
-    $shopName = 'testShop';
-
-    $generate = Generate::factory()->make([
-        'id' => $generateId,
-        'status' => false, // Inactive status
-    ]);
-
-    $this->generateRepository->shouldReceive('findById')
-        ->with($generateId)
-        ->andReturn($generate);
-
-    $result = $this->generateService->privateGenerateCoupon($validIp, $generateId, $shopName);
-
-    expect($result)->toBeArray()
-        ->and($result['status'])->toBeFalse()
-        ->and($result['message'])->toBe('Generate not active!');
-});
-
 test('private generate coupon fails when coupon used', function () {
-    // Use descriptive variable names
     $validIp = '127.0.0.1';
     $generateId = 123;
     $discountId = 456;
@@ -945,22 +915,18 @@ test('private generate coupon fails when coupon used', function () {
     $shopDomain = $shopName . '.myshopify.com';
     $appName = 'cs';
 
-    // Minimal generate object with only required properties
     $generate = Generate::factory()->make([
         'id' => $generateId,
         'app_name' => $appName,
         'discount_id' => $discountId,
-        'status' => true, // Active status
     ]);
 
-    // Minimal coupon object - use stdClass to match existing code pattern
     $coupon = Coupon::factory()->make([
         'id' => 789,
         'code' => 'GENAUTO123',
         'times_used' => 1, // Used coupon
     ]);
 
-    // Setup repository mocks
     $this->generateRepository->shouldReceive('findById')
         ->with($generateId)
         ->andReturn($generate);
@@ -969,27 +935,30 @@ test('private generate coupon fails when coupon used', function () {
         ->with($discountId, $shopDomain, $appName)
         ->andReturn($coupon);
 
-    // Call service method
     $result = $this->generateService->privateGenerateCoupon($validIp, $generateId, $shopName);
 
-    // Use Pest assertions
     expect($result)->toBeArray()
         ->and($result['status'])->toBeFalse()
         ->and($result['message'])->toBe('Coupon used!');
 });
+test('private generate coupon success when has coupon and coupon not used', function () {
+    $validIp = '127.0.0.1';
+    $shopName = 'testShop';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+    $discountId= 456;
 
-
-test('private generate coupon success when coupon not used', function () {
     $generate = Generate::factory()->make([
         'id' => 123,
         'app_name' => 'cs',
-        'discount_id' => 456,
+        'discount_id' => $discountId,
         'status' => true,
     ]);
     $coupon = Coupon::factory()->make([
         'id' => 789,
         'code' => 'GENAUTO123',
-        'times_used' => 0,
+        'discount_id' => $discountId,
+        'times_used' => 0, //coupon not used
     ]);
 
     $this->generateRepository->shouldReceive('findById')
@@ -997,10 +966,10 @@ test('private generate coupon success when coupon not used', function () {
         ->andReturn($generate);
 
     $this->couponRepository->shouldReceive('findByDiscountIdandShop')
-        ->with($generate->discount_id, 'shopName.myshopify.com', 'cs')  // Sửa lại tham số đúng
+        ->with($generate->discount_id, $shopDomain, $appName)
         ->andReturn($coupon);
 
-    $result = $this->generateService->privateGenerateCoupon('127.0.0.1', $generate->id, 'shopName');
+    $result = $this->generateService->privateGenerateCoupon($validIp, $generate->id, $shopName);
 
     expect($result)->toBe([
         'status' => true,
@@ -1009,9 +978,13 @@ test('private generate coupon success when coupon not used', function () {
 });
 test('private generate coupon fails when discount not found', function () {
     $discountIdNotExist = 10000;
+    $shopName = 'testShop';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+
     $generate = Generate::factory()->make([
         'id' => 123,
-        'app_name' => 'cs',
+        'app_name' => $appName,
         'discount_id' => $discountIdNotExist,
         'status' => true,
     ]);
@@ -1020,30 +993,31 @@ test('private generate coupon fails when discount not found', function () {
         ->andReturn($generate);
 
     $this->couponRepository->shouldReceive('findByDiscountIdandShop')
-        ->with($generate->discount_id, 'shopName.myshopify.com', 'cs')  // Sửa lại tham số đúng
+        ->with($generate->discount_id, $shopDomain, $appName)  // Sửa lại tham số đúng
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($generate->discount_id, $generate->app_name)
         ->andReturn(null);
 
     $result = $this->generateService->privateGenerateCoupon('127.0.0.1', $generate->id, 'shopName');
-    $this->assertEquals([
+    expect($result)->toBe([
         'status' => false,
         'message' => 'Discount not found!',
-    ], $result);
+    ]);
 });
-
-
 test('private generate coupon fails when discount expired', function () {
-
+    $invalidIp = '0.0.0.1';
+    $shopName = 'testShop';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
     $discount = Discount::factory()->make([
         'id' => 456,
-        'expired_at' => now()->subDay(),
+        'expired_at' => now()->subDay(1),//expired
     ]);
     $generate = Generate::factory()->make([
         'id' => 123,
-        'app_name' => 'cs',
+        'app_name' => $appName,
         'discount_id' => $discount->id,
         'status' => true,
     ]);
@@ -1052,40 +1026,42 @@ test('private generate coupon fails when discount expired', function () {
         ->andReturn($generate);
 
     $this->couponRepository->shouldReceive('findByDiscountIdandShop')
-        ->with($generate->discount_id, 'shopName.myshopify.com', 'cs')  // Sửa lại tham số đúng
+        ->with($generate->discount_id, $shopDomain, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($generate->discount_id, $generate->app_name)
         ->andReturn($discount);
-    $result = $this->generateService->privateGenerateCoupon('127.0.0.1', $generate->id, 'shopName');
-    $this->assertEquals([
+    $result = $this->generateService->privateGenerateCoupon($invalidIp, $generate->id, $shopName);
+    expect($result)->toBe([
         'status' => false,
         'message' => 'Discount expired!',
-    ], $result);
+    ]);
 });
-
-
 test('private generate coupon fails when limit is reached', function () {
-    $shopNameTest = 'shop1';
+    $invalidIp = '0.0.0.1';
+    $shopName = 'testShop';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+
     $discount = Discount::factory()->make([
         'id' => 456,
         'expired_at' => now()->addDay(),
     ]);
     $generate = Generate::factory()->make([
         'id' => 123,
-        'app_name' => 'cs',
+        'app_name' => $appName,
         'discount_id' => $discount->id,
         'status' => true,
-        'limit' => 1,
+        'limit' => 1, //limit coupon
     ]);
     $this->generateRepository->shouldReceive('findById')
         ->with($generate->id)
         ->andReturn($generate);
     $this->couponRepository->shouldReceive('findByDiscountIdandShop')
-        ->with($generate->discount_id, $shopNameTest . '.myshopify.com', 'cs')
+        ->with($generate->discount_id, $shopDomain,$appName)
         ->andReturn(null);
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($generate->discount_id, $generate->app_name)
         ->andReturn($discount);
 
@@ -1093,16 +1069,14 @@ test('private generate coupon fails when limit is reached', function () {
         ->with($generate->discount_id, 'cs')
         ->andReturn(1);
 
-    $result = $this->generateService->privateGenerateCoupon('127.0.0.1', $generate->id, $shopNameTest);
+    $result = $this->generateService->privateGenerateCoupon($invalidIp, $generate->id, $shopName);
 
     expect($result)->toBe([
         'status' => false,
         'message' => 'Limit Coupon!',
     ]);
 });
-
-test('private generate coupon success', function () {
-    // Define test variables
+test('private generate coupon success when no code for shop and create new code', function () {
     $validIp = '127.0.0.1';
     $generateId = 123;
     $discountId = 456;
@@ -1110,7 +1084,6 @@ test('private generate coupon success', function () {
     $shopDomain = $shopName . '.myshopify.com';
     $appName = 'cs';
 
-    // Create minimal generate object with required properties
     $generate = Generate::factory()->make([
         'id' => $generateId,
         'app_name' => $appName,
@@ -1118,19 +1091,11 @@ test('private generate coupon success', function () {
         'status' => true,
         'limit' => 10,
     ]);
-
-    // Create minimal discount object
     $discount = Discount::factory()->make([
         'id' => $discountId,
         'expired_at' => now()->addDay(),
     ]);
 
-    // Use stdClass for coupon to match repository return type
-    $newCoupon = (object)[
-        'code' => 'GENAUTO123',
-    ];
-
-    // Configure repository mocks with consistent method names
     $this->generateRepository->shouldReceive('findById')
         ->with($generateId)
         ->andReturn($generate);
@@ -1139,30 +1104,29 @@ test('private generate coupon success', function () {
         ->with($discountId, $shopDomain, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($discountId, $appName)
         ->andReturn($discount);
 
-    // Mock count check for limit validation
     $this->couponRepository->shouldReceive('countByDiscountIdAndCode')
         ->with($discountId, $appName)
         ->andReturn(0);
 
-    // Mock unique code generation
     $this->couponRepository->shouldReceive('findByCode')
         ->andReturn(null);
 
-    // Mock coupon creation
+    $newCoupon = (object)[
+        'code' => 'GENAUTO123',
+    ];
     $this->couponRepository->shouldReceive('createCoupon')
         ->andReturn($newCoupon);
 
-    // Call the service method
     $result = $this->generateService->privateGenerateCoupon($validIp, $generateId, $shopName);
 
-    // Use Pest's fluid assertions
-    expect($result)->toBeArray()
-        ->and($result['status'])->toBeTrue()
-        ->and($result['message'])->toBe('Success generate coupon!');
+    expect($result)->toBe([
+        'status' => true,
+        'message' => 'Success generate coupon!',
+    ]);
 });
 
 
@@ -1172,7 +1136,6 @@ test('generate coupon fails when generate not found', function () {
     $timestamp = time();
     $shopId = 'shop_123';
 
-    // Mock repository không tìm thấy generate
     $this->generateRepository->shouldReceive('getGenerateById')
         ->with($generateId)
         ->andReturn(null);
@@ -1186,20 +1149,19 @@ test('generate coupon fails when generate not found', function () {
         ->and($result['content_message'])->toBe('WHOOPS!')
         ->and($result['reasons'])->toBe('This offer does not exist!');
 });
-
 test('generate coupon fails when generate is inactive', function () {
     $generateId = 123;
     $timestamp = time();
     $shopId = 'shop_123';
 
-    // Tạo generate không hoạt động
+
     $generate = Generate::factory()->make([
         'id' => $generateId,
-        'status' => false,
+        'status' => false, //inactive
         'app_url' => 'https://example.com',
     ]);
 
-    $this->generateRepository->shouldReceive('getGenerateById')
+    $this->generateRepository->shouldReceive('findById')
         ->with($generateId)
         ->andReturn($generate);
 
@@ -1215,6 +1177,348 @@ test('generate coupon fails when generate is inactive', function () {
         ->and($result['app_url'])->toBe('https://example.com')
         ->and($result['generate_id'])->toBe($generateId);
 });
+
+test('generate coupon fails when unable to connect the shop', function () {
+    $generate =Generate::factory()->make([
+        'id' => 1,
+        'app_url' => 'http://example.com',
+        'status' => true,
+        'app_name' => 'test_app',
+        'discount_id' => 123,
+        'header_message' => null,
+        'used_message' => null,
+    ]);
+
+    $this->generateRepository
+        ->shouldReceive('findById')
+        ->with($generate->id)
+        ->once()
+        ->andReturn($generate);
+
+    $clientMock = Mockery::mock('overload:Customerio\Client');
+
+    $clientMock->shouldReceive('__construct')
+        ->withAnyArgs()
+        ->once();
+
+    $clientMock->shouldReceive('setAppAPIKey')
+        ->withAnyArgs()
+        ->once();
+
+    $exception = new RequestException(
+        'Error connecting to server',
+        new \GuzzleHttp\Psr7\Request('GET', '/customers/shop123/attributes')
+    );
+    $shopId='123';
+
+    $clientMock->shouldReceive('get')
+        ->with('/customers/' . $shopId . '/attributes')
+        ->once()
+        ->andThrow($exception);
+
+    $result = $this->generateService->generateCoupon($generate->id, time(), $shopId);
+
+    expect($result)->toBeArray()
+        ->and($result['headerMessage'])->toBe('Connection Error!')
+        ->and($result['contentMessage'])->toBe('Oops! Can not connect to shop!')
+        ->and($result['reasons'])->toBe('The shop may be down or experiencing issues. Please try again!')
+        ->and($result['appUrl'])->toBe('http://example.com')
+        ->and($result['generateId'])->toBe(1);
+});
+test('generate coupon fails when shop has coupon and coupon already used', function () {
+    $generateId = 123;
+    $timestamp = time();
+    $shopId = 'shop_123';
+    $shopName = 'shopname';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+    $discountId = 456;
+
+    $generate = Generate::factory()->make([
+        'id' => $generateId,
+        'status' => true,
+        'app_url' => 'https://example.com',
+        'app_name' => $appName,
+        'discount_id' => $discountId,
+        'header_message' => 'Custom Header',
+        'used_message' => 'Already Used Message'
+    ]);
+
+    $coupon = (object)[
+        'shop' => $shopDomain, //shop has coupon
+        'code' => 'EXISTING123',
+        'times_used' => 1 //coupon used
+    ];
+    $this->generateRepository->shouldReceive('findById')
+        ->with($generateId)
+        ->andReturn($generate);
+
+    $clientMock = Mockery::mock('overload:Customerio\Client');
+
+    $clientMock->shouldReceive('__construct')
+        ->withArgs(['apiKey', 'siteId'])
+        ->once();
+
+    $clientMock->shouldReceive('setAppAPIKey')
+        ->with('appKey')
+        ->once();
+
+    $clientMock->shouldReceive('get')
+        ->with('/customers/' . $shopId . '/attributes')
+        ->once()
+        ->andReturn((object) ['customer' => (object) ['attributes' => (object) ['shop_name' => $shopName]]]);
+
+    $this->couponRepository->shouldReceive('findByDiscountIdandShop')
+        ->with($discountId, $shopDomain, $appName)
+        ->andReturn($coupon);
+
+    $result = $this->generateService->generateCoupon($generateId, $timestamp, $shopId);
+
+    expect($result)
+        ->toHaveKey('headerMessage')
+        ->toHaveKey('contentMessage')
+        ->toHaveKey('reasons')
+        ->and($result['headerMessage'])->toBe('Custom Header');
+});
+
+test('generate coupon success when shop has coupon and coupon no used', function () {
+    $generateId = 123;
+    $timestamp = time();
+    $shopId = 'shop_123';
+    $shopName = 'shopname';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+    $discountId = 456;
+
+    $generate = Generate::factory()->make([
+        'id' => $generateId,
+        'status' => true,
+        'app_url' => 'https://example.com',
+        'app_name' => $appName,
+        'discount_id' => $discountId,
+        'header_message' => 'Custom Header',
+        'used_message' => 'Already Used Message'
+    ]);
+
+    $coupon = (object)[
+        'shop' => $shopDomain, //shop has coupon
+        'code' => 'EXISTING123',
+        'times_used' => 0 //coupon used
+    ];
+    $this->generateRepository->shouldReceive('findById')
+        ->with($generateId)
+        ->andReturn($generate);
+
+    $clientMock = Mockery::mock('overload:Customerio\Client');
+
+    $clientMock->shouldReceive('__construct')
+        ->withArgs(['apiKey', 'siteId'])
+        ->once();
+
+    $clientMock->shouldReceive('setAppAPIKey')
+        ->with('appKey')
+        ->once();
+
+    $clientMock->shouldReceive('get')
+        ->with('/customers/' . $shopId . '/attributes')
+        ->once()
+        ->andReturn((object) ['customer' => (object) ['attributes' => (object) ['shop_name' => $shopName]]]);
+
+    $this->couponRepository->shouldReceive('findByDiscountIdandShop')
+        ->with($discountId, $shopDomain, $appName)
+        ->andReturn($coupon);
+
+    $result = $this->generateService->generateCoupon($generateId, $timestamp, $shopId);
+
+    expect($result)
+        ->toHaveKey('headerMessage')
+        ->toHaveKey('contentMessage')
+        ->toHaveKey('extendMessage')
+        ->and($result['headerMessage'])->toBe('Custom Header');
+});
+test('generate coupon fails when shop does not have coupon and discount not found', function () {
+    $generateId = 123;
+    $timestamp = time();
+    $shopId = 'shop_123';
+    $shopName = 'shopname';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+    $discountId = 456;
+
+    $generate = Generate::factory()->make([
+        'id' => $generateId,
+        'status' => true,
+        'app_url' => 'https://example.com',
+        'app_name' => $appName,
+        'discount_id' => $discountId,
+        'header_message' => 'Custom Header',
+    ]);
+
+    $this->generateRepository->shouldReceive('findById')
+        ->with($generateId)
+        ->andReturn($generate);
+
+    $clientMock = Mockery::mock('overload:Customerio\Client');
+
+    $clientMock->shouldReceive('__construct')
+        ->withAnyArgs()
+        ->once();
+
+    $clientMock->shouldReceive('setAppAPIKey')
+        ->withAnyArgs()
+        ->once();
+
+    $clientMock->shouldReceive('get')
+        ->with('/customers/' . $shopId . '/attributes')
+        ->once()
+        ->andReturn((object) ['customer' => (object) ['attributes' => (object) ['shop_name' => $shopName]]]);
+
+    $this->couponRepository->shouldReceive('findByDiscountIdandShop')
+        ->with($discountId, $shopDomain, $appName)
+        ->andReturn(null);
+
+    $this->findDiscountByIdNoCoupon = $this->discountRepository->shouldReceive('findById')
+        ->with($discountId, $appName)
+        ->andReturn(null);
+
+    expect(fn() => $this->generateService->generateCoupon($generateId, $timestamp, $shopId))
+        ->toThrow(NotFoundException::class, 'Discount not found!');
+});
+
+test('generate coupon fails when discount has expired', function () {
+    $generateId = 123;
+    $timestamp = time();
+    $shopId = 'shop_123';
+    $shopName = 'shopname';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+    $discountId = 456;
+
+    $generate = Generate::factory()->make([
+        'id' => $generateId,
+        'status' => true,
+        'app_url' => 'https://example.com',
+        'app_name' => $appName,
+        'discount_id' => $discountId,
+        'header_message' => 'Custom Header',
+        'fail_message' => [
+            'message' => 'Fail Message',
+            'reason_expired' => 'Sorry, this offer has expired'
+        ]
+    ]);
+
+    $discount = (object)[
+        'id' => $discountId,
+        'expired_at' => now()->subDay(), // Discount đã hết hạn
+    ];
+
+    $this->generateRepository->shouldReceive('findById')
+        ->with($generateId)
+        ->andReturn($generate);
+
+    $clientMock = Mockery::mock('overload:Customerio\Client');
+
+    $clientMock->shouldReceive('__construct')
+        ->withAnyArgs()
+        ->once();
+
+    $clientMock->shouldReceive('setAppAPIKey')
+        ->withAnyArgs()
+        ->once();
+
+    $clientMock->shouldReceive('get')
+        ->with('/customers/' . $shopId . '/attributes')
+        ->once()
+        ->andReturn((object) ['customer' => (object) ['attributes' => (object) ['shop_name' => $shopName]]]);
+
+    $this->couponRepository->shouldReceive('findByDiscountIdandShop')
+        ->with($discountId, $shopDomain, $appName)
+        ->andReturn(null);
+
+    $this->discountRepository->shouldReceive('findById')
+        ->with($discountId, $appName)
+        ->andReturn($discount);
+
+    $result = $this->generateService->generateCoupon($generateId, $timestamp, $shopId);
+
+    expect($result)
+        ->toMatchArray([
+            'headerMessage' => 'Custom Header',
+            'contentMessage' => 'Fail Message',
+            'reasons' => 'Sorry, this offer has expired'
+        ]);
+});
+test('generate coupon fails when coupon limit reached', function () {
+    $generateId = 123;
+    $timestamp = time();
+    $shopId = 'shop_123';
+    $shopName = 'shopname';
+    $shopDomain = $shopName . '.myshopify.com';
+    $appName = 'cs';
+    $discountId = 456;
+
+    $generate = Generate::factory()->make([
+        'id' => $generateId,
+        'status' => true,
+        'app_url' => 'https://example.com',
+        'app_name' => $appName,
+        'discount_id' => $discountId,
+        'header_message' => 'Custom Header',
+        'limit' => 5, // Giới hạn số lượng coupon
+        'fail_message' => [
+            'message' => 'Fail Message',
+            'reason_limit' => 'Coupon limit reached'
+        ]
+    ]);
+
+    $discount = (object)[
+        'id' => $discountId,
+        'expired_at' => now()->addDay(), // Chưa hết hạn
+    ];
+
+    $this->generateRepository->shouldReceive('findById')
+        ->with($generateId)
+        ->andReturn($generate);
+
+    $clientMock = Mockery::mock('overload:Customerio\Client');
+
+    $clientMock->shouldReceive('__construct')
+        ->withAnyArgs()
+        ->once();
+
+    $clientMock->shouldReceive('setAppAPIKey')
+        ->withAnyArgs()
+        ->once();
+
+    $clientMock->shouldReceive('get')
+        ->with('/customers/' . $shopId . '/attributes')
+        ->once()
+        ->andReturn((object) ['customer' => (object) ['attributes' => (object) ['shop_name' => $shopName]]]);
+
+    $this->couponRepository->shouldReceive('findByDiscountIdandShop')
+        ->with($discountId, $shopDomain, $appName)
+        ->andReturn(null);
+
+    $this->discountRepository->shouldReceive('findById')
+        ->with($discountId, $appName)
+        ->andReturn($discount);
+
+    $this->couponRepository->shouldReceive('countCouponByDiscountIdAndCode')
+        ->with($discountId, $appName)
+        ->andReturn(5); // Đã đạt đến giới hạn
+
+    $result = $this->generateService->generateCoupon($generateId, $timestamp, $shopId);
+
+    expect($result)
+        ->toHaveKey('headerMessage')
+        ->toHaveKey('contentMessage')
+        ->toHaveKey('reasons')
+        ->and($result['headerMessage'])->toBe('Custom Header')
+        ->and($result['contentMessage'])->toBe('Fail Message')
+        ->and($result['reasons'])->toBe('Coupon limit reached');
+});
+
+
 
 
 test('generate coupon returns existing code when coupon already exists and not used', function () {
@@ -1268,50 +1572,7 @@ test('generate coupon returns existing code when coupon already exists and not u
         ->and($result['coupon_code'])->toBe('EXISTING123');
 });
 
-test('generate coupon fails when coupon already used', function () {
-    $generateId = 123;
-    $timestamp = time();
-    $shopId = 'shop_123';
-    $shopName = 'shopname'; // Hard-coded trong generateCoupon
-    $shopDomain = $shopName . '.myshopify.com';
-    $appName = 'cs';
-    $discountId = 456;
 
-    // Tạo generate hợp lệ
-    $generate = Generate::factory()->make([
-        'id' => $generateId,
-        'status' => true,
-        'app_url' => 'https://example.com',
-        'app_name' => $appName,
-        'discount_id' => $discountId,
-        'header_message' => 'Custom Header',
-        'used_message' => 'Already Used Message'
-    ]);
-
-    // Tạo coupon đã được sử dụng
-    $coupon = (object)[
-        'code' => 'EXISTING123',
-        'times_used' => 1
-    ];
-
-    // Mock các phương thức
-    $this->generateRepository->shouldReceive('getGenerateById')
-        ->with($generateId)
-        ->andReturn($generate);
-
-    $this->couponRepository->shouldReceive('findByDiscountIdandShop')
-        ->with($discountId, $shopDomain, $appName)
-        ->andReturn($coupon);
-
-    $result = $this->generateService->generateCoupon($generateId, $timestamp, $shopId);
-
-    expect($result)
-        ->toHaveKey('header_message')
-        ->toHaveKey('content_message')
-        ->toHaveKey('reasons')
-        ->and($result['header_message'])->toBe('Custom Header')
-        ->and($result['reasons'])->toBe('Already Used Message');
-});
 
 test('generate coupon fails when discount is expired', function () {
     $generateId = 123;
@@ -1351,7 +1612,7 @@ test('generate coupon fails when discount is expired', function () {
         ->with($discountId, $shopDomain, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($discountId, $appName)
         ->andReturn($discount);
 
@@ -1402,7 +1663,7 @@ test('generate coupon fails when limit reached', function () {
         ->with($discountId, $shopDomain, $appName)
         ->andReturn(null);
 
-    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->with($discountId, $appName)
         ->andReturn($discount);
 
@@ -1419,6 +1680,8 @@ test('generate coupon fails when limit reached', function () {
         ->and($result['content_message'])->toBe('Fail content')
         ->and($result['reasons'])->toBe('Custom limit reason');
 });
+
+
 
 
 //test('generate coupon creates new coupon successfully', function () {
@@ -1480,7 +1743,7 @@ test('generate coupon fails when limit reached', function () {
 //        ->with($discountId, $shopDomain, $appName)
 //        ->andReturn(null);
 //
-//    $this->discountRepository->shouldReceive('findByIdWithoutCoupon')
+//    $this->discountRepository->shouldReceive('findById')
 //        ->with($discountId, $appName)
 //        ->andReturn($discount);
 //
@@ -1533,8 +1796,8 @@ test('createCouponFromAffiliatePartner returns error when app code is invalid', 
         ->and($result['message'])->toBe('Not found connection');
 });
 
-test('createCouponFromAffiliatePartner returns message when coupon already exists and not used', function () {
-    // Arrangement
+test('createCouponFromAffiliatePartner fails when coupon already exists and not used', function () {
+
     $formData = [
         'percentage' => 10,
         'trial_days' => 14
@@ -1542,22 +1805,22 @@ test('createCouponFromAffiliatePartner returns message when coupon already exist
     $appCode = 'up_promote';
     $shopName = 'test-shop';
     $connection = 'app_13';
+    putenv('DB_CONNECTION_APP_13=' . $connection);
     $discountId = 123;
     $shopDomain = 'test-shop.myshopify.com';
 
-    // Mock discount object
+
+
     $discount = (object)[
         'id' => $discountId
     ];
 
-    // Mock existing coupon that hasn't been used
     $existingCoupon = (object)[
         'id' => 456,
         'code' => 'AF-12345',
         'times_used' => 0
     ];
 
-    // Setup repository mocks
     $this->discountRepository->shouldReceive('UpdateOrCreateDiscountInAffiliatePartner')
         ->with($connection, Mockery::type('array'))
         ->andReturn($discount);
@@ -1566,94 +1829,35 @@ test('createCouponFromAffiliatePartner returns message when coupon already exist
         ->with($discount, $shopDomain, $connection)
         ->andReturn($existingCoupon);
 
-    // Action
     $result = $this->generateService->createCouponFromAffiliatePartner($formData, $appCode, $shopName);
-
-    // Assertion
     expect($result)
         ->toBeArray()
         ->toHaveKey('message')
         ->and($result['message'])->toBe('Coupon already exists');
 });
-
-test('createCouponFromAffiliatePartner creates new coupon when app code is valid', function () {
-    // Arrangement
-    $formData = [
-        'percentage' => 15,
-        'trial_days' => 30
-    ];
-    $appCode = 'bon';
-    $shopName = 'test-shop';
-    $connection = 'app_15';
-    $discountId = 456;
-    $shopDomain = 'test-shop.myshopify.com';
-
-    // Mock discount object
-    $discount = (object)[
-        'id' => $discountId
-    ];
-
-    // Mock new coupon
-    $newCoupon = (object)[
-        'id' => 789,
-        'code' => 'AF-abc123',
-        'discount_id' => $discountId,
-        'shop' => $shopDomain,
-        'times_used' => 0,
-        'status' => 1,
-        'automatic' => true
-    ];
-
-    // Setup repository mocks
-    $this->discountRepository->shouldReceive('UpdateOrCreateDiscountInAffiliatePartner')
-        ->with($connection, Mockery::type('array'))
-        ->andReturn($discount);
-
-    $this->couponRepository->shouldReceive('getCouponByDiscountIdandShop')
-        ->with($discount, $shopDomain, $connection)
-        ->andReturn(null);
-
-    $this->couponRepository->shouldReceive('createCoupon')
-        ->with($connection, Mockery::type('array'))
-        ->andReturn($newCoupon);
-
-    // Action
-    $result = $this->generateService->createCouponFromAffiliatePartner($formData, $appCode, $shopName);
-
-    // Assertion
-    expect($result)
-        ->toBeArray()
-        ->toHaveKey('message')
-        ->toHaveKey('coupon')
-        ->and($result['message'])->toBe('Coupon created successfully')
-        ->and($result['coupon'])->toBe($newCoupon);
-});
-
 test('createCouponFromAffiliatePartner creates new coupon when existing coupon has been used', function () {
-    // Arrangement
+
     $formData = [
         'percentage' => 20,
         'trial_days' => 7
     ];
-    $appCode = 'deco';
+    $appCode = 'up_promote';
     $shopName = 'test-shop';
-    $connection = 'app_3';
+    $connection = 'app_13';
+    putenv('DB_CONNECTION_APP_13=' . $connection);
     $discountId = 789;
     $shopDomain = 'test-shop.myshopify.com';
 
-    // Mock discount object
     $discount = (object)[
         'id' => $discountId
     ];
 
-    // Mock existing used coupon
     $existingCoupon = (object)[
         'id' => 456,
         'code' => 'AF-12345',
         'times_used' => 1  // Coupon đã được sử dụng
     ];
 
-    // Mock new coupon
     $newCoupon = (object)[
         'id' => 999,
         'code' => 'AF-xyz789',
@@ -1664,23 +1868,22 @@ test('createCouponFromAffiliatePartner creates new coupon when existing coupon h
         'automatic' => true
     ];
 
-    // Setup repository mocks
     $this->discountRepository->shouldReceive('UpdateOrCreateDiscountInAffiliatePartner')
         ->with($connection, Mockery::type('array'))
         ->andReturn($discount);
 
-    $this->couponRepository->shouldReceive('getCouponByDiscountIdandShop')
-        ->with($discount, $shopDomain, $connection)
+    $this->couponRepository->shouldReceive('findByDiscountIdandShop')
+        ->with($discount->id, $shopDomain, $connection)
         ->andReturn($existingCoupon);
 
+    $this->couponRepository->shouldReceive('findByCode')
+        ->with(Mockery::any(),$connection)
+        ->andReturn(null);
     $this->couponRepository->shouldReceive('createCoupon')
         ->with($connection, Mockery::type('array'))
         ->andReturn($newCoupon);
 
-    // Action
     $result = $this->generateService->createCouponFromAffiliatePartner($formData, $appCode, $shopName);
-
-    // Assertion
     expect($result)
         ->toBeArray()
         ->toHaveKey('message')
@@ -1688,3 +1891,6 @@ test('createCouponFromAffiliatePartner creates new coupon when existing coupon h
         ->and($result['message'])->toBe('Coupon created successfully')
         ->and($result['coupon'])->toBe($newCoupon);
 });
+
+
+

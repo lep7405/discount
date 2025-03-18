@@ -14,16 +14,12 @@ class ReportServiceImp implements ReportService
 
     public function index(array $filters, string $databaseName)
     {
-        // Process discount data
         $discountStats = $this->processDiscountData($filters, $databaseName);
 
-        // Process coupon data
         $couponStats = $this->processCouponData($filters, $databaseName);
 
-        // Process summary statistics
-        $summaryStats = $this->calculateSummaryStats($databaseName);
+        $summaryStats = $this->calculate($databaseName);
 
-        // Combine all results
         return array_merge($discountStats, $couponStats, $summaryStats);
     }
 
@@ -37,13 +33,13 @@ class ReportServiceImp implements ReportService
             'totalPagesDiscount' => $discountData->lastPage(),
             'totalItemsDiscount' => $discountData->total(),
             'currentPagesDiscount' => $discountData->currentPage(),
-            'totalItems' => $countAll,
+            'totalDiscounts' => $countAll,
         ];
     }
     public function handleFiltersDiscount(int $countAll, array $filters){
-        $perPage = Arr::get($filters, 'perPageDiscount', config('constant.default_per_page'));
-        $perPage = $perPage == -1 ? $countAll : $perPage;
-        Arr::set($filters, 'perPageDiscount', $perPage);
+        $perPageDiscount = Arr::get($filters, 'perPageDiscount', config('constant.default_per_page'));
+        $perPageDiscount = $perPageDiscount == -1 ? $countAll : $perPageDiscount;
+        Arr::set($filters, 'perPageDiscount', $perPageDiscount);
         $startedAt = Arr::get($filters, 'startedAt');
         if ($startedAt && ! in_array($startedAt, ['desc', 'asc'])) {
             Arr::set($filters, 'startedAt', null);
@@ -61,14 +57,14 @@ class ReportServiceImp implements ReportService
             'totalPagesCoupon' => $couponData->lastPage(),
             'totalItemsCoupon' => $couponData->total(),
             'currentPagesCoupon' => $couponData->currentPage(),
-            'totalItems' => $countAll,
+            'totalCoupons' => $countAll,
         ];
     }
     public function handleFiltersCoupon(int $countAll, array $filters)
     {
-        $perPage = Arr::get($filters, 'perPageCoupon', 5);
-        $perPage = $perPage == -1 ? $countAll : $perPage;
-        Arr::set($filters, 'perPageCoupon', $perPage);
+        $perPageCoupon = Arr::get($filters, 'perPageCoupon', 5);
+        $perPageCoupon = $perPageCoupon == -1 ? $countAll : $perPageCoupon;
+        Arr::set($filters, 'perPageCoupon', $perPageCoupon);
 
         $arrangeTimesUsed = Arr::get($filters, 'timeUsed');
         if ($arrangeTimesUsed && ! in_array($arrangeTimesUsed, ['desc', 'asc'])) {
@@ -82,14 +78,13 @@ class ReportServiceImp implements ReportService
         return $filters;
     }
 
-    private function calculateSummaryStats(string $databaseName): array
+    private function calculate(string $databaseName): array
     {
-        $discounts = $this->discountRepository->getAllNotFilterWithCoupon($databaseName);
+        $discounts = $this->discountRepository->getAllWithCoupon($databaseName);
         $countDiscount = $discounts->count();
         $countDiscountUsed = 0;
         $countCoupon = 0;
         $countCouponUsed = 0;
-
         foreach ($discounts as $discount) {
             $total = 0;
             foreach ($discount->coupon as $coupon) {

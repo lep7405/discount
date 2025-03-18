@@ -10,57 +10,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-//it('create discount', function () {
-//    // Mock DiscountRepository
-//    $mockRepository = mock(DiscountRepository::class);
-//
-//    // Giả lập phương thức createDiscount
-//    $mockRepository->shouldReceive('createDiscount')
-//        ->once()
-//        ->andReturn(new Discount([
-//            'name' => 'Discount 20%',
-//            'value' => 120,
-//            'type' => 'percentage',
-//            'started_at' => '2025-01-01',
-//            'expired_at' => '2025-12-31',
-//            'usage_limit' => 100,
-//            'trial_days' => 30,
-//            'discount_month' => 6,
-//        ]));
-//
-//    // Kiểm tra xem phương thức có trả về đối tượng Discount không
-//    $discount = $mockRepository->createDiscount([
-//        'name' => 'Discount 20%11',
-//        'value' => 120,
-//        'type' => 'percentage',
-//        'started_at' => '2025-01-01',
-//        'expired_at' => '2025-12-31',
-//        'usage_limit' => 100,
-//        'trial_days' => 30,
-//        'discount_month' => 6,
-//    ], 'cs');
-//
-//    expect($discount)->toBeInstanceOf(Discount::class);
-//});
-//beforeEach(function(){
-//    $this->discountRepository=app(DiscountRepository::class);
-//});
-//
-//test('create discount',function(){
-//    $data=
-//        [
-//            'name' => 'Discount 20%',
-//            'value' => 120,
-//            'type' => 'percentage',
-//            'started_at' => '2025-01-01',
-//            'expired_at' => '2025-12-31',
-//            'usage_limit' => 100,
-//            'trial_days' => 30,
-//            'discount_month' => 6,
-//        ];
-//    $discount=$this->repository->createDiscount($data,'cs');
-//    $this->assertInstanceOf(Discount::class, $discount);
-//});
 class DiscountRepositoryTest extends TestCase
 {
     use RefreshDatabase;

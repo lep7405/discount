@@ -53,7 +53,7 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->find($id);
     }
 
-    public function findByIdWithoutCoupon(int $id, string $databaseName)
+    public function findById(int $id, string $databaseName)
     {
         return $this->getModel()
             ->on($databaseName)
@@ -64,7 +64,17 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
     {
         return $this->getModel()
             ->on($databaseName)
-            ->create($attributes);
+            ->create([
+                'name' => Arr::get($attributes, 'name'),
+                'value' => Arr::get($attributes, 'value'),
+                'type' => Arr::get($attributes, 'type'),
+                'started_at' => Arr::get($attributes, 'started_at'),
+                'expired_at' => Arr::get($attributes, 'expired_at'),
+                'usage_limit' => Arr::get($attributes, 'usage_limit'),
+                'trial_days' => Arr::get($attributes, 'trial_days'),
+                'discount_month' => Arr::get($attributes, 'discount_month'),
+            ]);
+//            ->create($attributes);
     }
 
     public function updateDiscount(int $id, string $databaseName,array $attributes)
@@ -102,11 +112,14 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
             ->get();
     }
 
-    public function getAllNotFilterWithCoupon($databaseName)
+    public function getAllWithCoupon($databaseName)
     {
         return $this->getModel()
             ->on($databaseName)
-            ->with('coupon')
+            ->select('id')
+            ->with(['coupon' => function ($query) {
+                $query->select('id', 'times_used', 'discount_id');
+            }])
             ->get();
     }
 

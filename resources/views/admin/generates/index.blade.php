@@ -148,7 +148,11 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <!-- Showing entries info -->
                         <div class="text-sm text-gray-600 font-medium">
-                            Showing {{ ($currentPage - 1) * $perPage + 1 }} to {{ min($currentPage * $perPage, $totalItem) }} of {{ $totalItem }} entries
+                            @if ($totalItems == $totalGenerates)
+                                Showing {{ ($currentPage - 1) * $perPage + 1 }} to {{ min($currentPage * $perPage, $totalItems) }} of {{ $totalItems }} entries
+                            @else
+                                Showing {{ ($currentPage - 1) * $perPage + 1 }} to {{ min($currentPage * $perPage, $totalItems) }} of {{ $totalItems }} entries of {{ $totalGenerates }} total items
+                            @endif
                         </div>
 
                         <!-- Pagination controls -->

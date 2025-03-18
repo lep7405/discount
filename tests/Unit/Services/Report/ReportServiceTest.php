@@ -23,8 +23,6 @@ test('index trả về dữ liệu báo cáo đầy đủ và chính xác', func
         'timeUsed' => 'asc',
         'status' => '0'
     ];
-
-    // Mock dữ liệu discount
     $this->discountRepository->shouldReceive('countDiscount')
         ->once()
         ->with($databaseName)
@@ -36,7 +34,6 @@ test('index trả về dữ liệu báo cáo đầy đủ và chính xác', func
         ->with($databaseName, Mockery::any())
         ->andReturn($discountPaginator);
 
-    // Mock dữ liệu coupon
     $this->couponRepository->shouldReceive('countCoupons')
         ->once()
         ->with($databaseName)
@@ -48,7 +45,6 @@ test('index trả về dữ liệu báo cáo đầy đủ và chính xác', func
         ->with(null, $databaseName, Mockery::any())
         ->andReturn($couponPaginator);
 
-    // Mock dữ liệu thống kê tổng hợp
     $discount1 = (object)['coupon' => [
         (object)['times_used' => 5],
         (object)['times_used' => 3]
@@ -60,7 +56,7 @@ test('index trả về dữ liệu báo cáo đầy đủ và chính xác', func
 
     $allDiscounts = collect([$discount1, $discount2, $discount3]);
 
-    $this->discountRepository->shouldReceive('getAllNotFilterWithCoupon')
+    $this->discountRepository->shouldReceive('getAllWithCoupon')
         ->once()
         ->with($databaseName)
         ->andReturn($allDiscounts);

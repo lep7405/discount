@@ -14,11 +14,9 @@
 @section('mainContent')
     <div class="container mx-auto px-4">
         <div class="flex flex-wrap -mx-4">
-            <div class="w-full lg:w-2/3 px-4 mb-8">
-                <div class="bg-white rounded-lg shadow-md">
-                    <div class="bg-gray-100 px-6 py-4 rounded-t-lg border-b">
-                        <h3 class="text-xl font-semibold text-gray-800">Create New Coupon</h3>
-                    </div>
+            <div class="w-full lg:w-2/3 px-4 mb-8 mt-3">
+                <div class="bg-white shadow rounded-lg overflow-hidden">
+                    <x-section-header title="Create New Coupon" />
 
                     <div class="p-6">
                         <form role="form" action="{{ route('admin.'.$databaseName.'.storeCoupon') }}" method="POST">
@@ -30,33 +28,24 @@
                                     <p>{{ session()->get('message') }}</p>
                                 </div>
                             @endif
-{{--                            @if (count($errors)>0)--}}
-{{--                                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">--}}
-{{--                                    <ul class="list-disc list-inside">--}}
-{{--                                        @foreach ($errors->all() as $error)--}}
-{{--                                            <li>{!! $error !!}</li>--}}
-{{--                                        @endforeach--}}
-{{--                                    </ul>--}}
-{{--                                </div>--}}
-{{--                            @endif--}}
 
                             <div class="mb-4">
                                 <label for="inputCode" class="block text-gray-700 text-sm font-bold mb-2">Code</label>
-                                <input type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="inputCode" name="code" value="{{ old('code') }}" placeholder="Enter code">
+                                <input type="text" class="form-input" id="inputCode" name="code" value="{{ old('code') }}" placeholder="Enter code">
                                 @if ($errors->has('code'))
                                     <span class="text-red-500">{{ $errors->first('code') }}</span>
                                 @endif
                             </div>
                             <div class="mb-4">
                                 <label for="inputShop" class="block text-gray-700 text-sm font-bold mb-2">Shop</label>
-                                <input type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="inputShop" name="shop" value="{{ old('shop') }}" placeholder="Enter shop">
+                                <input type="text" class="form-input" id="inputShop" name="shop" value="{{ old('shop') }}" placeholder="Enter shop">
                                 @if ($errors->has('shop'))
                                     <span class="text-red-500">{{ $errors->first('shop') }}</span>
                                 @endif
                             </div>
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Discount</label>
-                                <select id="discount_id" name="discount_id" class="discount_select2 mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" name="discount_app">
+                            <div class="space-y-2 mb-4">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Discount</label>
+                                <select id="discount_id" name="discount_id" class="discount_select2 form-input" name="discount_app">
                                     <option value="">-- Select Discount --</option>
                                     @foreach ($discountData as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -67,16 +56,15 @@
                                 @endif
 
                             </div>
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Create</button>
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2">Create</button>
                         </form>
                     </div>
                 </div>
             </div>
-            <div class="w-full lg:w-1/3 px-4 mb-8">
-                <div class="bg-white rounded-lg shadow-md">
-                    <div class="bg-gray-100 px-6 py-4 rounded-t-lg border-b">
-                        <h3 class="text-xl font-semibold text-gray-800">Discount Info</h3>
-                    </div>
+            <div class="w-full lg:w-1/3 px-4 mb-8 mt-3">
+                <div class="bg-white shadow rounded-lg overflow-hidden">
+
+                    <x-section-header title="Discount Info" />
                     <div class="p-6">
                         <ul id="discountInfo" class="list-disc list-inside text-gray-700"></ul>
                     </div>

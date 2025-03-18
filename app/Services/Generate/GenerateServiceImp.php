@@ -20,6 +20,7 @@ class GenerateServiceImp implements GenerateService
 {
     public function __construct(protected GenerateRepository $generateRepository, protected DiscountRepository $discountRepository, protected CouponRepository $couponRepository) {}
 
+
     public function index(array $filters)
     {
         $countAll = $this->generateRepository->countGenerate();
@@ -31,6 +32,7 @@ class GenerateServiceImp implements GenerateService
             'generateData' => $generateDataItems,
             'totalPages' => $generateData->lastPage(),
             'totalItems' => $generateData->total(),
+            'totalGenerates' => $countAll,
             'currentPages' => $generateData->currentPage(),
         ];
     }
@@ -105,18 +107,18 @@ class GenerateServiceImp implements GenerateService
 
     public function checkDiscount($discountId, $appName)
     {
-        $discount = $this->findDiscountByIdNoCoupon($discountId, $appName);
+        $discount = $this->findDiscountById($discountId, $appName);
 
         if (! $discount->expired_at || (now()->greaterThan($discount->expired_at))) {
             throw DiscountException::discountExpired();
         }
     }
 
-    public function findDiscountByIdNoCoupon($discountId, $appName)
+    public function findDiscountById($discountId, $appName)
     {
-        $discount = $this->discountRepository->findByIdWithoutCoupon($discountId, $appName);
+        $discount = $this->discountRepository->findById($discountId, $appName);
         if (! $discount) {
-            throw NotFoundException::Notfound('Discount not found');
+            throw NotFoundException::Notfound('Discount not found!');
         }
 
         return $discount;
@@ -189,7 +191,6 @@ class GenerateServiceImp implements GenerateService
     {
         $generate = $this->findGenerateById($id);
         $coupon = $this->couponRepository->findByDiscountIdAndCode($generate->discount_id, $generate->app_name);
-        $discount = $this->findDiscountByIdNoCoupon($generate->discount_id, $generate->app_name);
         $discountData = [];
         foreach ($databaseName as $db) {
             $data = $this->discountRepository->getAllDiscountIdAndName($db);
@@ -251,6 +252,8 @@ class GenerateServiceImp implements GenerateService
 
         return $generate;
     }
+
+    //private generate coupon
     public function privateGenerateCoupon($ip, int $generateId,string $shopName)
     {
         if (! $this->validateIp($ip)) {
@@ -260,9 +263,6 @@ class GenerateServiceImp implements GenerateService
         $generate = $this->generateRepository->findById($generateId);
         if (! $generate) {
             return $this->privateGenerateResponse(false, 'Generate not exist!');
-        }
-        if (! $generate->status) {
-            return $this->privateGenerateResponse(false, 'Generate not active!');
         }
 
         $app = $generate->app_name;
@@ -277,7 +277,7 @@ class GenerateServiceImp implements GenerateService
             return $this->privateGenerateResponse(true, 'Coupon created!');
         }
 
-        $discount = $this->discountRepository->findByIdWithoutCoupon($discountId, $app);
+        $discount = $this->discountRepository->findById($discountId, $app);
         if (! $discount) {
             return $this->privateGenerateResponse(false, 'Discount not found!');
         }
@@ -328,6 +328,27 @@ class GenerateServiceImp implements GenerateService
         $this->couponRepository->createCoupon($app,$dataCoupon);
     }
 
+    private function generateUniqueCouponCode($discountId, $shopName, $app)
+    {
+        do {
+            $newCode = strtoupper('GENAUTO' . random_int(1, 1000) . substr(md5("{$app}_{$discountId}_{$shopName}"), 2, 4));
+            $exists = $this->couponRepository->findByCode($newCode, $app);
+        } while ($exists);
+
+        return $newCode;
+    }
+    private function isAutomaticCoupon($app)
+    {
+        $automaticApps = [
+            'banner', 'cs',
+            'pl', 'customer_attribute', 'spin_to_win', 'smart_image_optimizer',
+            'seo_booster', 'affiliate', 'loyalty', 'freegifts',
+            'freegifts_new', 'reviews_importer',
+        ];
+
+        return in_array($app, $automaticApps);
+    }
+
     public function privateGenerateResponse($status, $message)
     {
         return [
@@ -336,15 +357,13 @@ class GenerateServiceImp implements GenerateService
         ];
     }
 
-    //end private generate coupon
-
     //generate coupon
     /**
      * @throws NotFoundException
      */
-    public function generateCoupon(int $generateId, $timeStamp, $shopId)
+    public function generateCoupon(int $generateId, $timestamp, $shopId)
     {
-        $generate = $this->generateRepository->getGenerateById($generateId);
+        $generate = $this->generateRepository->findById($generateId);
         $headerMessage = config('constant.DEFAULT_HEADER_MESSAGE');
         if (! $generate) {
             return $this->generateCouponResponse($headerMessage, contentMessage: 'WHOOPS!', reasons: 'This offer does not exist!');
@@ -361,13 +380,12 @@ class GenerateServiceImp implements GenerateService
         $usedMessage = $generate->used_message ?? config('constant.DEFAULT_USED_MESSAGE');
 
         // Lấy thông tin Shop từ API Customer.io
-//        $attributes = $this->getShopAttributes($shopId);
-//        if (! $attributes) {
-//            return $this->generateCouponResponse(headerMessage: 'Connection Error!', contentMessage: 'Oops! Can not connect to shop!', reasons: 'The shop may be down or experiencing issues. Please try again!', appUrl: $appUrl, generateId: $generateId);
-//        }
-//        $shopName = $attributes->shop_name ?? null;
+        $attributes = $this->getShopAttributes($shopId);
+        if (! $attributes) {
+            return $this->generateCouponResponse(headerMessage: 'Connection Error!', contentMessage: 'Oops! Can not connect to shop!', reasons: 'The shop may be down or experiencing issues. Please try again!', appUrl: $appUrl, generateId: $generateId);
+        }
+        $shopName = $attributes->shop_name ?? null;
 
-        $shopName = 'shopname';
         $coupon = $this->couponRepository->findByDiscountIdandShop($discountId, "{$shopName}.myshopify.com", $app);
         if ($coupon) {
             if ($coupon->times_used > 0) {
@@ -377,13 +395,13 @@ class GenerateServiceImp implements GenerateService
             return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['success_message'], appUrl: $appUrl, generateId: $generateId, extendMessage: $messages['extend_message'], couponCode: $coupon->code);
         }
 
-        $discount = $this->findDiscountByIdNoCoupon($discountId, $app);
-        $expiredTimestamp = $timeStamp + ($generate->expired_range * 24 * 60 * 60);
+        $discount = $this->findDiscountById($discountId, $app);
+        $expiredTimestamp = $timestamp + ($generate->expired_range * 24 * 60 * 60);
         if (($discount->expired_at && now()->greaterThan($discount->expired_at)) || now()->timestamp > $expiredTimestamp) {
             return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['fail_message'], reasons: $messages['reason_expired'], appUrl: $appUrl, generateId: $generateId);
         }
 
-        $numberCoupon = $this->couponRepository->countCouponByDiscountIdAndCode($discountId, $app);
+        $numberCoupon = $this->couponRepository->countByDiscountIdAndCode($discountId, $app);
         if ($generate->limit && $generate->limit <= $numberCoupon) {
             return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['fail_message'], reasons: $messages['reason_limit'], appUrl: $appUrl, generateId: $generateId);
         }
@@ -397,7 +415,36 @@ class GenerateServiceImp implements GenerateService
 
         return $this->generateCouponResponse(headerMessage: $headerMessage, contentMessage: $messages['success_message'], appUrl: $appUrl, generateId: $generateId, customFail: $messages['extend_message']);
     }
+    private function getMessagesFromGenerate($generate)
+    {
+        return [
+            'success_message' => $generate->success_message['message'] ?? config('constant.DEFAULT_SUCCESS_MESSAGE'),
+            'extend_message' => $generate->success_message['extend'] ?? config('constant.DEFAULT_EXTEND_MESSAGE'),
+            'fail_message' => $generate->fail_message['message'] ?? config('constant.DEFAULT_FAIL_MESSAGE'),
+            'reason_expired' => $generate->fail_message['reason_expired'] ?? config('constant.DEFAULT_EXPIRED_REASON'),
+            'reason_limit' => $generate->fail_message['reason_limit'] ?? config('constant.DEFAULT_LIMIT_REASON'),
+            'reason_condition' => $generate->fail_message['reason_condition'] ?? config('constant.DEFAULT_CONDITION_REASON'),
+        ];
+    }
+    private function getShopAttributes($shopId)
+    {
+        $apiKey = config('Discount_manager.customerio.apiKey');
 
+        $siteId = config('Discount_manager.customerio.siteId');
+
+        $appKey = config('Discount_manager.customerio.appKey');
+
+        $client = new Client($apiKey, $siteId);
+        $endpoint = "/customers/{$shopId}/attributes";
+        $client->setAppAPIKey($appKey);
+
+        try {
+            $getCustomerio = $client->get($endpoint);
+            return $getCustomerio->customer->attributes;
+        } catch (GuzzleException $e) {
+            return false;
+        }
+    }
     public function checkConditions($conditions,array $attributes)
     {
         $prefixApp = [
@@ -454,6 +501,42 @@ class GenerateServiceImp implements GenerateService
 
         return $textOr;
     }
+    private function generateCouponResponse(
+        string $headerMessage,
+        string $contentMessage,
+        ?string $reasons = null,
+        ?string $appUrl = null,
+        ?int $generateId = null,
+        ?string $customFail = null,
+        ?string $extendMessage = null,
+        ?string $couponCode = null
+    ): array {
+        $response = [
+            'headerMessage' => $headerMessage,
+            'contentMessage' => $contentMessage,
+        ];
+
+        if ($reasons !== null) {
+            $response['reasons'] = $reasons;
+        }
+        if ($appUrl !== null) {
+            $response['appUrl'] = $appUrl;
+        }
+        if ($generateId !== null) {
+            $response['generateId'] = $generateId;
+        }
+        if ($customFail !== null) {
+            $response['customFail'] = $customFail;
+        }
+        if ($extendMessage !== null) {
+            $response['extendMessage'] = $extendMessage;
+        }
+        if ($couponCode !== null) {
+            $response['couponCode'] = $couponCode;
+        }
+
+        return $response;
+    }
 
     public function createCouponFromAffiliatePartner(array $formData, string $appCode, string $shopName)
     {
@@ -486,7 +569,7 @@ class GenerateServiceImp implements GenerateService
         $discount = $this->discountRepository->UpdateOrCreateDiscountInAffiliatePartner($connection,$attributes);
         $shop = "{$shopName}.myshopify.com";
 
-        $existingCoupon = $this->couponRepository->getCouponByDiscountIdandShop($discount, $shop, $connection);
+        $existingCoupon = $this->couponRepository->findByDiscountIdandShop($discount->id, $shop, $connection);
         if ($existingCoupon) {
             if ($existingCoupon->times_used == 0) {
                 return [
@@ -513,92 +596,6 @@ class GenerateServiceImp implements GenerateService
             'coupon' => $coupon,
         ];
     }
-
-    private function getMessagesFromGenerate($generate)
-    {
-        return [
-            'success_message' => $generate->success_message['message'] ?? config('constant.DEFAULT_SUCCESS_MESSAGE'),
-            'extend_message' => $generate->success_message['extend'] ?? config('constant.DEFAULT_EXTEND_MESSAGE'),
-            'fail_message' => $generate->fail_message['message'] ?? config('constant.DEFAULT_FAIL_MESSAGE'),
-            'reason_expired' => $generate->fail_message['reason_expired'] ?? config('constant.DEFAULT_EXPIRED_REASON'),
-            'reason_limit' => $generate->fail_message['reason_limit'] ?? config('constant.DEFAULT_LIMIT_REASON'),
-            'reason_condition' => $generate->fail_message['reason_condition'] ?? config('constant.DEFAULT_CONDITION_REASON'),
-        ];
-    }
-
-    private function getShopAttributes($shopId)
-    {
-        $client = new Client($this->apiKey, $this->siteId);
-        $endpoint = "/customers/{$shopId}/attributes";
-        $client->setAppAPIKey($this->appKey);
-
-        try {
-            $getCustomerio = $client->get($endpoint);
-            return $getCustomerio->customer->attributes;
-        } catch (GuzzleException $e) {
-            return false;
-        }
-    }
-
-    private function generateUniqueCouponCode($discountId, $shopName, $app)
-    {
-        do {
-            $newCode = strtoupper('GENAUTO' . random_int(1, 1000) . substr(md5("{$app}_{$discountId}_{$shopName}"), 2, 4));
-            $exists = $this->couponRepository->findByCode($newCode, $app);
-        } while ($exists);
-
-        return $newCode;
-    }
-
-    private function isAutomaticCoupon($app)
-    {
-        $automaticApps = [
-            'banner', 'cs',
-            'pl', 'customer_attribute', 'spin_to_win', 'smart_image_optimizer',
-            'seo_booster', 'affiliate', 'loyalty', 'freegifts',
-            'freegifts_new', 'reviews_importer',
-        ];
-
-        return in_array($app, $automaticApps);
-    }
-
-    private function generateCouponResponse(
-        string $headerMessage,
-        string $contentMessage,
-        ?string $reasons = null,
-        ?string $appUrl = null,
-        ?int $generateId = null,
-        ?string $customFail = null,
-        ?string $extendMessage = null,
-        ?string $couponCode = null
-    ): array {
-        $response = [
-            'header_message' => $headerMessage,
-            'content_message' => $contentMessage,
-        ];
-
-        if ($reasons !== null) {
-            $response['reasons'] = $reasons;
-        }
-        if ($appUrl !== null) {
-            $response['app_url'] = $appUrl;
-        }
-        if ($generateId !== null) {
-            $response['generate_id'] = $generateId;
-        }
-        if ($customFail !== null) {
-            $response['custom_fail'] = $customFail;
-        }
-        if ($extendMessage !== null) {
-            $response['extend_message'] = $extendMessage;
-        }
-        if ($couponCode !== null) {
-            $response['coupon_code'] = $couponCode;
-        }
-
-        return $response;
-    }
-
     private function generateCodeName(
         string $connection,
         string $appCode,
@@ -607,7 +604,7 @@ class GenerateServiceImp implements GenerateService
     ) {
         $partialCode = $appCode . $discountId . random_int(1, 10000) . time();
         $code = $prefix . md5($partialCode);
-        $exist = Coupon::on($connection)->where('code', $code)->first();
+        $exist = $this->couponRepository->findByCode($code, $connection);
 
         if ($exist) {
             return $this->generateCodeName($connection, $appCode, $discountId, $prefix);
@@ -615,5 +612,4 @@ class GenerateServiceImp implements GenerateService
 
         return $code;
     }
-    //end create coupon from affiliate partner
 }

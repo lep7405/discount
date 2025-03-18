@@ -4,7 +4,7 @@
     Reports
 @endsection
 @section("li_breadcumb")
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.' . $databaseName . '.reports') }}">{{ $appName }}</a></li>
 @endsection
 
 @section('mainContent')
@@ -15,7 +15,7 @@
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-1">
-                        <h3 class="text-3xl font-bold text-white">{{ $count_discount }}</h3>
+                        <h3 class="text-3xl font-bold text-white">{{ $countDiscount }}</h3>
                         <p class="mt-1 text-white">Discounts</p>
                     </div>
                     <div class="ml-4">
@@ -30,7 +30,7 @@
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-1">
-                        <h3 class="text-3xl font-bold text-white">{{ $count_coupon }}</h3>
+                        <h3 class="text-3xl font-bold text-white">{{ $countCoupon }}</h3>
                         <p class="mt-1 text-white">Coupons</p>
                     </div>
                     <div class="ml-4">
@@ -45,7 +45,7 @@
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-1">
-                        <h3 class="text-3xl font-bold text-white">{{ $count_discount_used }}</h3>
+                        <h3 class="text-3xl font-bold text-white">{{ $countDiscountUsed }}</h3>
                         <p class="mt-1 text-white">Discounts Used</p>
                     </div>
                     <div class="ml-4">
@@ -60,7 +60,7 @@
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-1">
-                        <h3 class="text-3xl font-bold text-white">{{ $count_coupon_used }}</h3>
+                        <h3 class="text-3xl font-bold text-white">{{ $countCouponUsed }}</h3>
                         <p class="mt-1 text-white">Coupons Used</p>
                     </div>
                     <div class="ml-4">
@@ -78,7 +78,7 @@
             <!-- Card Header -->
             <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
                 <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Discounts List</h2>
-                <a href="{{ route('admin.'.$databaseName.'.createDiscount') }}"
+                <a href="{{ route('admin.' . $databaseName . '.createDiscount') }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                     <i class="fas fa-plus mr-2"></i>
                     Add New Discount
@@ -89,33 +89,33 @@
             <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gray-50/50">
                 <form id="discount-entries-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
                     <label class="text-sm font-medium text-gray-600">Show</label>
-                    <input type="hidden" name="search_discount" value="{{ $search_discount }}">
-                    <input type="hidden" name="started_at" value="{{ $started_at }}">
-                    <input type="hidden" name="started_at" value="{{ $per_page_coupon }}">
-                    <input type="hidden" name="started_at" value="{{ $current_pages_coupon }}">
-                    <input type="hidden" name="started_at" value="{{ $search_coupon }}">
-                    <input type="hidden" name="started_at" value="{{ $time_used }}">
-                    <input type="hidden" name="started_at" value="{{ $status }}">
+                    <input type="hidden" name="searchDiscount" value="{{ $searchDiscount }}">
+                    <input type="hidden" name="startedAt" value="{{ $startedAt }}">
+                    <input type="hidden" name="startedAt" value="{{ $perPageCoupon }}">
+                    <input type="hidden" name="startedAt" value="{{ $currentPagesCoupon }}">
+                    <input type="hidden" name="startedAt" value="{{ $searchCoupon }}">
+                    <input type="hidden" name="startedAt" value="{{ $timeUsed }}">
+                    <input type="hidden" name="startedAt" value="{{ $status }}">
 
-                    <select id="discount-entries-select" name="per_page_discount"
+                    <select id="discount-entries-select" name="perPageDiscount"
                             class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
                             onchange="this.form.submit()">
-                        <option value="5" {{ $per_page_discount == 5 ? 'selected' : '' }}>5</option>
-                        <option value="10" {{ $per_page_discount == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ $per_page_discount == 20 ? 'selected' : '' }}>20</option>
-                        <option value="-1" {{ $per_page_discount == -1 ? 'selected' : '' }}>All</option>
+                        <option value="5" {{ $perPageDiscount == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $perPageDiscount == 10 ? 'selected' : '' }}>10</option>
+                        <option value="20" {{ $perPageDiscount == 20 ? 'selected' : '' }}>20</option>
+                        <option value="-1" {{ $perPageDiscount == -1 ? 'selected' : '' }}>All</option>
                     </select>
                     <label class="text-sm font-medium text-gray-600">entries</label>
                 </form>
                 <div class="flex items-center">
                     <form id="discount-search-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
-                        <input type="hidden" name="per_page_discount" value="{{ $per_page_discount }}">
-                        <input type="hidden" name="started_at" value="{{ $started_at }}">
+                        <input type="hidden" name="perPageDiscount" value="{{ $perPageDiscount }}">
+                        <input type="hidden" name="startedAt" value="{{ $startedAt }}">
                         <label for="discount-table-search" class="text-sm font-medium text-gray-600 mr-2">Search:</label>
                         <input type="search"
-                               name="search_discount"
+                               name="searchDiscount"
                                id="discount-table-search"
-                               value="{{ $search_discount }}"
+                               value="{{ $searchDiscount }}"
                                class="min-w-[200px] border-2 border-gray-200 rounded-lg text-sm px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                                placeholder="Search discounts...">
                     </form>
@@ -165,42 +165,40 @@
                         </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
-                        @if (count($discountData)>0)
+                        @if (count($discountData) > 0)
                             @foreach ($discountData as $item)
-                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.editDiscount', $item->id) }}';"
+                                <tr onclick="window.location='{{ route('admin.' . $databaseName . '.editDiscount', $item->id) }}';"
                                     class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a
-                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">{{ $item->id }}</a>
+                                        <a class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">{{ $item->id }}</a>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
-                                        <a
-                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">{{ $item->name }}</a>
+                                        <a class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">{{ $item->name }}</a>
                                         <br>
                                         <span class="text-gray-500 text-sm">
-                                    {{ $item->type == 'percentage' ? $item->value.'%' : $item->value." USD" }},
-                                    {{ $item->usage_limit == 0 ? 'Unlimited time' : $item->usage_limit." times" }} Usage,
-                                    {{ $item->trial_days ?? 0 }} days trial
-                                </span>
+                                            {{ $item->type == 'percentage' ? $item->value . '%' : $item->value . " USD" }},
+                                            {{ $item->usage_limit == 0 ? 'Unlimited time' : $item->usage_limit . " times" }} Usage,
+                                            {{ $item->trial_days ?? 0 }} days trial
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
-                                        @if ($item->started_at)
-                                            {{ date_format(date_create($item->started_at), "d-m-Y") }}
+                                        @if ($item->startedAt)
+                                            {{ date_format(date_create($item->startedAt), "d-m-Y") }}
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">
-                                        @if ($item->expired_at)
-                                            {{ date_format(date_create($item->expired_at), "d-m-Y") }}
+                                        @if ($item->expiredAt)
+                                            {{ date_format(date_create($item->expiredAt), "d-m-Y") }}
                                         @endif
                                     </td>
                                 </tr>
                             @endforeach
-
                         @else
                             <tr>
                                 <td colspan="4" class="text-center text-gray-500 py-4">No data found</td>
                             </tr>
                         @endif
+                        </tbody>
                     </table>
 
                     <!-- Pagination Info and Links -->
@@ -208,62 +206,62 @@
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                             <!-- Showing entries info -->
                             <div class="text-sm text-gray-600 font-medium">
-                                Showing {{ ($current_pages_discount - 1) * $per_page_discount + 1 }} to {{ min($current_pages_discount * $per_page_discount, $total_items_discount) }} of {{ $total_items_discount }} entries
+                                Showing {{ ($currentPagesDiscount - 1) * $perPageDiscount + 1 }} to {{ min($currentPagesDiscount * $perPageDiscount, $totalItemsDiscount) }} of {{ $totalItemsDiscount }} entries
                             </div>
 
                             <!-- Pagination controls -->
                             <div class="flex items-center space-x-1">
                                 <!-- First Page -->
-                                @if ($current_pages_discount > 1)
-                                    <a href="?page_discount=1&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                @if ($currentPagesDiscount > 1)
+                                    <a href="?pageDiscount=1&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}&pageCoupon={{ $currentPagesCoupon }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-left"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </span>
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </span>
                                 @endif
 
                                 <!-- Previous Page -->
-                                @if ($current_pages_discount > 1)
-                                    <a href="?page_discount={{ $current_pages_discount - 1 }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                @if ($currentPagesDiscount > 1)
+                                    <a href="?pageDiscount={{ $currentPagesDiscount - 1 }}&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}&pageCoupon={{ $currentPagesCoupon }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-left"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                    <i class="fas fa-angle-left"></i>
-                                </span>
+                                        <i class="fas fa-angle-left"></i>
+                                    </span>
                                 @endif
 
                                 <!-- Current Page Indicator -->
                                 <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md">
-                                {{ $current_pages_discount }}/{{ $total_pages_discount }}
-                            </span>
+                                    {{ $currentPagesDiscount }}/{{ $totalPagesDiscount }}
+                                </span>
 
                                 <!-- Next Page -->
-                                @if ($current_pages_discount < $total_pages_discount)
-                                    <a href="?page_discount={{ $current_pages_discount + 1 }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                @if ($currentPagesDiscount < $totalPagesDiscount)
+                                    <a href="?pageDiscount={{ $currentPagesDiscount + 1 }}&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}&pageCoupon={{ $currentPagesCoupon }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-right"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                    <i class="fas fa-angle-right"></i>
-                                </span>
+                                        <i class="fas fa-angle-right"></i>
+                                    </span>
                                 @endif
 
                                 <!-- Last Page -->
-                                @if ($current_pages_discount < $total_pages_discount)
-                                    <a href="?page_discount={{ $total_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}&page_coupon={{ $current_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}"
+                                @if ($currentPagesDiscount < $totalPagesDiscount)
+                                    <a href="?pageDiscount={{ $totalPagesDiscount }}&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}&pageCoupon={{ $currentPagesCoupon }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-right"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </span>
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </span>
                                 @endif
                             </div>
                         </div>
@@ -271,17 +269,18 @@
                 </div>
             </div>
             <form id="discount-start-form" method="GET" action="{{ url()->current() }}" class="hidden">
-                <input type="hidden" name="started_at" id="discount-start-input">
-                <input type="hidden" name="search_discount" value="{{ $search_discount }}">
-                <input type="hidden" name="per_page_discount" value="{{ $per_page_discount }}">
+                <input type="hidden" name="startedAt" id="discount-start-input">
+                <input type="hidden" name="searchDiscount" value="{{ $searchDiscount }}">
+                <input type="hidden" name="perPageDiscount" value="{{ $perPageDiscount }}">
             </form>
         </div>
+
         <!-- Coupons Table -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-100">
             <!-- Card Header -->
             <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
                 <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Coupons List</h2>
-                <a href="{{ route('admin.'.$databaseName.'.createCoupon') }}"
+                <a href="{{ route('admin.' . $databaseName . '.createCoupon') }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
                     <i class="fas fa-plus mr-2"></i>
                     Add New Coupon
@@ -292,33 +291,33 @@
             <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gray-50/50">
                 <form id="coupon-entries-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
                     <label class="text-sm font-medium text-gray-600">Show</label>
-                    <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
+                    <input type="hidden" name="searchCoupon" value="{{ $searchCoupon }}">
                     <input type="hidden" name="status" value="{{ $status }}">
-                    <input type="hidden" name="time_used" value="{{ $per_page_discount }}">
-                    <input type="hidden" name="search_coupon" value="{{ $current_pages_discount }}">
-                    <input type="hidden" name="status" value="{{ $search_discount }}">
-                    <input type="hidden" name="time_used" value="{{ $started_at }}">
+                    <input type="hidden" name="timeUsed" value="{{ $perPageDiscount }}">
+                    <input type="hidden" name="searchCoupon" value="{{ $currentPagesDiscount }}">
+                    <input type="hidden" name="status" value="{{ $searchDiscount }}">
+                    <input type="hidden" name="timeUsed" value="{{ $startedAt }}">
 
-                    <select id="coupon-entries-select" name="per_page_coupon"
+                    <select id="coupon-entries-select" name="perPageCoupon"
                             class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
                             onchange="this.form.submit()">
-                        <option value="5" {{ $per_page_coupon == 5 ? 'selected' : '' }}>5</option>
-                        <option value="10" {{ $per_page_coupon == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ $per_page_coupon == 20 ? 'selected' : '' }}>20</option>
-                        <option value="-1" {{ $per_page_coupon == -1 ? 'selected' : '' }}>All</option>
+                        <option value="5" {{ $perPageCoupon == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $perPageCoupon == 10 ? 'selected' : '' }}>10</option>
+                        <option value="20" {{ $perPageCoupon == 20 ? 'selected' : '' }}>20</option>
+                        <option value="-1" {{ $perPageCoupon == -1 ? 'selected' : '' }}>All</option>
                     </select>
                     <label class="text-sm font-medium text-gray-600">entries</label>
                 </form>
                 <div class="flex items-center">
                     <form id="coupon-search-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
-                        <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
+                        <input type="hidden" name="perPageCoupon" value="{{ $perPageCoupon }}">
                         <input type="hidden" name="status" value="{{ $status }}">
-                        <input type="hidden" name="time_used" value="{{ $time_used }}">
+                        <input type="hidden" name="timeUsed" value="{{ $timeUsed }}">
                         <label for="coupon-table-search" class="text-sm font-medium text-gray-600 mr-2">Search:</label>
                         <input type="search"
-                               name="search_coupon"
+                               name="searchCoupon"
                                id="coupon-table-search"
-                               value="{{ $search_coupon }}"
+                               value="{{ $searchCoupon }}"
                                class="min-w-[200px] border-2 border-gray-200 rounded-lg text-sm px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                                placeholder="Search coupons...">
                     </form>
@@ -400,18 +399,18 @@
                         </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
-                        @if (count($couponData)>0)
+                        @if (count($couponData) > 0)
                             @foreach ($couponData as $item)
-                                <tr onclick="window.location='{{ route('admin.'.$databaseName.'.editCoupon', $item->id) }}';"
+                                <tr onclick="window.location='{{ route('admin.' . $databaseName . '.editCoupon', $item->id) }}';"
                                     class="hover:bg-blue-50/50 transition-colors duration-150 hover:cursor-pointer">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.editCoupon', $item->id) }}"
+                                        <a href="{{ route('admin.' . $databaseName . '.editCoupon', $item->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->id }}
                                         </a>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.editCoupon', $item->id) }}"
+                                        <a href="{{ route('admin.' . $databaseName . '.editCoupon', $item->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->code }}
                                         </a>
@@ -420,13 +419,13 @@
                                         {{ $item->shop }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        <a href="{{ route('admin.'.$databaseName.'.updateDiscount',$item->discount->id) }}"
+                                        <a href="{{ route('admin.' . $databaseName . '.updateDiscount', $item->discount->id) }}"
                                            class="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
                                             {{ $item->discount->name }}
                                         </a>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $item->times_used }}
+                                        {{ $item->timesUsed }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->status == '1' ? 'text-green-600' : 'text-red-600' }}">
                                         {{ $item->status == "1" ? 'Active' : 'Disable' }}
@@ -446,62 +445,62 @@
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                             <!-- Showing entries info -->
                             <div class="text-sm text-gray-600 font-medium">
-                                Showing {{ ($current_pages_coupon - 1) * $per_page_coupon + 1 }} to {{ min($current_pages_coupon * $per_page_coupon, $total_items_coupon) }} of {{ $total_items_coupon }} entries
+                                Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries
                             </div>
 
                             <!-- Pagination controls -->
                             <div class="flex items-center space-x-1">
                                 <!-- First Page -->
-                                @if ($current_pages_coupon > 1)
-                                    <a href="?page_coupon=1&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                @if ($currentPagesCoupon > 1)
+                                    <a href="?pageCoupon=1&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}&pageDiscount={{ $currentPagesDiscount }}&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-left"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                <i class="fas fa-angle-double-left"></i>
-                            </span>
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </span>
                                 @endif
 
                                 <!-- Previous Page -->
-                                @if ($current_pages_coupon > 1)
-                                    <a href="?page_coupon={{ $current_pages_coupon - 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                @if ($currentPagesCoupon > 1)
+                                    <a href="?pageCoupon={{ $currentPagesCoupon - 1 }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}&pageDiscount={{ $currentPagesDiscount }}&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-left"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                <i class="fas fa-angle-left"></i>
-                            </span>
+                                        <i class="fas fa-angle-left"></i>
+                                    </span>
                                 @endif
 
                                 <!-- Current Page Indicator -->
                                 <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md">
-                            {{ $current_pages_coupon }}/{{ $total_pages_coupon }}
-                        </span>
+                                    {{ $currentPagesCoupon }}/{{ $totalPagesCoupon }}
+                                </span>
 
                                 <!-- Next Page -->
-                                @if ($current_pages_coupon < $total_pages_coupon)
-                                    <a href="?page_coupon={{ $current_pages_coupon + 1 }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                @if ($currentPagesCoupon < $totalPagesCoupon)
+                                    <a href="?pageCoupon={{ $currentPagesCoupon + 1 }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}&pageDiscount={{ $currentPagesDiscount }}&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-right"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                <i class="fas fa-angle-right"></i>
-                            </span>
+                                        <i class="fas fa-angle-right"></i>
+                                    </span>
                                 @endif
 
                                 <!-- Last Page -->
-                                @if ($current_pages_coupon < $total_pages_coupon)
-                                    <a href="?page_coupon={{ $total_pages_coupon }}&per_page_coupon={{ $per_page_coupon }}&search_coupon={{ $search_coupon }}&status={{ $status }}&time_used={{ $time_used }}&page_discount={{ $current_pages_discount }}&per_page_discount={{ $per_page_discount }}&search_discount={{ $search_discount }}&started_at={{ $started_at }}"
+                                @if ($currentPagesCoupon < $totalPagesCoupon)
+                                    <a href="?pageCoupon={{ $totalPagesCoupon }}&perPageCoupon={{ $perPageCoupon }}&searchCoupon={{ $searchCoupon }}&status={{ $status }}&timeUsed={{ $timeUsed }}&pageDiscount={{ $currentPagesDiscount }}&perPageDiscount={{ $perPageDiscount }}&searchDiscount={{ $searchDiscount }}&startedAt={{ $startedAt }}"
                                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200">
                                         <i class="fas fa-angle-double-right"></i>
                                     </a>
                                 @else
                                     <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
-                                <i class="fas fa-angle-double-right"></i>
-                            </span>
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </span>
                                 @endif
                             </div>
                         </div>
@@ -510,24 +509,21 @@
             </div>
             <form id="status-form" method="GET" action="{{ url()->current() }}" class="hidden">
                 <input type="hidden" name="status" id="status-input">
-                <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
-                <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
-
-                <input type="hidden" name="search_discount" value="{{ $search_discount }}">
-                <input type="hidden" name="per_page_discount" value="{{ $per_page_discount }}">
-                <input type="hidden" name="current_pages_discount" value="{{ $current_pages_discount }}">
-                <input type="hidden" name="started_at" value="{{ $started_at }}">
-
+                <input type="hidden" name="searchCoupon" value="{{ $searchCoupon }}">
+                <input type="hidden" name="perPageCoupon" value="{{ $perPageCoupon }}">
+                <input type="hidden" name="searchDiscount" value="{{ $searchDiscount }}">
+                <input type="hidden" name="perPageDiscount" value="{{ $perPageDiscount }}">
+                <input type="hidden" name="currentPagesDiscount" value="{{ $currentPagesDiscount }}">
+                <input type="hidden" name="startedAt" value="{{ $startedAt }}">
             </form>
             <form id="times-used-form" method="GET" action="{{ url()->current() }}" class="hidden">
-                <input type="hidden" name="time_used" id="times-used-input">
-                <input type="hidden" name="search_coupon" value="{{ $search_coupon }}">
-                <input type="hidden" name="per_page_coupon" value="{{ $per_page_coupon }}">
-
-                <input type="hidden" name="search_discount" value="{{ $search_discount }}">
-                <input type="hidden" name="per_page_discount" value="{{ $per_page_discount }}">
-                <input type="hidden" name="current_pages_discount" value="{{ $current_pages_discount }}">
-                <input type="hidden" name="started_at" value="{{ $started_at }}">
+                <input type="hidden" name="timeUsed" id="times-used-input">
+                <input type="hidden" name="searchCoupon" value="{{ $searchCoupon }}">
+                <input type="hidden" name="perPageCoupon" value="{{ $perPageCoupon }}">
+                <input type="hidden" name="searchDiscount" value="{{ $searchDiscount }}">
+                <input type="hidden" name="perPageDiscount" value="{{ $perPageDiscount }}">
+                <input type="hidden" name="currentPagesDiscount" value="{{ $currentPagesDiscount }}">
+                <input type="hidden" name="startedAt" value="{{ $startedAt }}">
             </form>
         </div>
     </div>
@@ -535,7 +531,6 @@
 
 @push('scripts')
     <script>
-
         function toggleDropdownDiscount() {
             const dropdown = document.getElementById('discount-startDropdown');
             dropdown.classList.toggle('hidden');
@@ -630,7 +625,7 @@
             const urlParams = new URLSearchParams(window.location.search);
 
             // Check which pagination was used
-            if (urlParams.has('page_discount') || urlParams.has('per_page_discount') || urlParams.has('search_discount') || urlParams.has('started_at')) {
+            if (urlParams.has('pageDiscount') || urlParams.has('perPageDiscount') || urlParams.has('searchDiscount') || urlParams.has('startedAt')) {
                 // Discount table was paginated
                 const discountSection = document.getElementById('discount-data');
                 if (discountSection) {
@@ -642,7 +637,7 @@
                         });
                     }, 100);
                 }
-            } else if (urlParams.has('page_coupon') || urlParams.has('per_page_coupon') || urlParams.has('search_coupon') || urlParams.has('status') || urlParams.has('time_used')) {
+            } else if (urlParams.has('pageCoupon') || urlParams.has('perPageCoupon') || urlParams.has('searchCoupon') || urlParams.has('status') || urlParams.has('timeUsed')) {
                 // Coupon table was paginated
                 const couponSection = document.getElementById('coupon-data');
                 if (couponSection) {

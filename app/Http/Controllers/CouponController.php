@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CouponByDiscountRequest;
-use App\Http\Requests\CouponRequest;
+use App\Http\Requests\CreateCouponRequest;
 use App\Http\Requests\DecrementRequest;
 use App\Http\Requests\UpdateCouponRequest;
 use App\Models\Coupon;
@@ -39,6 +39,7 @@ class CouponController extends Controller
             'apps' => $this->apps,
             'totalPagesCoupon' => $data['totalPagesCoupon'],
             'totalItemsCoupon' => $data['totalItemsCoupon'],
+            'totalCoupons' => $data['totalCoupons'],
             'currentPagesCoupon' => $data['currentPagesCoupon'] ?? 1,
             'perPageCoupon' => $request->query('perPageCoupon') ?? 5,
             'searchCoupon' => $request->query('searchCoupon') ?? null,
@@ -56,7 +57,7 @@ class CouponController extends Controller
         return view('admin.coupons.create', compact(['discountData', 'databaseName', 'appName']));
     }
 
-    public function store(CouponService $couponService, CouponRequest $couponRequest)
+    public function store(CouponService $couponService, CreateCouponRequest $couponRequest)
     {
         $couponService->store($this->databaseName,$couponRequest->validationData());
 
@@ -77,7 +78,7 @@ class CouponController extends Controller
     public function update(CouponService $couponService, UpdateCouponRequest $couponRequest, $id)
     {
 
-        $couponService->update($couponRequest->validated(), $id, $this->databaseName);
+        $couponService->update($id, $this->databaseName , $couponRequest->validated());
 
         return redirect()->route('admin.' . $this->databaseName . '.coupons')->with('success', 'Discount updated successfully!');
     }
@@ -96,19 +97,17 @@ class CouponController extends Controller
         return redirect()->back()->with('success', 'Success Decrement Times Used!');
     }
 
-    public function createByDiscount($discount_id, DiscountService $discountService)
+    public function createByDiscount(int $discount_id, DiscountService $discountService)
     {
-        dd(1);
+
         $appName = $this->appName;
         $databaseName = $this->databaseName;
         $apps = $this->apps;
-        $discount = $discountService->getDiscountInfo((int) $discount_id, $databaseName);
-        $discount = json_decode(json_encode($discount));
-
+        $discount = $discountService->getDiscountInfo( $discount_id, $databaseName);
         return view('admin.coupons.discounts.createCoupon', compact(['appName', 'databaseName', 'apps', 'discount']));
     }
 
-    public function storeByDiscount($discount_id, CouponService $couponService, CouponByDiscountRequest $couponRequest)
+    public function storeByDiscount(int $discount_id, CouponService $couponService, CouponByDiscountRequest $couponRequest)
     {
         $couponNew = $couponService->createCouponByDiscount( $discount_id, $this->databaseName,$couponRequest->validationData());
 

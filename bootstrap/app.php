@@ -20,7 +20,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (Exception $exception) {
             if ($exception instanceof InternalException) {
-//                dd(json_encode($exception->getErrors(), JSON_PRETTY_PRINT));
                 return redirect()->back()->withErrors($exception->getErrors())->withInput();
             }
             if ($exception instanceof NotFoundException) {

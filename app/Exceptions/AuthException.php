@@ -4,10 +4,6 @@ namespace App\Exceptions;
 
 class AuthException extends InternalException
 {
-    //    public static function loginFailed()
-    //    {
-    //        return new self(, 401);
-    //    }
     public static function loginFailed(array $message): self
     {
         return self::new($message);

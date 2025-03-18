@@ -15,11 +15,12 @@ class DiscountController extends Controller
 
     public function __construct(protected DiscountService $discountService)
     {
-        $uri = Request()->route()->uri();
 
-        $segments = explode('/', $uri);
+        $this->routeName = Request()->route()->getPrefix();
 
-        $this->databaseName = $segments[1];
+        $arr = explode("/", $this->routeName);
+
+        $this->databaseName = $arr[1];
 
         $this->appName = config('database.connections.' . $this->databaseName . '.app_name');
 
@@ -33,14 +34,13 @@ class DiscountController extends Controller
         $databaseName = $this->databaseName;
 
         $data = $this->discountService->index($databaseName,$request->query());
-
         return view('admin.discounts.index', [
             'appName' => $appName,
             'discountData' => $data['discountData'],
             'databaseName' => $databaseName,
             'totalPagesDiscount' => $data['totalPagesDiscount'],
             'totalItemsDiscount' => $data['totalItemsDiscount'],
-            'totalItems' => $data['totalItems'],
+            'totalDiscounts' => $data['totalDiscounts'],
             'currentPagesDiscount' => $data['currentPagesDiscount'] ?? 1,
             'perPageDiscount' => $request->query('perPageDiscount') ?? 5,
             'searchDiscount' => $request->query('searchDiscount') ?? null,
@@ -97,10 +97,9 @@ class DiscountController extends Controller
     public function getDiscountInfo(Request $request, $id)
     {
         try {
-            $data = $this->discountService->getDiscountInfo($id, $this->databaseName);
-            return view('components.discountInfo', compact('data'))->render();
+            $discount = $this->discountService->getDiscountInfo($id, $this->databaseName);
+            return view('components.discountInfo', compact('discount'))->render();
         } catch (\Exception $e) {
-            \Log::error('Error in getDiscountInfo: ' . $e->getMessage());
             return response()->json(['error' => 'An error occurred'], 500);
         }
     }

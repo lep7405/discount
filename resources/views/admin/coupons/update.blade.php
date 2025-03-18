@@ -6,13 +6,15 @@
 
 @section("li_breadcumb")
     <li>
-        <a href="{{ route('admin.'.$databaseName.'.reports') }}" class="text-blue-600 hover:text-blue-800 transition-colors">
+        <a href="{{ route('admin.'.$databaseName.'.reports') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
             {{ $appName }}
         </a>
     </li>
     <li class="text-gray-400">/</li>
     <li>
-        <a href="{{ route('admin.'.$databaseName.'.coupons') }}" class="text-blue-600 hover:text-blue-800 transition-colors">
+        <a href="{{ route('admin.'.$databaseName.'.coupons') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
             Coupons
         </a>
     </li>
@@ -21,7 +23,9 @@
 
 @section('mainContent')
     <style>
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
     <div x-data="{ showModal1: false, showModal2:false }" x-cloak class="container mx-auto mt-5">
         <div class="flex flex-wrap">
@@ -30,14 +34,11 @@
                     <div class="bg-[#027BFF] px-6 py-4 rounded-t-lg border-b">
                         <h3 class="text-xl font-semibold text-white">Edit Coupon</h3>
                     </div>
-                    @if ($errors->has('error'))
-                        <div class="text-red-500">
-                            {{ $errors->first('error') }}
-                        </div>
-                    @endif
+
 
                     <div class="p-6">
-                        <form role="form" action="{{ route('admin.'.$databaseName.'.updateCoupon', $couponData->id) }}" method="POST">
+                        <form role="form" action="{{ route('admin.'.$databaseName.'.updateCoupon', $couponData->id) }}"
+                              method="POST">
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="_db" value="{{ $databaseName }}">
@@ -89,11 +90,12 @@
                             </div>
 
                             <div class="mb-4">
-                                <label for="discount_id" class="block text-gray-700 text-sm font-bold mb-2">Discount</label>
+                                <label for="discount_id"
+                                       class="block text-gray-700 text-sm font-bold mb-2">Discount</label>
                                 <select
                                     id="discount_id"
                                     name="discount_id"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-700
+                                    class=" discount_select2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-700
                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                transition-colors duration-200
                @if ($couponData->times_used)
@@ -103,7 +105,8 @@
                @endif"
                                     @if ($couponData->times_used) disabled @endif
                                 >
-                                    <option value="{{ $currentDiscount->id }}" selected>{{ $currentDiscount->name }}</option>
+                                    <option value="{{ $currentDiscount->id }}"
+                                            selected>{{ $currentDiscount->name }}</option>
                                     @foreach ($discountData as $discount)
                                         <option value="{{ $discount->id }}"
                                                 @if ($discount->id == $currentDiscount->id) selected @endif>
@@ -115,6 +118,8 @@
                                     <span class="text-red-500">{{ $errors->first('discount_id') }}</span>
                                 @endif
                             </div>
+
+
                             <div class="flex items-center justify-between">
                                 <button
                                     type="button"
@@ -168,7 +173,8 @@
                 </div>
             </div>
         </div>
-        <div x-show="showModal1" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal">
+        <div x-show="showModal1" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full"
+             id="my-modal">
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
                 <div class="mt-3 text-center">
                     <h3 class="text-lg leading-6 font-medium text-gray-900">Xác nhận xóa Discount</h3>
@@ -176,10 +182,12 @@
                         <p class="text-sm text-gray-500">Bạn có chắc chắn muốn xóa?</p>
                     </div>
                     <div class="items-center px-4 py-3">
-                        <button @click="showModal1 = false" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        <button @click="showModal1 = false"
+                                class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
                             Đóng
                         </button>
-                        <button @click="showModal1 = false; document.getElementById('deleteDiscount').submit();" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        <button @click="showModal1 = false; document.getElementById('deleteDiscount').submit();"
+                                class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
                             Xóa
                         </button>
                     </div>
@@ -197,7 +205,9 @@
             class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
         >
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all">
-                <form id="decrementCoupon" action="{{ route('admin.'.$databaseName.'.decrementTimesUsedCoupon', $couponData->id) }}" method="POST">
+                <form id="decrementCoupon"
+                      action="{{ route('admin.'.$databaseName.'.decrementTimesUsedCoupon', $couponData->id) }}"
+                      method="POST">
                     @csrf
                     @method('PUT')
 
@@ -221,7 +231,7 @@
                                 <input
                                     type="number"
                                     min="0"
-{{--                                    max="{{ $couponData->times_used ?? 0 }}"--}}
+                                    {{--                                    max="{{ $couponData->times_used ?? 0 }}"--}}
                                     class="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-gray-900 placeholder-gray-400 text-sm"
                                     id="inputTimesUsed"
                                     name="numDecrement"
@@ -240,7 +250,8 @@
                                 class="inline-flex items-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                             >
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                                 Cancel
                             </button>
@@ -251,7 +262,8 @@
                                 class="inline-flex items-center px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500"
                             >
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                                 </svg>
                                 Decrement
                             </button>
@@ -262,41 +274,51 @@
         </div>
     </div>
     <!-- Modal -->
-    <form id="deleteDiscount" method="POST" action="{{ route('admin.'.$databaseName.'.destroyCoupon', $couponData->id) }}">
+    <form id="deleteDiscount" method="POST"
+          action="{{ route('admin.'.$databaseName.'.destroyCoupon', $couponData->id) }}">
         @csrf
         @method('DELETE')
     </form>
 @endsection
 
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet"/>
+@endpush
 
+@push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const discountSelect = document.getElementById('discount_id');
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sử dụng jQuery để khởi tạo Select2
+            $('#discount_id').select2({
+                placeholder: "Tìm kiếm discount...",
+                allowClear: false,
+                width: '100%'
+            });
+
             const discountInfo = document.getElementById('discountInfo');
 
-            discountSelect.addEventListener('change', function() {
-                const selectedId = this.value;
+            // Sử dụng jQuery để bắt sự kiện change
+            $('#discount_id').on('change', function () {
+                const selectedId = $(this).val();
                 if (selectedId) {
                     fetchDiscountInfo(selectedId);
                 } else {
-                    discountInfo.innerHTML = '<li>No discount selected</li>';
+                    discountInfo.innerHTML = '<li>Chưa chọn discount</li>';
                 }
             });
 
-            // Fetch discount info based on the current discount initially
-            const currentDiscountId = "{{ $currentDiscount->id }}"; // Lấy ID của discount mặc định
+            // Fetch thông tin discount mặc định
+            const currentDiscountId = "{{ $currentDiscount->id }}";
             if (currentDiscountId) {
-                discountSelect.value = currentDiscountId; // Đảm bảo chọn đúng discount
-                fetchDiscountInfo(currentDiscountId); // Gọi hàm để fetch thông tin discount
+                // Sử dụng jQuery để chọn và kích hoạt sự kiện
+                $('#discount_id').val(currentDiscountId).trigger('change');
             }
 
             function fetchDiscountInfo(id) {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 const dbName = document.querySelector('input[name="_db"]').value;
-                const url = `http://localhost:8000/admin/${dbName}/discounts/${id}`
-                console.log(url);
+                const url = `http://localhost:8000/admin/${dbName}/discounts/${id}`;
+
                 fetch(url, {
                     method: 'POST',
                     headers: {
@@ -308,22 +330,18 @@
                         if (!response.ok) {
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
-                        return response.text();  // Nhận HTML từ server
+                        return response.text();
                     })
                     .then(html => {
-                        discountInfo.innerHTML = html;  // Chèn HTML vào phần tử discountInfo
+                        discountInfo.innerHTML = html;
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        discountInfo.innerHTML = '<li>Failed to load discount info</li>';
+                        console.error('Lỗi:', error);
+                        discountInfo.innerHTML = '<li>Không thể tải thông tin discount</li>';
                     });
             }
-
-            function formatDate(date) {
-                let parts = date.split("-");
-                return `${parts[2]}-${parts[1]}-${parts[0]}`;
-            }
         });
+
         @if (session('success'))
         Swal.fire({
             toast: true,
@@ -339,21 +357,20 @@
         });
         @endif
 
-        @if ($errors->has('decrement'))
+        @if ($errors->has('error'))
         Swal.fire({
             toast: true,
             position: 'top-end',
             icon: 'error',
-            title: "{{ $errors->first('decrement') }}",
+            title: "{{ $errors->first('error') }}",
             showConfirmButton: false,
             timer: 3000,
             timerProgressBar: true,
             customClass: {
-            popup: 'animate__animated animate__fadeInDown'
-        }
+                popup: 'animate__animated animate__fadeInDown'
+            }
         });
         @endif
-
     </script>
 @endpush
 

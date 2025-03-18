@@ -14,11 +14,18 @@
         <!-- Card Header -->
         <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
             <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Coupons List</h2>
-            <a href="{{ route('admin.'.$databaseName.'.createCoupon') }}"
-               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
-                <i class="fas fa-plus mr-2"></i>
-                Add New Coupon
-            </a>
+
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('admin.'.$databaseName.'.createCoupon') }}"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New Coupon
+                </a>
+                <button id="clear-filters-btn"
+                        class="ml-4 px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 flex items-center">
+                    <i class="fas fa-filter-slash mr-1"></i> Clear filters
+                </button>
+            </div>
         </div>
 
         <!-- Table Controls -->
@@ -175,7 +182,11 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <!-- Showing entries info -->
                         <div class="text-sm text-gray-600 font-medium">
-                            Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries
+                            @if ($totalItemsCoupon == $totalCoupons)
+                                Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries
+                            @else
+                                Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries of {{ $totalCoupons }} total items
+                            @endif
                         </div>
 
                         <!-- Pagination controls -->
@@ -252,6 +263,9 @@
 
 @push('scripts')
     <script>
+
+
+
         function toggleDropdownTime() {
             const dropdown = document.getElementById('timeDropdown');
             dropdown.classList.toggle('hidden');
@@ -330,6 +344,26 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const clearFiltersBtn = document.getElementById('clear-filters-btn');
+
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    // Lấy đường dẫn cơ bản không có query params
+                    const baseUrl = window.location.href.split('?')[0];
+
+                    // Chuyển hướng đến URL không có tham số
+                    window.location.href = baseUrl;
+                });
+            }
+
+            // Kiểm tra nếu đang có bộ lọc để hiển thị/ẩn nút
+            const urlParams1 = new URLSearchParams(window.location.search);
+            if (urlParams1.toString()) {
+                clearFiltersBtn.classList.remove('opacity-50');
+            } else {
+                clearFiltersBtn.classList.add('opacity-50');
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.has('pageCoupon') || urlParams.has('perPageCoupon') || urlParams.has('searchCoupon') || urlParams.has('status') || urlParams.has('timeUsed')) {
                 const couponSection = document.getElementById('coupon-data');
