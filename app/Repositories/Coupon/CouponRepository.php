@@ -6,7 +6,7 @@ use Prettus\Repository\Contracts\RepositoryInterface;
 
 interface CouponRepository extends RepositoryInterface
 {
-    public function getAll( $discount_id, string $databaseName, array $filters);
+    public function getAll( string $databaseName, array $filters);
     public function countCoupons(string $databaseName);
     public function createCoupon(string $databaseName, array $attributes);
     public function updateCoupon(int $id, string $databaseName, array $attributes);

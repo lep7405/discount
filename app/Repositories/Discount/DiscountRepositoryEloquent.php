@@ -64,16 +64,17 @@ class DiscountRepositoryEloquent extends BaseRepository implements DiscountRepos
     {
         return $this->getModel()
             ->on($databaseName)
-            ->create([
-                'name' => Arr::get($attributes, 'name'),
-                'value' => Arr::get($attributes, 'value'),
-                'type' => Arr::get($attributes, 'type'),
-                'started_at' => Arr::get($attributes, 'started_at'),
-                'expired_at' => Arr::get($attributes, 'expired_at'),
-                'usage_limit' => Arr::get($attributes, 'usage_limit'),
-                'trial_days' => Arr::get($attributes, 'trial_days'),
-                'discount_month' => Arr::get($attributes, 'discount_month'),
-            ]);
+            ->create($attributes);
+//            ->create([
+//                'name' => Arr::get($attributes, 'name'),
+//                'value' => Arr::get($attributes, 'value'),
+//                'type' => Arr::get($attributes, 'type'),
+//                'started_at' => Arr::get($attributes, 'started_at'),
+//                'expired_at' => Arr::get($attributes, 'expired_at'),
+//                'usage_limit' => Arr::get($attributes, 'usage_limit'),
+//                'trial_days' => Arr::get($attributes, 'trial_days'),
+//                'discount_month' => Arr::get($attributes, 'discount_month'),
+//            ]);
 //            ->create($attributes);
     }
 

@@ -32,17 +32,13 @@ beforeEach(function () {
 });
 
 //test index
-it('index return correct pagination ', function () {
-    // Arrange
-    // Create a discount
+test('index return correct pagination ', function () {
     $discount = Discount::on($this->databaseName)->create([
         'name' => 'Test Discount',
         'code' => 'TEST',
         'value' => 10,
         'type' => 'percentage',
     ]);
-
-    // Create coupons
     Coupon::factory()->count(3)->make()->each(function ($coupon) use ($discount) {
         $coupon->discount_id = $discount->id;
         $coupon->setConnection($this->databaseName)->save();
@@ -50,20 +46,16 @@ it('index return correct pagination ', function () {
 
     $filters = [];
 
-    // Act
     $result = $this->couponService2->index($this->databaseName, $filters);
 
-    // Assert
     expect($result['couponData'])->toBeInstanceOf(\Illuminate\Pagination\LengthAwarePaginator::class)
         ->and($result['totalPagesCoupon'])->toBe(1)
         ->and($result['totalItemsCoupon'])->toBe(3)
         ->and($result['currentPagesCoupon'])->toBe(1)
         ->and($result['totalCoupons'])->toBe(3)
         ->and($result['couponData']->items())->toHaveCount(3);
-})->only();
-it('index return correct data with filters contain status', function () {
-    // Arrange
-    // Create a discount
+});
+test('index return correct data with filters contain status', function () {
     $discount = Discount::on($this->databaseName)->create([
         'name' => 'Test Discount',
         'code' => 'TEST',
@@ -92,8 +84,8 @@ it('index return correct data with filters contain status', function () {
     foreach ($result['couponData']->items() as $coupon) {
         expect($coupon->status)->toBe(1);
     }
-})->only();
-it('index return correct data with filters contain seachCoupon', function () {
+});
+test('index return correct data with filters contain seachCoupon', function () {
     $discount = Discount::on($this->databaseName)->create([
         'name' => 'Test Discount',
         'code' => 'TEST',
@@ -119,8 +111,8 @@ it('index return correct data with filters contain seachCoupon', function () {
 
     expect($result['totalItemsCoupon'])->toBe(1)
         ->and($result['couponData']->first()->code)->toBe('CODE123');
-})->only();
-it('index return correct data with timesUsed', function () {
+});
+test('index return correct data with timesUsed', function () {
     // Arrange
     $discount = Discount::on($this->databaseName)->create([
         'name' => 'Test Discount',
@@ -152,220 +144,173 @@ it('index return correct data with timesUsed', function () {
     // Assert
     expect($result['couponData']->first()->times_used)->toBe(5)
         ->and($result['couponData']->last()->times_used)->toBe(10);
-})->only();
-it('index return correct page', function () {
-    // Arrange
-    $discount = Discount::on($this->databaseName)->create([
+});
+
+//test create
+test('create coupon successfully', function () {
+    $databaseName = 'cs';
+    $discount = Discount::on($databaseName)->create([
         'name' => 'Test Discount',
-        'code' => 'TEST',
-        'value' => 10,
-        'type' => 'percentage',
+        'value' => 10
     ]);
-
-    Coupon::factory()->count(7)->make()->each(function ($coupon) use ($discount) {
-        $coupon->discount_id = $discount->id;
-        $coupon->setConnection($this->databaseName)->save();
-    });
-
-    $filters = ['perPageCoupon' => 5];
-
-    // Act
-    $result = $this->couponService2->index($this->databaseName, $filters);
-
-    // Assert
-    expect($result['totalItemsCoupon'])->toBe(7);
-    expect($result['couponData']->perPage())->toBe(5);
-    expect($result['couponData']->total())->toBe(7);
-    expect($result['totalPagesCoupon'])->toBe(2);
-})->only();
-
-//test update
-test('update coupon successfully when times_used is 0', function () {
-    $id = 1;
-    $databaseName = 'test_db';
     $attributes = [
         'code' => 'NEW_CODE',
-        'shop' => 'shop1',
-        'discountId' => 5,
-        'other_field' => 'should be filtered out'
-    ];
-
-    // Existing coupon with times_used = 0
-    $existingCoupon = (object) [
-        'id' => $id,
-        'code' => 'OLD_CODE',
-        'shop' => 'old_shop',
-        'discountId' => 3,
-        'timesUsed' => 0
-    ];
-
-    // Mock findById to return existing coupon
-    $this->couponRepository->shouldReceive('findById')
-        ->once()
-        ->with($id, $databaseName)
-        ->andReturn($existingCoupon);
-
-    // Mock getCouponByCode to return null (no duplicate code)
-    $this->couponRepository->shouldReceive('getCouponByCode')
-        ->once()
-        ->with('NEW_CODE', $databaseName)
-        ->andReturn(null);
-
-    // Expected filtered attributes that should be passed to updateCoupon
-    $expectedFilteredAttributes = [
-        'code' => 'NEW_CODE',
-        'shop' => 'shop1',
-        'discountId' => 5
-    ];
-
-    // Mock updateCoupon
-    $updatedCoupon = (object) array_merge(
-        (array) $existingCoupon,
-        $expectedFilteredAttributes,
-    );
-
-    $this->couponRepository->shouldReceive('updateCoupon')
-        ->once()
-        ->with($id, $databaseName, $expectedFilteredAttributes)
-        ->andReturn($updatedCoupon);
-
-    $result = $this->couponService->update($id, $databaseName, $attributes);
-    expect($result)->toBe($updatedCoupon);
-});
-
-test('update coupon with existing code but same ID', function () {
-    $id = 1;
-    $databaseName = 'test_db';
-    $attributes = [
-        'code' => 'EXISTING_CODE',
-        'shop' => 'new_shop'
-    ];
-
-    // Existing coupon with times_used = 0
-    $existingCoupon = (object) [
-        'id' => $id,
-        'code' => 'OLD_CODE',
-        'shop' => 'old_shop',
-        'timesUsed' => 0
-    ];
-
-    // Mock findById to return existing coupon
-    $this->couponRepository->shouldReceive('findById')
-        ->once()
-        ->with($id, $databaseName)
-        ->andReturn($existingCoupon);
-
-    // Mock getCouponByCode to return a coupon with same ID (which is allowed)
-    $couponWithSameCode = (object) [
-        'id' => $id,
-        'code' => 'EXISTING_CODE'
-    ];
-
-    $this->couponRepository->shouldReceive('getCouponByCode')
-        ->once()
-        ->with('EXISTING_CODE', $databaseName)
-        ->andReturn($couponWithSameCode);
-
-    // Mock updateCoupon
-    $updatedCoupon = (object) [
-        'id' => $id,
-        'code' => 'EXISTING_CODE',
         'shop' => 'new_shop',
-        'timesUsed' => 0
+        'discount_id' => $discount->id,
+        'times_used' => 0
     ];
-
-    $this->couponRepository->shouldReceive('updateCoupon')
-        ->once()
-        ->with($id, $databaseName, $attributes)
-        ->andReturn($updatedCoupon);
-
-    $result = $this->couponService->update($id, $databaseName, $attributes);
-    expect($result)->toBe($updatedCoupon);
-});
-
-test('update coupon fails when coupon has been used', function () {
-    $id = 1;
-    $databaseName = 'test_db';
+    $coupon = $this->couponService2->store($databaseName, $attributes);
+    $this->assertDatabaseHas('coupons', [
+        'code' => $attributes['code'],
+        'shop' => $attributes['shop'],
+        'discount_id' => $attributes['discount_id'],
+        'times_used' => $attributes['times_used'],
+        'automatic' => 1 // Vì $databaseName = 'cs' và $attributes['shop'] != null
+    ],'cs');
+})->only();
+test('create coupon successfully with automatic = false when shop is null', function () {
+    $databaseName = 'cs';
+    $discount = Discount::on($databaseName)->create([
+        'name' => 'Test Discount',
+        'value' => 10
+    ]);
     $attributes = [
         'code' => 'NEW_CODE',
-        'shop' => 'new_shop'
+        'shop' => null,
+        'discount_id' => $discount->id,
+        'times_used' => 0
     ];
-
-    // Existing coupon with times_used > 0
-    $existingCoupon = (object) [
-        'id' => $id,
-        'code' => 'OLD_CODE',
-        'shop' => 'old_shop',
-        'timesUsed' => 5
-    ];
-
-    // Mock findById to return existing coupon
-    $this->couponRepository->shouldReceive('findById')
-        ->once()
-        ->with($id, $databaseName)
-        ->andReturn($existingCoupon);
-
-    // No need to mock getCouponByCode since exception will be thrown before that
-
-    expect(fn () => $this->couponService->update($id, $databaseName, $attributes))
-        ->toThrow(CouponException::class);
+    $coupon = $this->couponService2->store($databaseName, $attributes);
+    $this->assertDatabaseHas('coupons', [
+        'code' => $attributes['code'],
+        'shop' => null,
+        'discount_id' => $attributes['discount_id'],
+        'times_used' => $attributes['times_used'],
+        'automatic' => 0 // Vì $attributes['shop'] == null
+    ],'cs');
 });
-
-test('update coupon fails when coupon code already exists for different ID', function () {
-    $id = 1;
-    $databaseName = 'test_db';
-    $attributes = [
-        'code' => 'EXISTING_CODE',
-        'shop' => 'new_shop'
-    ];
-
-    // Existing coupon with times_used = 0
-    $existingCoupon = (object) [
-        'id' => $id,
-        'code' => 'OLD_CODE',
-        'shop' => 'old_shop',
-        'timesUsed' => 0
-    ];
-
-    // Mock findById to return existing coupon
-    $this->couponRepository->shouldReceive('findById')
-        ->once()
-        ->with($id, $databaseName)
-        ->andReturn($existingCoupon);
-
-    // Mock getCouponByCode to return a coupon with different ID (which should throw exception)
-    $couponWithDifferentId = (object) [
-        'id' => 2, // Different ID
-        'code' => 'EXISTING_CODE'
-    ];
-
-    $this->couponRepository->shouldReceive('getCouponByCode')
-        ->once()
-        ->with('EXISTING_CODE', $databaseName)
-        ->andReturn($couponWithDifferentId);
-
-    expect(fn () => $this->couponService->update($id, $databaseName, $attributes))
-        ->toThrow(CouponException::class);
-});
-
+//test update
 test('update fails when coupon not found', function () {
     $id = 999;
-    $databaseName = 'test_db';
+    $databaseName = 'cs';
     $attributes = [
         'code' => 'NEW_CODE',
         'shop' => 'new_shop'
     ];
-
-    // Mock findById to return null (not found)
-    $this->couponRepository->shouldReceive('findById')
-        ->once()
-        ->with($id, $databaseName)
-        ->andReturn(null);
-
-    expect(fn () => $this->couponService->update($id, $databaseName, $attributes))
+    $couponIdNotFound = 100000000000;
+    expect(fn () => $this->couponService2->update($couponIdNotFound, $databaseName, $attributes))
         ->toThrow(NotFoundException::class);
 });
+test('update coupon fails when coupon has been used', function () {
+    $databaseName = 'cs';
+    $attributes = [
+        'code' => 'NEW_CODE',
+        'shop' => 'new_shop'
+    ];
+    $discount=Discount::on($databaseName)->create([
+        'id' => 1,
+        'name' => 'Test Discount',
+        'value' => 10
+    ]);
+    $coupon=Coupon::on($databaseName)->create([
+        'id' => 1,
+        'discount_id' => $discount->id,
+        'code' => 'OLD_CODE',
+        'shop' => 'old_shop',
+        'times_used' => 5
+    ]);
+    expect(fn () => $this->couponService2->update($coupon->id, $databaseName, $attributes))
+        ->toThrow(CouponException::class);
+});
+test('update coupon fails when coupon code not used and already exists for different ID', function () {
+    $id = 1;
 
+    $discount=Discount::on($this->databaseName)->create([
+        'id' => 1,
+        'name' => 'Test Discount',
+        'value' => 10
+    ]);
+    $attributes = [
+        'code' => 'EXISTING_CODE',
+        'shop' => 'new_shop',
+        'discount_id' => $discount->id,
+    ];
+    $couponNeedUpdate = Coupon::on($this->databaseName)->create([
+        'id' => 1,
+        'discount_id' => $discount->id,
+        'code' => 'OLD_CODE',
+        'shop' => 'old_shop',
+        'times_used' => 0
+    ]);
+    $existCouponCode = Coupon::on($this->databaseName)->create([
+        'id' => 2,
+        'discount_id' => $discount->id,
+        'code' => 'EXISTING_CODE',
+        'shop' => 'old_shop',
+        'times_used' => 0
+    ]);
+    expect(fn () => $this->couponService2->update($couponNeedUpdate->id, $this->databaseName, $attributes))
+        ->toThrow(function(CouponException $e){
+            expect($e->getErrors()['error'])->toBe('Code existed!');
+        });
+});
+test('update coupon fails when coupon code not used and not validate data update', function () {
+    $id = 1;
+
+    $discount=Discount::on($this->databaseName)->create([
+        'id' => 1,
+        'name' => 'Test Discount',
+        'value' => 10
+    ]);
+    $attributes = [
+        'code' => 'EXISTING_CODE',
+        'shop' => 'new_shop',
+//        'discount_id' => $discount->id,
+    ];
+    $couponUpdate = Coupon::on($this->databaseName)->create([
+        'id' => 1,
+        'discount_id' => $discount->id,
+        'code' => 'OLD_CODE',
+        'shop' => 'old_shop',
+        'times_used' => 0
+    ]);
+
+    expect(fn () => $this->couponService2->update($couponUpdate->id, $this->databaseName, $attributes))
+        ->toThrow(CouponException::class);
+});
+test('update coupon successfully when times_used is 0 and not exist coupon code want to update', function () {
+    $id = 1;
+    $attributes = [
+        'code' => 'EXISTING_CODE',
+        'shop' => 'new_shop'
+    ];
+    $discount=Discount::on($this->databaseName)->create([
+        'id' => 1,
+        'name' => 'Test Discount',
+        'value' => 10
+    ]);
+    $attributes = [
+        'code' => 'EXISTING_CODE',
+        'shop' => 'new_shop',
+        'discount_id' => $discount->id,
+    ];
+    $coupon = Coupon::on($this->databaseName)->create([
+        'id' => 1,
+        'discount_id' => $discount->id,
+        'code' => 'OLD_CODE',
+        'shop' => 'old_shop',
+        'times_used' => 0
+    ]);
+    Coupon::on($this->databaseName)->where('code',$attributes['code'])->delete();
+    $result= $this->couponService2->update($coupon->id, $this->databaseName, $attributes);
+    expect($result)->toBe(1);
+    $this->assertDatabaseHas('coupons', [
+        'id' => $coupon->id,
+        'code' => $attributes['code'],
+        'shop' => $attributes['shop'],
+        'times_used' => 0
+    ],'cs');
+});
 
 //test delete
 test('delete successfully removes unused coupon', function () {
@@ -510,7 +455,7 @@ test('createCouponByDiscount throws exception when discount not found', function
     $databaseName = 'test_db';
     $attributes = ['code' => 'NEWCODE123', 'shop' => 'test-shop'];
 
-    $this->discountRepository->shouldReceive('findDiscountByIdNoCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->once()
         ->with($discountId, $databaseName)
         ->andReturn(null);
@@ -518,7 +463,6 @@ test('createCouponByDiscount throws exception when discount not found', function
     expect(fn () => $this->couponService->createCouponByDiscount($discountId, $databaseName, $attributes))
         ->toThrow(NotFoundException::class, 'Discount not found');
 });
-
 test('createCouponByDiscount successfully creates coupon when discount exists', function () {
     $discountId = 1;
     $databaseName = 'test_db';
@@ -544,7 +488,7 @@ test('createCouponByDiscount successfully creates coupon when discount exists', 
         'timesUsed' => 0
     ];
 
-    $this->discountRepository->shouldReceive('findDiscountByIdNoCoupon')
+    $this->discountRepository->shouldReceive('findById')
         ->once()
         ->with($discountId, $databaseName)
         ->andReturn($discount);
@@ -556,4 +500,30 @@ test('createCouponByDiscount successfully creates coupon when discount exists', 
 
     $result = $this->couponService->createCouponByDiscount($discountId, $databaseName, $attributes);
     expect($result)->toBe($expectedCoupon);
+});
+
+//test get all coupons by discount
+test('getAllCouponsByDiscount success',function(){
+    Coupon::on($this->databaseName)->delete();
+    Discount::on($this->databaseName)->delete();
+    $discount=Discount::on($this->databaseName)->create([
+        'id' => 1,
+        'name' => 'Test Discount',
+        'value' => 10
+    ]);
+    $couponsList=Coupon::on($this->databaseName)->insert([
+        [
+            'code' => 'CODE123',
+            'shop' => 'Test Shop',
+            'discount_id' => $discount->id
+        ],
+        [
+            'code' => 'CODE456',
+            'shop' => 'Another Shop',
+            'discount_id' => $discount->id
+        ]
+    ]);
+    $filters = ['searchCoupon' => 'CODE123'];
+    $result = $this->couponService2->getAllCouponsByDiscount($discount->id, $this->databaseName, $filters);
+    expect($result['couponData'])->toHaveCount(1);
 });

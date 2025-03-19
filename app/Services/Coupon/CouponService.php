@@ -8,7 +8,7 @@ interface CouponService
 
     public function store(string $databaseName, array $attributes);
 
-    public function update(int $id, string $databaseName, array $attributes);
+    public function update(int $id, string $databaseName, array $formData);
 
     public function delete(int $id, string $databaseName);
 

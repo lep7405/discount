@@ -12,7 +12,6 @@ Route::get('/', function () {
     if (Auth()->check()) {
         return redirect()->route('admin.dashboard.index');
     }
-
     return redirect()->route('login');
 });
 Route::fallback(function(){

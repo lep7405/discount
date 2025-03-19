@@ -1,4 +1,4 @@
-<aside class="fixed top-0 left-0 h-screen z-50 transition-all duration-300 ease-in-out bg-[#2c3e50] text-[#ecf0f1] w-64">
+<aside class="fixed top-0 left-0 h-screen z-50 transition-all duration-300 ease-in-out bg-[#2c3e50] text-[#ecf0f1] w-64 ">
     <div class="flex flex-col h-full">
         <!-- Logo -->
         <div class="flex items-center justify-between p-4 border-b border-gray-700">

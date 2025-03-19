@@ -27,7 +27,7 @@ class CreateCouponRequest extends FormRequest
 
         return [
             'code' => "required|string|max:128|unique:{$databaseName}.coupons,code",
-            'discount_id' => "required|integer|min:1|exists:{$databaseName}.discounts,id",
+            'discountId' => "required|integer|min:1|exists:{$databaseName}.discounts,id",
             'shop' => 'nullable|string|max:128',
         ];
         // dùng nháp đơn và nháy kép trong cái return có gì khác nhau à
@@ -37,7 +37,7 @@ class CreateCouponRequest extends FormRequest
     {
         return [
             'code' => $this->input('code'),
-            'discount_id' => $this->input('discount_id'),
+            'discountId' => $this->input('discountId'),
             'shop' => $this->input('shop'),
         ];
     }

@@ -4,12 +4,27 @@
     Create New Coupon
 @endsection
 @section("li_breadcumb")
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.coupons') }}"><span class="mr-2">/</span>{{ 'Coupons' }}</a></li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.reports') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ $appName }}
+        </a>
+    </li>
+    <li class="text-gray-400">/</li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ 'Discounts' }}
+        </a>
+    </li>
+    <li class="text-gray-400">/</li>
 @endsection
 
 @section('title_admin_breadcumb')
-    <span class="mr-2">/</span>{{ 'Create' }}
+    <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
+       class="text-blue-600 hover:text-blue-800 transition-colors">
+        {{ 'Create' }}
+    </a>
 @endsection
 @section('mainContent')
     <div class="container mx-auto px-4">
@@ -45,14 +60,14 @@
                             </div>
                             <div class="space-y-2 mb-4">
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Discount</label>
-                                <select id="discount_id" name="discount_id" class="discount_select2 form-input" name="discount_app">
+                                <select id="discountId" name="discountId" class="discount_select2 form-input" name="discount_app">
                                     <option value="">-- Select Discount --</option>
                                     @foreach ($discountData as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
                                     @endforeach
                                 </select>
-                                @if ($errors->has('discount_id'))
-                                    <span class="text-red-500">{{ $errors->first('discount_id') }}</span>
+                                @if ($errors->has('discountId'))
+                                    <span class="text-red-500">{{ $errors->first('discountId') }}</span>
                                 @endif
 
                             </div>
@@ -79,7 +94,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const discountSelect = $('#discount_id');
+            const discountSelect = $('#discountId');
             const discountInfo = document.getElementById('discountInfo');
 
             // discountSelect.addEventListener('change', function() {
@@ -91,7 +106,7 @@
             //     }
             // });
             if (!discountSelect.length) {
-                console.error("Không tìm thấy phần tử có ID 'discount_id'");
+                console.error("Không tìm thấy phần tử có ID 'discountId'");
                 return;
             }
             // Khởi tạo Select2 với tìm kiếm

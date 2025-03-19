@@ -47,7 +47,7 @@
                                             </label>
                                             <div id="discountInfo" class="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm"></div>
                                             <select id="discount_id" @if (!$status_del) disabled @endif
-                                            class="discount_select2 w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            class="discount_select2 form-input disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:opacity-75 disabled:cursor-not-allowed""
                                                     name="discount_app"
                                             >
                                                 @foreach ($discountData as $item)

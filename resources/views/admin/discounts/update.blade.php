@@ -1,14 +1,31 @@
 @extends('admin.layouts.admin')
 
-@section('title_admin', 'Edit Discount')
+@section('title_admin')
+    Edit Discount
+@endsection
 
 @section("li_breadcumb")
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}"><span class="mr-2">/</span>{{ 'Discounts' }}</a></li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.reports') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ $appName }}
+        </a>
+    </li>
+    <li class="text-gray-400">/</li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ 'Discounts' }}
+        </a>
+    </li>
+    <li class="text-gray-400">/</li>
 @endsection
 
 @section('title_admin_breadcumb')
-    <span class="mr-2">/</span>{{ 'Edit' }}
+    <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
+       class="text-blue-600 hover:text-blue-800 transition-colors">
+        {{ 'Edit' }}
+    </a>
 @endsection
 
 @section('mainContent')
@@ -64,10 +81,10 @@
                                             <select
                                                 name="discount_for_x_month"
                                                 x-on:change="showDiscountMonth = $event.target.value === '1'"
-                                                class="h-10 rounded-md border-2 border-gray-200 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                class="form-input disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:opacity-75 disabled:cursor-not-allowed"
                                                 @if ($discountStatus) disabled @endif
                                             >
-                                                <option value="0" @if (isset($discountData->discount_month) && $discountData->discount_month == null) selected @endif>No</option>
+                                                <option value="0" @if (isset($discountData->discount_month) && $discountData->discount_month == null) selected @endif >No</option>
                                                 <option value="1" @if (isset($discountData->discount_month) && $discountData->discount_month > 0) selected @endif>Yes</option>
                                             </select>
                                         </div>
@@ -79,7 +96,7 @@
                                                 name="discount_month"
                                                 value="@if (isset($discountData->discount_month)){{ $discountData->discount_month }}@endif"
                                                 placeholder="Enter value"
-                                                class="form-input {{ $errors->has('discount_month') ? 'border-red-500' : 'border-gray-300' }}"
+                                                class="form-input {{ $errors->has('discount_month') ? 'border-red-500' : 'border-gray-300' }} disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:opacity-75 disabled:cursor-not-allowed""
                                                 @if ($discountStatus) disabled @endif
                                             >
                                         </div>
@@ -89,7 +106,7 @@
                                     <div>
                                         <label class="block text-sm font-bold text-gray-700">Type <span class="text-red-400">*</span></label>
                                         <select name="type"
-                                                class="mt-1 p-2 block w-full rounded-md border-2 border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                                class="form-input disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:opacity-75 disabled:cursor-not-allowed"
                                                 @if ($discountStatus) disabled @endif
                                         >
                                             <option @if ($discountData->type == 'percentage') selected @endif value="percentage">Percentage</option>
@@ -104,7 +121,7 @@
                                                name="value"
                                                value="{{ $discountData->value }}"
                                                placeholder="Enter value"
-                                               class="form-input {{ $errors->has('value') ? 'border-red-500' : 'border-gray-300' }}"
+                                               class="form-input {{ $errors->has('value') ? 'border-red-500' : 'border-gray-300' }} disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:opacity-75 disabled:cursor-not-allowed"
                                                @if ($discountStatus) disabled @endif>
                                         @error('value')
                                         <p class="mt-2 text-sm text-red-600">{{ $errors->first('value') }}</p>
@@ -118,7 +135,7 @@
                                            name="trial_days"
                                            value="{{ $discountData->trial_days }}"
                                            placeholder="Enter trial days"
-                                           class="form-input {{ $errors->has('trial_days') ? 'border-red-500' : 'border-gray-300' }}"
+                                           class="form-input {{ $errors->has('trial_days') ? 'border-red-500' : 'border-gray-300' }} disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:opacity-75 disabled:cursor-not-allowed"
                                            @if ($discountStatus) disabled @endif>
                                     @error('trial_days')
                                     <p class="mt-2 text-sm text-red-600">{{ $errors->first('trial_days') }}</p>

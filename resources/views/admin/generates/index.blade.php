@@ -4,20 +4,31 @@
     Generates
 @endsection
 
-@section('title_admin_breadcumb')
-    {{ 'Generate Coupon' }}
+@section("li_breadcumb")
+    <li>
+        <a href="{{ route('admin.indexGenerate') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ 'Generate Coupon' }}
+        </a>
+    </li>
 @endsection
-
 @section('mainContent')
     <div class="bg-white rounded-xl shadow-lg border border-gray-100">
         <!-- Card Header -->
         <div class="border-b border-gray-100 px-6 py-5 flex justify-between items-center bg-gradient-to-r from-white to-gray-50">
             <h2 class="text-2xl font-semibold text-gray-800 tracking-tight">Generate Coupon URL</h2>
-            <a href="{{ route('admin.createGenerate') }}"
-               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
-                <i class="fas fa-plus mr-2"></i>
-                Add New
-            </a>
+
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('admin.createGenerate') }}"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-md">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New Generate
+                </a>
+                <button id="clear-filters-btn"
+                        class="ml-4 px-3 py-1 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 flex items-center">
+                    <i class="fas fa-filter-slash mr-1"></i> Clear filters
+                </button>
+            </div>
         </div>
 
         <!-- Table Controls -->
@@ -26,14 +37,23 @@
                 <label class="text-sm font-medium text-gray-600">Show</label>
                 <input type="hidden" name="search" value="{{ $search }}">
                 <input type="hidden" name="status" value="{{ $status }}">
-                <select id="entries-select" name="perPage"
-                        class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
-                        onchange="this.form.submit()">
-                    <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
-                    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                    <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
-                    <option value="-1" {{ $perPage == -1 ? 'selected' : '' }}>All</option>
-                </select>
+                <div class="relative inline-block">
+                    <select id="discountEntriesSelect" name="perPage"
+                            class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onchange="this.form.submit()">
+                        <option value="5" {{ $perPage == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                        <option value="20" {{ $perPage == 20 ? 'selected' : '' }}>20</option>
+                        <option value="-1" {{ $perPage == -1 ? 'selected' : '' }}>All</option>
+                    </select>
+
+                    <!-- Custom Dropdown Arrow -->
+                    <div class="absolute top-0 right-3 flex items-center justify-center w-8 h-full pointer-events-none">
+                        <div class="absolute top-0 right-0 flex items-center justify-center h-full pr-3 pointer-events-none text-gray-500 group-hover:text-blue-500 transition-colors duration-200">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
                 <label class="text-sm font-medium text-gray-600">entries</label>
             </form>
             <div class="flex items-center">
@@ -225,12 +245,25 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get URL parameters
+            const clearFiltersBtn = document.getElementById('clear-filters-btn');
+
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    const baseUrl = window.location.href.split('?')[0];
+                    window.location.href = baseUrl;
+                });
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.toString()) {
+                clearFiltersBtn.classList.remove('opacity-50');
+            } else {
+                clearFiltersBtn.classList.add('opacity-50');
+            }
+
             const paginationSection = document.getElementById('generate-pagination-section');
             const perPageSelect = document.getElementById('entries-select');
 
-            // Check if we need to scroll (when page or perPage changes)
             if ((urlParams.has('page') || urlParams.has('perPage') || urlParams.has('search') || urlParams.has('status'))
                 && paginationSection && perPageSelect.value !== '-1') {
                 setTimeout(() => {

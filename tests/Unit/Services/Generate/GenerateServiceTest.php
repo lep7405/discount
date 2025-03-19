@@ -30,12 +30,55 @@ beforeEach(function () {
         'discountRepository' => $this->discountRepository,
         'couponRepository' => $this->couponRepository,
     ]);
+
+    $this->generateService2=app(GenerateService::class);
     config(['database.connections.db1.app_name' => 'Application One']);
     config(['database.connections.db2.app_name' => 'Application Two']);
     Coupon::on('cs')->delete();
     Discount::on('cs')->delete();
     Generate::query()->delete();
+
+    $this->databaseName='cs';
 });
+
+//test index
+test('index return correct pagination',function(){
+    $discount=Discount::on('cs')->create([
+        'id'=>1,
+        'name'=>'Discount 1',
+        'type'=>'percentage',
+    ]);
+    $generates=Generate::factory()->count(10)->create([
+        'discount_id'=>$discount->id,
+        'app_name'=>'cs',
+    ]);
+    $result=$this->generateService2->index([]);
+
+    expect($result)->toHaveKeys(['generateData','totalPages','totalItems','currentPages'])
+        ->and($result['generateData'])->toBeInstanceOf(Collection::class)
+    ->and($result['generateData'])->toHaveCount(5)
+    ->and($result['totalPages'])->toBe(2);
+
+})->only();
+test('index return correct data when filters contain search',function(){
+    $discount=Discount::on('cs')->create([
+        'id'=>1,
+        'name'=>'Discount 1',
+        'type'=>'percentage',
+    ]);
+
+    $generateList=Generate::factory()->create([
+        'discount_id'=>$discount->id,
+        'app_name'=>$this->databaseName,
+        'conditions'=>["fg&notinstalledyet"]
+    ]);
+
+    $filters=[
+        'search'=>'fg'
+    ];
+    $result=$this->generateService2->index($filters);
+    expect($result['generateData'])->toHaveCount(1);
+})->only();
 //test index
 test('index returns correct data structure with pagination', function () {
     $filters = ['perPage' => 5];
@@ -412,7 +455,6 @@ test('update generate fails when generate not found', function () {
 
     expect(fn () => $this->generateService->update($generateIdNotExist, []))->toThrow(NotFoundException::class, 'Generate not found');
 });
-
 test('update generate fails when no coupon has code like GENAUTO% and missing value required', function () {
     // Create app_name variable to avoid repetition
     $appName = 'cs';

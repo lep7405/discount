@@ -13,12 +13,19 @@
     </li>
     <li class="text-gray-400">/</li>
     <li>
-        <a href="{{ route('admin.'.$databaseName.'.coupons') }}"
+        <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
            class="text-blue-600 hover:text-blue-800 transition-colors">
-            Coupons
+            {{ 'Coupons' }}
         </a>
     </li>
     <li class="text-gray-400">/</li>
+@endsection
+
+@section('title_admin_breadcumb')
+    <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
+       class="text-blue-600 hover:text-blue-800 transition-colors">
+        {{ 'Edit' }}
+    </a>
 @endsection
 
 @section('mainContent')

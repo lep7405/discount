@@ -16,7 +16,7 @@ class GenerateRepositoryEloquent extends BaseRepository implements GenerateRepos
 
     public function getAll(array $filters)
     {
-        $perPage = Arr::get($filters, 'per_page');
+        $perPage = Arr::get($filters, 'perPage');
         $search = Arr::get($filters, 'search');
         $status = Arr::get($filters, 'status', null);
         $cs = DB::connection('cs')->table('discounts')->select('id as ids', 'name');

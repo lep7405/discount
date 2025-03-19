@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'DEFAULT_PER_PAGE' => 5,
+
     'DEFAULT_HEADER_MESSAGE' => 'Welcome to Secomapp special offer!',
     'DEFAULT_SUCCESS_MESSAGE' => 'Your offer was created! Please install app to activate the offer!',
     'DEFAULT_EXTEND_MESSAGE' => 'Just install app then offer will be applied automatically!',

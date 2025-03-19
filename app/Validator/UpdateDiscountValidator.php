@@ -45,10 +45,6 @@ class UpdateDiscountValidator
             }
             throw DiscountException::validateUpdate($errorDetails);
         }
-        //        if ($validator->fails()) {
-        //            self::throwValidationException($validator);
-        //        }
-
         return $validator->validated();
     }
 

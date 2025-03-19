@@ -1,12 +1,19 @@
 @extends('admin.layouts.admin')
 
-@section('title_admin')
-    Coupons
-@endsection
-
 @section("li_breadcumb")
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.coupons') }}"><span class="mr-2">/</span>{{ 'Coupons' }}</a></li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.reports') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ $appName }}
+        </a>
+    </li>
+    <li class="text-gray-400">/</li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.coupons') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ 'Coupons' }}
+        </a>
+    </li>
 @endsection
 
 @section('mainContent')
@@ -35,15 +42,25 @@
                 <input type="hidden" name="searchCoupon" value="{{ $searchCoupon }}">
                 <input type="hidden" name="status" value="{{ $status }}">
                 <input type="hidden" name="timeUsed" value="{{ $timeUsed }}">
-                <select id="coupon-entries-select" name="perPageCoupon"
-                        class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
-                        onchange="this.form.submit()">
-                    <option value="5" {{ $perPageCoupon == 5 ? 'selected' : '' }}>5</option>
-                    <option value="10" {{ $perPageCoupon == 10 ? 'selected' : '' }}>10</option>
-                    <option value="20" {{ $perPageCoupon == 20 ? 'selected' : '' }}>20</option>
-                    <option value="-1" {{ $perPageCoupon == -1 ? 'selected' : '' }}>All</option>
-                </select>
+                <div class="relative inline-block">
+                    <select id="discountEntriesSelect" name="perPageCoupon"
+                            class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onchange="this.form.submit()">
+                        <option value="5" {{ $perPageCoupon == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ $perPageCoupon == 10 ? 'selected' : '' }}>10</option>
+                        <option value="20" {{ $perPageCoupon == 20 ? 'selected' : '' }}>20</option>
+                        <option value="-1" {{ $perPageCoupon == -1 ? 'selected' : '' }}>All</option>
+                    </select>
+
+                    <!-- Custom Dropdown Arrow -->
+                    <div class="absolute top-0 right-3 flex items-center justify-center w-8 h-full pointer-events-none">
+                        <div class="absolute top-0 right-0 flex items-center justify-center h-full pr-3 pointer-events-none text-gray-500 group-hover:text-blue-500 transition-colors duration-200">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
                 <label class="text-sm font-medium text-gray-600">entries</label>
+
             </form>
             <div class="flex items-center">
                 <form id="coupon-search-form" method="GET" action="{{ url()->current() }}" class="flex items-center">
@@ -264,8 +281,6 @@
 @push('scripts')
     <script>
 
-
-
         function toggleDropdownTime() {
             const dropdown = document.getElementById('timeDropdown');
             dropdown.classList.toggle('hidden');
@@ -288,7 +303,6 @@
             const dropdown = document.getElementById('statusDropdown');
             dropdown.classList.toggle('hidden');
 
-            // Đóng dropdown khi click ra ngoài
             document.addEventListener('click', function(event) {
                 const dropdown = document.getElementById('statusDropdown');
                 const button = event.target.closest('button');
@@ -357,14 +371,13 @@
             }
 
             // Kiểm tra nếu đang có bộ lọc để hiển thị/ẩn nút
-            const urlParams1 = new URLSearchParams(window.location.search);
+            const urlParams = new URLSearchParams(window.location.search);
             if (urlParams1.toString()) {
                 clearFiltersBtn.classList.remove('opacity-50');
             } else {
                 clearFiltersBtn.classList.add('opacity-50');
             }
 
-            const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.has('pageCoupon') || urlParams.has('perPageCoupon') || urlParams.has('searchCoupon') || urlParams.has('status') || urlParams.has('timeUsed')) {
                 const couponSection = document.getElementById('coupon-data');
                 if (couponSection) {

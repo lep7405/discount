@@ -26,7 +26,7 @@
     <div id="app" class="min-h-screen flex flex-col">
         <nav class="bg-white shadow-sm">
             <div class="container mx-auto px-4 py-3">
-                <h2 class="text-center text-2xl font-semibold text-blue-600">{{ $header_message }}</h2>
+                <h2 class="text-center text-2xl font-semibold text-blue-600">{{ $headerMessage }}</h2>
             </div>
         </nav>
 
@@ -35,30 +35,30 @@
                 <div class="max-w-2xl mx-auto">
                     <div class="bg-white rounded-lg shadow-md overflow-hidden">
                         <div class="bg-gray-100 px-4 py-3 border-b">
-                            <h3 class="text-lg font-semibold text-gray-800">{{ $content_message }}</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">{{ $contentMessage }}</h3>
                         </div>
                         <div class="p-6 space-y-4">
                             @if (isset($reasons))
                                 <p class="text-gray-700">{{ $reasons }}</p>
                             @endif
 
-                            @if (isset($custom_fail))
-                                <p class="text-gray-700">{!! $custom_fail !!}</p>
+                            @if (isset($customFail))
+                                <p class="text-gray-700">{!! $customFail !!}</p>
                             @endif
 
-                            @if (isset($extend_message))
-                                <p class="font-semibold text-gray-800">{{ $extend_message }}</p>
+                            @if (isset($extendMessage))
+                                <p class="font-semibold text-gray-800">{{ $extendMessage }}</p>
                             @endif
                         </div>
-                        @if (isset($coupon_code))
-                            <p class="font-semibold text-gray-800">Coupon code :  {{ $coupon_code }}</p>
+                        @if (isset($couponCode))
+                            <p class="font-semibold text-gray-800">Coupon code :  {{ $couponCode }}</p>
                         @endif
-                        @if (isset($app_url))
+                        @if (isset($appUrl))
                             <div class="bg-gray-50 px-4 py-3 text-right">
-                                @if (!empty($generate_id) && $generate_id == 28)
-                                    <a href="{{ $app_url }}" target="_blank" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded transition duration-300">Log in</a>
+                                @if (!empty($generateId) && $generateId == 28)
+                                    <a href="{{ $appUrl }}" target="_blank" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded transition duration-300">Log in</a>
                                 @else
-                                    <a href="{{ $app_url }}" target="_blank" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded transition duration-300">Install App</a>
+                                    <a href="{{ $appUrl }}" target="_blank" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded transition duration-300">Install App</a>
                                 @endif
                             </div>
                         @endif

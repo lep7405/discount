@@ -100,14 +100,14 @@ class GenerateController extends Controller
 
         return view('customer.coupon.layout',
             [
-                'header_message' => Arr::get($data, 'header_message'),
-                'content_message' => Arr::get($data, 'content_message'),
+                'headerMessage' => Arr::get($data, 'headerMessage'),
+                'contentMessage' => Arr::get($data, 'contentMessage'),
                 'reasons' => Arr::get($data, 'reasons'),
-                'app_url' => Arr::get($data, 'app_url'),
-                'generate_id' => Arr::get($data, 'generate_id'),
-                'custom_fail' => Arr::get($data, 'custom_fail'),
-                'extend_message' => Arr::get($data, 'extend_message'),
-                'coupon_code' => Arr::get($data, 'coupon_code'),
+                'appUrl' => Arr::get($data, 'appUrl'),
+                'generateId' => Arr::get($data, 'generateId'),
+                'customFail' => Arr::get($data, 'customFail'),
+                'extendMessage' => Arr::get($data, 'extendMessage'),
+                'couponCode' => Arr::get($data, 'couponCode'),
             ]
         );
     }
@@ -122,7 +122,6 @@ class GenerateController extends Controller
     public function createCouponFromAffiliatePartner(string $appCode, string $shopName,Request $request,  GenerateService $generateService)
     {
         $coupon = $generateService->createCouponFromAffiliatePartner($request->input(), $appCode, $shopName);
-
         response()->json([
             'message' => 'Coupon created successfully',
             'coupon' => $coupon,

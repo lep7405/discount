@@ -4,7 +4,12 @@
     Reports
 @endsection
 @section("li_breadcumb")
-    <li class="breadcrumb-item"><a href="{{ route('admin.' . $databaseName . '.reports') }}">{{ $appName }}</a></li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.reports') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ $appName }}
+        </a>
+    </li>
 @endsection
 
 @section('mainContent')
@@ -97,14 +102,23 @@
                     <input type="hidden" name="startedAt" value="{{ $timeUsed }}">
                     <input type="hidden" name="startedAt" value="{{ $status }}">
 
-                    <select id="discount-entries-select" name="perPageDiscount"
-                            class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
-                            onchange="this.form.submit()">
-                        <option value="5" {{ $perPageDiscount == 5 ? 'selected' : '' }}>5</option>
-                        <option value="10" {{ $perPageDiscount == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ $perPageDiscount == 20 ? 'selected' : '' }}>20</option>
-                        <option value="-1" {{ $perPageDiscount == -1 ? 'selected' : '' }}>All</option>
-                    </select>
+                    <div class="relative inline-block">
+                        <select id="discountEntriesSelect" name="perPageDiscount"
+                                class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onchange="this.form.submit()">
+                            <option value="5" {{ $perPageDiscount == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ $perPageDiscount == 10 ? 'selected' : '' }}>10</option>
+                            <option value="20" {{ $perPageDiscount == 20 ? 'selected' : '' }}>20</option>
+                            <option value="-1" {{ $perPageDiscount == -1 ? 'selected' : '' }}>All</option>
+                        </select>
+
+                        <!-- Custom Dropdown Arrow -->
+                        <div class="absolute top-0 right-3 flex items-center justify-center w-8 h-full pointer-events-none">
+                            <div class="absolute top-0 right-0 flex items-center justify-center h-full pr-3 pointer-events-none text-gray-500 group-hover:text-blue-500 transition-colors duration-200">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
                     <label class="text-sm font-medium text-gray-600">entries</label>
                 </form>
                 <div class="flex items-center">
@@ -206,7 +220,11 @@
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                             <!-- Showing entries info -->
                             <div class="text-sm text-gray-600 font-medium">
-                                Showing {{ ($currentPagesDiscount - 1) * $perPageDiscount + 1 }} to {{ min($currentPagesDiscount * $perPageDiscount, $totalItemsDiscount) }} of {{ $totalItemsDiscount }} entries
+                                @if ($totalItemsDiscount == $totalDiscounts)
+                                    Showing {{ ($currentPagesDiscount - 1) * $perPageDiscount + 1 }} to {{ min($currentPagesDiscount * $perPageDiscount, $totalItemsDiscount) }} of {{ $totalItemsDiscount }} entries
+                                @else
+                                    Showing {{ ($currentPagesDiscount - 1) * $perPageDiscount + 1 }} to {{ min($currentPagesDiscount * $perPageDiscount, $totalItemsDiscount) }} of {{ $totalItemsDiscount }} entries of {{ $totalDiscounts }} total items
+                                @endif
                             </div>
 
                             <!-- Pagination controls -->
@@ -298,14 +316,23 @@
                     <input type="hidden" name="status" value="{{ $searchDiscount }}">
                     <input type="hidden" name="timeUsed" value="{{ $startedAt }}">
 
-                    <select id="coupon-entries-select" name="perPageCoupon"
-                            class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 bg-no-repeat bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-[url('data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e')]"
-                            onchange="this.form.submit()">
-                        <option value="5" {{ $perPageCoupon == 5 ? 'selected' : '' }}>5</option>
-                        <option value="10" {{ $perPageCoupon == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ $perPageCoupon == 20 ? 'selected' : '' }}>20</option>
-                        <option value="-1" {{ $perPageCoupon == -1 ? 'selected' : '' }}>All</option>
-                    </select>
+                    <div class="relative inline-block">
+                        <select id="discountEntriesSelect" name="perPageCoupon"
+                                class="mx-2 appearance-none bg-white border-2 border-gray-200 rounded-lg text-sm px-3 py-1.5 pr-8 hover:border-blue-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onchange="this.form.submit()">
+                            <option value="5" {{ $perPageCoupon == 5 ? 'selected' : '' }}>5</option>
+                            <option value="10" {{ $perPageCoupon == 10 ? 'selected' : '' }}>10</option>
+                            <option value="20" {{ $perPageCoupon == 20 ? 'selected' : '' }}>20</option>
+                            <option value="-1" {{ $perPageCoupon == -1 ? 'selected' : '' }}>All</option>
+                        </select>
+
+                        <!-- Custom Dropdown Arrow -->
+                        <div class="absolute top-0 right-3 flex items-center justify-center w-8 h-full pointer-events-none">
+                            <div class="absolute top-0 right-0 flex items-center justify-center h-full pr-3 pointer-events-none text-gray-500 group-hover:text-blue-500 transition-colors duration-200">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
                     <label class="text-sm font-medium text-gray-600">entries</label>
                 </form>
                 <div class="flex items-center">
@@ -445,7 +472,11 @@
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                             <!-- Showing entries info -->
                             <div class="text-sm text-gray-600 font-medium">
-                                Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries
+                                @if ($totalItemsCoupon == $totalCoupons)
+                                    Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries
+                                @else
+                                    Showing {{ ($currentPagesCoupon - 1) * $perPageCoupon + 1 }} to {{ min($currentPagesCoupon * $perPageCoupon, $totalItemsCoupon) }} of {{ $totalItemsCoupon }} entries of {{ $totalCoupons }} total items
+                                @endif
                             </div>
 
                             <!-- Pagination controls -->
@@ -554,7 +585,7 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 document.getElementById("discount-search-form").submit();
-            }, 500);
+            }, 2000);
         });
 
         function toggleDropdownTime() {
@@ -598,7 +629,7 @@
             clearTimeout(searchTimeout1);
             searchTimeout1 = setTimeout(() => {
                 document.getElementById("coupon-search-form").submit();
-            }, 500);
+            }, 2000);
         });
 
         @if (session('success'))

@@ -5,14 +5,28 @@
 @endsection
 
 @section("li_breadcumb")
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.reports') }}">{{ $appName }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('admin.'.$databaseName.'.discounts') }}"><span class="mr-2">/</span>{{ 'Discounts' }}</a></li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.reports') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ $appName }}
+        </a>
+    </li>
+    <li class="text-gray-400">/</li>
+    <li>
+        <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
+           class="text-blue-600 hover:text-blue-800 transition-colors">
+            {{ 'Discounts' }}
+        </a>
+    </li>
+    <li class="text-gray-400">/</li>
 @endsection
 
 @section('title_admin_breadcumb')
-    <span class="mr-2">/</span>{{ 'Create' }}
+    <a href="{{ route('admin.'.$databaseName.'.discounts') }}"
+       class="text-blue-600 hover:text-blue-800 transition-colors">
+        {{ 'Create' }}
+    </a>
 @endsection
-
 @section('mainContent')
     <div class="max-w-2xl mx-auto">
         @if ($errors->has('error'))
@@ -78,8 +92,6 @@
                                     @enderror
                                 </div>
                             </div>
-
-
                         @endif
                             <div class="grid grid-cols-2 gap-4">
                                 <div>

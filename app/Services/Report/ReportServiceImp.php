@@ -50,7 +50,7 @@ class ReportServiceImp implements ReportService
     {
         $countAll = $this->couponRepository->countCoupons($databaseName);
         $filters = $this->handleFiltersCoupon($countAll, $filters);
-        $couponData = $this->couponRepository->getAll(null, $databaseName, $filters);
+        $couponData = $this->couponRepository->getAll( $databaseName, $filters);
 
         return [
             'couponData' => $couponData,

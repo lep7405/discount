@@ -13,13 +13,14 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
         return Coupon::class;
     }
 
-    public function getAll($discount_id, string $databaseName, array $filters)
+    public function getAll(string $databaseName, array $filters)
     {
         $perPage = Arr::get($filters, 'perPageCoupon');
         $pageCoupon = Arr::get($filters, 'pageCoupon', 1);
         $search = Arr::get($filters, 'searchCoupon');
         $status = Arr::get($filters, 'status');
         $arrange_times_used = Arr::get($filters, 'timeUsed');
+        $discount_id = Arr::get($filters, 'discountId');
 
         return $this->getModel()
             ->on($databaseName)
@@ -61,7 +62,6 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
     {
         return $this->getModel()
             ->on($databaseName)
-//            ->create($data);
             ->create([
                 'code' => Arr::get($attributes, 'code'),
                 'shop' => Arr::get($attributes, 'shop'),
@@ -76,7 +76,7 @@ class CouponRepositoryEloquent extends BaseRepository implements CouponRepositor
     {
         return $this->getModel()
             ->on($databaseName)
-            ->with(['discount:id,name'])
+//            ->with(['discount:id,name'])
             ->find($id);
     }
 

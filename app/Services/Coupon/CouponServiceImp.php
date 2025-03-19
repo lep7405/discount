@@ -7,6 +7,7 @@ use App\Exceptions\DiscountException;
 use App\Exceptions\NotFoundException;
 use App\Repositories\Coupon\CouponRepository;
 use App\Repositories\Discount\DiscountRepository;
+use App\Validator\UpdateCouponValidator;
 use Illuminate\Support\Arr;
 
 class CouponServiceImp implements CouponService
@@ -17,7 +18,7 @@ class CouponServiceImp implements CouponService
     {
         $countAll = $this->couponRepository->countCoupons($databaseName);
         $filters = $this->handleFilters($countAll, $filters);
-        $couponData = $this->couponRepository->getAll(null, $databaseName, $filters);
+        $couponData = $this->couponRepository->getAll($databaseName, $filters);
 
         return [
             'couponData' => $couponData,
@@ -64,27 +65,26 @@ class CouponServiceImp implements CouponService
         ) && $attributes['shop'] != null) {
             $attributes['automatic'] = true;
         }
-        $formData = Arr::only($attributes, ['code', 'shop', 'discountId', 'automatic']);
-
-        return $this->couponRepository->createCoupon($databaseName, $formData);
+        return $this->couponRepository->createCoupon($databaseName, $attributes);
     }
 
-    public function update(int $id, string $databaseName, array $attributes)
+    public function update(int $id, string $databaseName, array $formData)
     {
-        $attributes = Arr::only($attributes, ['code', 'shop', 'discountId']);
-
         $coupon = $this->getCouponById($id, $databaseName);
 
-        if ($coupon->timesUsed && $coupon->timesUsed > 0) {
+        if ($coupon->times_used && $coupon->times_used > 0) {
             throw CouponException::cannotUpdate();
         }
+
+        $validationData=UpdateCouponValidator::validateUpdate($databaseName,$formData);
+        $attributes = Arr::only($validationData, ['code', 'shop', 'discountId']);
+
         $couponByCode = $this->couponRepository->findByCode(Arr::get($attributes, 'code'), $databaseName);
         if ($couponByCode) {
             if ($couponByCode->id != $id) {
                 throw CouponException::codeAlreadyExist();
             }
         }
-
         return $this->couponRepository->updateCoupon($id, $databaseName, $attributes);
     }
 
@@ -126,7 +126,6 @@ class CouponServiceImp implements CouponService
 
         Arr::set($attributes, 'discountId', $discount->id);
         Arr::set($attributes, 'timesUsed', 0);
-        $attributes = Arr::only($attributes, ['code', 'shop', 'discountId','timesUsed']);
 
         return $this->couponRepository->createCoupon($databaseName, $attributes);
     }
@@ -136,7 +135,8 @@ class CouponServiceImp implements CouponService
         $discount = $this->discountRepository->findByIdWithCoupon($discountId, $databaseName);
         $countAll = count($discount->coupon);
         $this->handleFilters($countAll, $filters);
-        $couponData = $this->couponRepository->getAll($discountId, $databaseName, $filters);
+        $filters = Arr::add($filters, 'discountId', $discountId);
+        $couponData = $this->couponRepository->getAll($databaseName, $filters);
 
         return [
             'couponData' => $couponData,

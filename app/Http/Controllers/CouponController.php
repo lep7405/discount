@@ -75,10 +75,10 @@ class CouponController extends Controller
         return view('admin.coupons.update', compact(['couponData', 'discountData', 'currentDiscount', 'databaseName', 'appName']));
     }
 
-    public function update(CouponService $couponService, UpdateCouponRequest $couponRequest, $id)
+    public function update(CouponService $couponService, Request $request, $id)
     {
 
-        $couponService->update($id, $this->databaseName , $couponRequest->validated());
+        $couponService->update($id, $this->databaseName , $request->all());
 
         return redirect()->route('admin.' . $this->databaseName . '.coupons')->with('success', 'Discount updated successfully!');
     }

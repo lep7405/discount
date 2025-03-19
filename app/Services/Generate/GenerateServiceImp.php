@@ -50,7 +50,6 @@ class GenerateServiceImp implements GenerateService
 
     public function handleGenerateData($generateData)
     {
-
         $groupedGenerates = $generateData->groupBy('app_name');
         $discountMap = [];
         foreach ($groupedGenerates as $appName => $group) {
@@ -70,7 +69,6 @@ class GenerateServiceImp implements GenerateService
             $gen['expired'] = $discount->expired_at && now()->greaterThan($discount->expired_at);
             $gen['discount_name'] = $discount->name;
             $gen['discount_id'] = $discount->id;
-
             return $gen;
         });
     }
@@ -259,7 +257,6 @@ class GenerateServiceImp implements GenerateService
         if (! $this->validateIp($ip)) {
             return $this->privateGenerateResponse(false, 'Ip not valid!');
         }
-
         $generate = $this->generateRepository->findById($generateId);
         if (! $generate) {
             return $this->privateGenerateResponse(false, 'Generate not exist!');
@@ -284,7 +281,6 @@ class GenerateServiceImp implements GenerateService
         if ($discount->expired_at != null && now()->greaterThan($discount->expired_at)) {
             return $this->privateGenerateResponse(false, 'Discount expired!');
         }
-
         $numberCoupon = $this->couponRepository->countByDiscountIdAndCode($discountId, $app);
         if ($generate->limit && $generate->limit <= $numberCoupon) {
             return $this->privateGenerateResponse(false, 'Limit Coupon!');
@@ -315,9 +311,9 @@ class GenerateServiceImp implements GenerateService
     public function createCouponForShop(int $discountId,string $shopName,string $app)
     {
         $dataCoupon = [
-            'discount_id' => $discountId,
+            'discountId' => $discountId,
             'shop' => $shopName . '.myshopify.com',
-            'times_used' => 0,
+            'timesUsed' => 0,
             'status' => 1,
             'code' => $this->generateUniqueCouponCode($discountId, $shopName, $app),
         ];
@@ -462,11 +458,11 @@ class GenerateServiceImp implements GenerateService
         ];
 
         foreach ($conditions as $cd) {
-            $arrOr = explode('||', $cd); // Tách trên 1 hàng các điều kiện OR
+            $arrOr = explode('||', $cd);
             $textOr = '';
 
             for ($i = 0; $i < count($arrOr); $i++) {
-                $arrCon = explode('&', $arrOr[$i]); // Dạng của điều kiện name&status
+                $arrCon = explode('&', $arrOr[$i]);
                 $nameStatus = $arrCon[0] . '_status';
                 $status = $arrCon[1];
 
@@ -582,9 +578,9 @@ class GenerateServiceImp implements GenerateService
 
         $attributes = [
             'code' => $codeName,
-            'discount_id' => $discount->id,
+            'discountId' => $discount->id,
             'shop' => $shop,
-            'times_used' => 0,
+            'timesUsed' => 0,
             'status' => 1,
             'automatic' => true,
         ];
